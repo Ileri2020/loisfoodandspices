@@ -82,8 +82,9 @@ export const columns: ColumnDef<Payment>[] = [
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() 
+          // ||
+          // (table.getIsSomePageRowsSelected() && "indeterminate")
           // type checked state changed
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
