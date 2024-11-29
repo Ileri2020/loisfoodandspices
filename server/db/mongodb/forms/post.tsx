@@ -107,3 +107,9 @@ const AdminStockForm = (props: {method : string,}) => {
 // });
 
 export default AdminStockForm
+
+
+
+
+
+

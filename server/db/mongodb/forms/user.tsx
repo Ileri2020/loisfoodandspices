@@ -18,6 +18,24 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
+import {
+  ColumnDef,
+} from "@tanstack/react-table"
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+
+
+
 const UserForm = (props: {method : string,}) => {
   const [details, setDetails] = useState({
     firstName : "",
@@ -134,16 +152,139 @@ const UserForm = (props: {method : string,}) => {
   )
 }
 
-// export const userSchema = new mongoose.Schema({
-//   firstName: { type: String},
-//   lastName: { type: String},
-//   userName: { type: String},
-//   email: { type: String, unique: true, required: true },
-//   password: { type: String},
-//   role: { type: String, enum: ['admin', 'user', "staff"] },
-//   address: { type: mongoose.Schema.Types.ObjectId, ref: 'Address' },
-//   image: { type: String},
-//   authProviderId: { type: String},
-// });
 
 export default UserForm
+
+
+
+export type user = {
+  _id: string
+  firstName: string
+  lastName: string
+  userName: string
+  email: string
+  password: number
+  role: "admin" | "user" | "staff"
+  address: string
+  image: string
+  authProviderId: string
+}
+
+export const UserColumns: ColumnDef<user>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "firstName",
+    header: "FirstName",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("firstName")}</div>
+    ),
+  },
+  {
+    accessorKey: "lastName",
+    header: "LastName",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("lastName")}</div>
+    ),
+  },
+  {
+    accessorKey: "userName",
+    header: "UserName",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("userName")}</div>
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("role")}</div>
+    ),
+  },
+  {
+    accessorKey: "address",
+    header: "Address",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("address")}</div>
+    ),
+  },
+  {
+    accessorKey: "image",
+    header: "Image",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("image")}</div>
+    ),
+  },
+  {
+    accessorKey: "authProviderId",
+    header: "AuthProviderId",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("authProviderId")}</div>
+    ),
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const user = row.original
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(user._id)}
+            >
+              Copy payment ID
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>View customer</DropdownMenuItem>
+            <DropdownMenuItem>View payment details</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
+  },
+]
+

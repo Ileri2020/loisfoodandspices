@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const SalesSchema = new mongoose.Schema({
     products: [
         {
-          productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Products' },
+          productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Stock' },
           productQuantity: { type: Number, required: true },
           productPrice: { type: Number, required: true },
           productCost: {type: Number, required: true },
@@ -22,3 +22,6 @@ const SalesSchema = new mongoose.Schema({
 const Sale = mongoose.model("Sales", SalesSchema);
 
 export default Sale;
+
+
+

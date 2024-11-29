@@ -3,8 +3,8 @@ import { motion } from "framer-motion"
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
 import { cartActions } from "@/store/cart-slice";
-import UserForm from "@/server/db/mongodb/forms/user";
-import StockForm from "@/server/db/mongodb/forms/stock";
+import UserForm, { UserColumns } from "@/server/db/mongodb/forms/user";
+import StockForm, { StockColumns } from "@/server/db/mongodb/forms/stock";
 import SaleForm from "@/server/db/mongodb/forms/sales";
 // import { Button} from "@/components/ui/button"
 // import { Input } from "@/components/ui/input"
@@ -28,6 +28,8 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { ArrowUp, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { serveraddr } from "@/data/env"
 
 const forms = [
   {
@@ -73,8 +75,31 @@ const forms = [
 ]
 
 const Admin = () => {
-  const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
-  const dispatch = useDispatch();
+  const [data, setData] = useState<any[]>([]);
+  const [columns, setColumns] = useState<any[]>(StockColumns );
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    fetch(`${serveraddr + "/api/v1/post/stocks"}`)
+      .then(response => response.json())
+      .then(data => data.slice().sort(()=>Math.random()-0.5))
+      .then(data => {
+        setData(data);
+        // data.forEach((obj : any) => {
+        //   console.log(obj._id, obj.name, obj.price);
+        // });
+        setLoading(false);
+      })
+      .catch(error => {
+        setError(error);
+        alert("unable to connect to server please check your network connection");
+        setLoading(true);
+      });
+  }, []);
+
+  // const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
+  // const dispatch = useDispatch();
   // const cart = (name : string, id : number, price : number) => {
   //   dispatch(
   //     cartActions.addToCart({
@@ -134,7 +159,7 @@ const Admin = () => {
 
         <ResizablePanel defaultSize={100}>
           <div className="flex-col flex-1 justify-center items-center gap-5">
-            <DataTableDemo />
+            { loading ? <p>Loading...</p> : <DataTableDemo data={data} columns={columns} />}
             <ChartComponent />
           </div>
         </ResizablePanel>

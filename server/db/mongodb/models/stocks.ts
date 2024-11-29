@@ -93,3 +93,5 @@ export const skipLimitStockList = async (start = 0, limit: number) => {
         console.log(`unable to get stocks list of ${limit} limit`)
     }
 }
+
+

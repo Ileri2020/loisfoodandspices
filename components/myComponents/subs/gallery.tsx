@@ -24,7 +24,7 @@ const Gallery = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
+  // const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
   const dispatch = useDispatch();
   const cart = (name : string, id : string, price : number, img : string) => {
     dispatch(
