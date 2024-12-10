@@ -9,7 +9,7 @@ export const userSchema = new mongoose.Schema({
     address: { type: mongoose.Schema.Types.ObjectId, ref: 'Address' },
     image: { type: String},
     authProviderId: { type: String},
-  });
+  }, {timestamps: true});
 
   let User
 

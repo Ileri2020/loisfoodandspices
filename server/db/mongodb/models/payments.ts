@@ -7,7 +7,7 @@ const paymentSchema = new mongoose.Schema({
     paymentStatus: { type: String, enum: ['paid', 'unpaid'] },
     amount: { type: Number},
     transactionId: { type: String},
-  });
+  }, {timestamps: true});
 
 
 

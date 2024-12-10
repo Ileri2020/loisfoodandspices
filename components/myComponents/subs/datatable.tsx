@@ -248,7 +248,7 @@ export function DataTableDemo(props : {data : any, columns: any}) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="bg-red-500 max-w-sm">
+                    <TableHead key={header.id} className="/bg-red-500 max-w-sm">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

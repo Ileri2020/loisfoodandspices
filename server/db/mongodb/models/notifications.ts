@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema({
     category: { type:String, enum: ['suggestion', 'complaint', 'advertise', 'comment', "reply", "general", "appreciate"], required: true },
     message: { type: String},
     read: { type: Boolean, default: false },
-});
+}, {timestamps: true});
 
 
 

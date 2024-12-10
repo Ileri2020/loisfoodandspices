@@ -8,7 +8,7 @@ const StocksSchema = new mongoose.Schema({
     cost: {type: Number, required: true },
     price: {type: Number, required: true },
     qty: {type: Number},
-});
+}, {timestamps: true});
 
 
 let Stock

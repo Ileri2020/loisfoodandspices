@@ -86,7 +86,7 @@ const forms = [
 const Admin = () => {
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>(StockColumns );
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -101,11 +101,11 @@ const Admin = () => {
         setLoading(false);
       })
       .catch(error => {
-        setError(error);
+        // setError(error);
         alert("unable to connect to server please check your network connection");
         setLoading(true);
       });
-  }, [data, columns]);
+  }, [columns]);//data, 
 
   // const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
   // const dispatch = useDispatch();
