@@ -6,6 +6,8 @@ import { CartItems } from '@/components/myComponents/subs/index';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { PayDrawer } from "@/components/myComponents/paydrawer";
+import { BookDrawer } from '../../components/myComponents/bookdrawer';
+import { Booked } from "@/components/myComponents/booked";
 
 const Cart = () => {
   const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
@@ -34,30 +36,34 @@ const Cart = () => {
       }}
       className="w-[100vw] overflow-clip"
     >
-      <ScrollArea className="mx-auto max-w-3xl max-h-[65vh] flex flex-col">
         {cartItems.length < 1 ?
-          <div>No stock in cart</div>
+          <div>
+            <div>No stock in cart</div>
+            <div>Click to view booked orders</div>
+            <div><Booked /></div>
+          </div>
           :
-          cartItems.map((stock, index)=>{
-            return(
-              <CartItems name={stock.name} price={stock.price} qty={stock.quantity} id={stock.id} totalPrice={stock.totalPrice} img={stock.img} key={index}/>
-            )
-          })}
-      </ScrollArea>
-      <div>
-        <div className="mx-auto max-w-3xl flex flex-col mt-5 gap-2">
-          <div className="flex flex-row justify-between items-center">
-            <div>total : <span className="text-accent text-xl font-semibold">₦ {total}</span></div>
-            <div className="flex flex-row gap-2"><Button>book</Button><Button variant={"outline"} className="border-2 border-accent-secondary">order</Button></div>
+          <div>
+            <ScrollArea className="mx-auto max-w-3xl max-h-[65vh] flex flex-col">
+              {cartItems.map((stock, index)=>{
+                return(
+                  <CartItems name={stock.name} price={stock.price} qty={stock.quantity} id={stock.id} totalPrice={stock.totalPrice} img={stock.img} key={index}/>
+                )
+              })}
+            </ScrollArea>
             <div>
-              <PayDrawer />
+              <div className="mx-auto max-w-3xl flex flex-col mt-5 gap-2">
+                <div className="flex flex-row justify-between items-center">
+                  <div>total : <span className="text-accent text-xl font-semibold">₦ {total}</span></div>
+                  <div className="flex flex-row gap-2"><Booked /><BookDrawer cart={cartItems} /><PayDrawer cart={cartItems} /></div>
+                </div>
+                <div>
+                  
+                </div>
+              </div>
             </div>
           </div>
-          <div>
-            
-          </div>
-        </div>
-      </div>
+        }
     </motion.section>
   )
 }

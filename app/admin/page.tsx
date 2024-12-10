@@ -5,7 +5,7 @@ import { RootState } from "@/store";
 import { cartActions } from "@/store/cart-slice";
 import UserForm, { UserColumns } from "@/server/db/mongodb/forms/user";
 import StockForm, { StockColumns } from "@/server/db/mongodb/forms/stock";
-import SaleForm from "@/server/db/mongodb/forms/sales";
+import SaleForm, { SaleColumns } from "@/server/db/mongodb/forms/sales";
 // import { Button} from "@/components/ui/button"
 // import { Input } from "@/components/ui/input"
 // import { Textarea } from "@/components/ui/textarea"
@@ -29,48 +29,57 @@ import {
 } from "@/components/ui/resizable"
 import { ArrowUp, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
-import { serveraddr } from "@/data/env"
 
 const forms = [
   {
       model : "User",
       form : UserForm,
+      column : UserColumns,
   },
   {
       model : "Stock",
       form : StockForm,
+      column : StockColumns,
   },
   {
       model : "Sale",
       form : SaleForm,
+      column : SaleColumns,
   },
   {
       model : "Review",
       form : ReviewForm,
+      column : "",
   },
   {
       model : "Refund",
       form : RefundForm,
+      column : "",
   },
   {
       model : "Payment",
       form : PaymentForm,
+      column : "",
   },
   {
       model : "Notification",
       form : NotificationForm,
+      column : "",
   },
   {
       model : "Coupon",
       form : CouponForm,
+      column : "",
   },
   {
       model : "Cart",
       form : CartForm,
+      column : "",
   },
   {
       model : "Address",
       form : AddressForm,
+      column : "",
   },
 ]
 
@@ -81,7 +90,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetch(`${serveraddr + "/api/v1/post/stocks"}`)
+    fetch(`/api/data/stock?limit=10}`)
       .then(response => response.json())
       .then(data => data.slice().sort(()=>Math.random()-0.5))
       .then(data => {
@@ -96,7 +105,7 @@ const Admin = () => {
         alert("unable to connect to server please check your network connection");
         setLoading(true);
       });
-  }, []);
+  }, [data, columns]);
 
   // const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
   // const dispatch = useDispatch();
@@ -111,9 +120,9 @@ const Admin = () => {
   //   console.log(cartItems)
   // }
 
-  const Model = (props : { name: string, formComponent: any,}) => {
+  const Model = (props : { name: string, formComponent: any, dataColumn: any}) => {
     return(
-      <div className="bg-secondary max-w-full rounded-sm my-1 p-2 flex flex-col gap-2">
+      <div onClick={()=>{setColumns(props.dataColumn)}} className={`${props.dataColumn === columns && "border-accent border-2 bg-secondary/60"} bg-secondary max-w-full rounded-sm my-1 p-2 flex flex-col gap-2 transition-all`}>
         <div className="flex flex-row justify-between items-center w-full">
           <div className="text-xl text-blue-600 font-semibold">{props.name}</div>
           <div className="/flex-1 text-5xl font-semibold text-outline-positive text-background /text-nowrap whitespace-nowrap px-2">20 <span className="text-green-500 inline font-extrabold whitespace-nowrap text-outline-none">+</span></div>
@@ -150,7 +159,7 @@ const Admin = () => {
         <ResizablePanel defaultSize={50}>
           <div className="flex flex-col gap-2 /mx-auto p-2 max-w-xl">
             {forms.map((item, key) => {
-              return(<Model key={key} name={item.model} formComponent={item.form} />)
+              return(<Model key={key} name={item.model} formComponent={item.form} dataColumn={item.column} />)
             })}
           </div>
         </ResizablePanel>

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useDispatch, useSelector } from "react-redux";
 import { cartActions } from "@/store/cart-slice";
 import {RootState} from "@/store";
-import { serveraddr } from '@/data/env';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -39,7 +38,7 @@ const Stocks = () => {
   //const navigate = useRouter()
 
   useEffect(() => {
-    fetch(`${serveraddr + "/api/v1/post/stocks"}`)
+      fetch(`/api/data/stock?limit=10`)
       .then(response => response.json())
       .then(data => data.slice().sort(()=>Math.random()-0.5))
       .then(data => {

@@ -7,15 +7,14 @@ import { redirect } from "next/navigation";
 
 
 const register = async ( formData : FormData) => {
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
+    const userName = formData.get("userName") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    console.log({firstName, lastName, email, password})
+    console.log({userName, email, password})
 
     let role = "user"
-    if (!firstName && !lastName && !email && !password) {
+    if (!userName && !email && !password) {
          console.log("account already exist")
          return
     }
@@ -35,8 +34,7 @@ const register = async ( formData : FormData) => {
         const hashedPassword = await hashSync(password, 10)
 
         const user = await User.create({
-            firstName: firstName,
-            lastName: lastName,
+            userName: userName,
             email: email,
             password: hashedPassword,
             role: role,

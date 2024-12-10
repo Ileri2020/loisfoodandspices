@@ -5,11 +5,10 @@ import img4 from "./../public/mission-burrito-fast-food-shawarma-kati-roll-break
 import img5 from "./../public/small chops 3.jpg"
 import img6 from "./../public/flyer.jpg"
 import img7 from "./../public/shawama pics 1.jpg"
-import { serveraddr } from "./env"
 
 let fetchedData = null;
 
-fetch(`${serveraddr + "/api/v1/post/stocks"}`)
+fetch(`/api/data/stock?limit=10`)
   .then(response => {
     if (response.ok) {
       return response.json();

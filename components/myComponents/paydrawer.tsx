@@ -16,54 +16,13 @@ import {
 import { useSelector } from "react-redux"
 import { RootState } from "@/store"
 
-const data = [
-  {
-    goal: 400,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 278,
-  },
-  {
-    goal: 189,
-  },
-  {
-    goal: 239,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 278,
-  },
-  {
-    goal: 189,
-  },
-  {
-    goal: 349,
-  },
-]
 
-export function PayDrawer() {
-  const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
 
+
+export function PayDrawer(props : {cart: any}) {
   let total = 0
 
-  cartItems.forEach((item)=>{ total = total + item.totalPrice})
+  props.cart.forEach((item)=>{ total = total + item.totalPrice})
 
   const [goal, setGoal] = React.useState(total)
 
@@ -74,7 +33,7 @@ export function PayDrawer() {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button variant="outline">Open Drawer</Button>
+        <Button variant="outline">Order</Button>
       </DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">

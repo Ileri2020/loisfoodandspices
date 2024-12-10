@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from "react-redux"
 import { cartActions } from "@/store/cart-slice"
 import { RootState } from "@/store"
 import { useEffect, useState } from "react"
-import { serveraddr } from "@/data/env"
 import { Button } from "@/components/ui/button"
 
 const Gallery = () => {
@@ -39,7 +38,7 @@ const Gallery = () => {
   }
 
   useEffect(() => {
-    fetch(`${serveraddr + "/api/v1/post/stocks"}`)
+    fetch(`/api/data/stock?limit=10`)
       .then(response => response.json())
       .then(data => data.slice().sort(()=>Math.random()-0.5))
       .then(data => {

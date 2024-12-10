@@ -14,6 +14,7 @@ const ContactForm = () => {
     email : "",
     category : "",
     message : "",
+    emailto : "adepojuololade2020@gmail.com",
   })
   
   interface RefObject<T> {
@@ -24,16 +25,16 @@ const ContactForm = () => {
 
     const sendMessage =async (e : FormEvent) => {
       e.preventDefault();
-      const payment = {}
 
       const submitToServer =async ()=>{
-        await fetch("/api/v1/post/upload", {
+        console.log(details)
+        await fetch("/api/data/notification", {
           //mode: 'no-cors',  mode: 'no-cores'   mode: 'cores'
           method: 'POST',
-          // headers: {
-          //     "Content-Type": "application/json",
-          // },
-          body: JSON.stringify(payment),
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(details),
           // body: JSON.stringify(form)
         })
         .then((response) => response.json())
@@ -43,8 +44,9 @@ const ContactForm = () => {
             email : "",
             category : "",
             message : "",
+            emailto : "adepojuololade2020@gmail.com",
           }); 
-        alert("Message sent successfully")})
+        alert(`Message sent successfully: ${data}`)})
         .catch((error) => console.error(error));
       }
       console.log(`about to send to server ${details}`)
@@ -71,8 +73,8 @@ const ContactForm = () => {
       {/* onSubmit={sendEmail} */}
         <h3 className="text-4xl text-accent mb-7">Message Us</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input type="firstname" name="username" placeholder="Username" className="rounded-sm bg-background" />
-        <Input type="email" name="email" placeholder="Email address" className="rounded-sm bg-background" />
+          <Input type="firstname" name="username" placeholder="Username" onChange={handleChange} className="rounded-sm bg-background" />
+          <Input type="email" name="email" placeholder="Email address" onChange={handleChange} className="rounded-sm bg-background" />
         </div>
         <select name="category" value={details.category} onChange={handleChange} className='bg-secondary border-2 border-border h-8 ring-1 rounded-sm ring-accent/30'>
                 <option value="suggestion"> Suggestion </option>
@@ -80,7 +82,7 @@ const ContactForm = () => {
                 <option value="advert"> Advert </option>
                 <option value="appreciate">Appreciate</option>
         </select>
-        <Textarea className="h-[120px]" name="message" placeholder="Type your message here" />
+        <Textarea className="h-[120px]" name="message" onChange={handleChange} placeholder="Type your message here" />
         <Button type="submit" className="before:ani-shadow">Submit</Button>
     </form>
   )

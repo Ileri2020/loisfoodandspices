@@ -225,7 +225,7 @@ export const StockColumns: ColumnDef<stock>[] = [
     accessorKey: "img",
     header: "Image",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("img")}</div>
+      <img src={row.getValue("img")} className="h-10 /max-w-10" />
     ),
   },
   {

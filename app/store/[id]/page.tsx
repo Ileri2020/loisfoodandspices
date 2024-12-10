@@ -8,7 +8,6 @@ import stocks from "@/data/stocks"
 import { useDispatch } from 'react-redux';
 import { cartActions } from "@/store/cart-slice"
 import Similar from "@/components/myComponents/subs/similar"
-import { serveraddr } from "@/data/env"
 
 const Description = () => {
   type stockCategory = {
@@ -30,7 +29,7 @@ const Description = () => {
   let { id } = useParams()
 
   useEffect(() => {
-    fetch(`${serveraddr + "/api/v1/post/stocks"}`)
+    fetch(`/api/data/stock?limit=10`)
       .then(response => response.json())
       .then(data => data.slice().sort(()=>Math.random()-0.5))
       .then(data => {

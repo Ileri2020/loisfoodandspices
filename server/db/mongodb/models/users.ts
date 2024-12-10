@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 
 
 export const userSchema = new mongoose.Schema({
-    firstName: { type: String},
-    lastName: { type: String},
-    userName: { type: String},
+    userName: { type: String, unique: true, required: true },
     email: { type: String, unique: true, required: true },
     password: { type: String},
     role: { type: String, enum: ['admin', 'user', "staff"] },
@@ -18,7 +16,7 @@ export const userSchema = new mongoose.Schema({
   try {
       // users = mongoose.model('User')  //always make sure that the name of the model is correct and this only works only if the model is already in the database, else redefinine the model and schema
       console.log ("about to get or create model")
-      User = mongoose.models.User as unknown as null || mongoose.model('User', userSchema)
+      User = mongoose.models.User as unknown as null || mongoose.model('Users', userSchema)
       console.log ("user model now active")
   } catch (error) {
       // users = mongoose.model('users', userSchema)

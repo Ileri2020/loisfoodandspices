@@ -1,16 +1,10 @@
-// import nc from "next-connect"
-// import { createRouter } from "next-connect"
-// import { uploadimg } from "@/server/config/multersetup"
 import { NextApiRequest, NextApiResponse } from "next"
 import { NextRequest, NextResponse } from 'next/server';
 import cloud from "@/server/config/cloudinary"
-import Stock from "@/server/db/mongodb/models/stocks"
-// import { join } from "path";
-// import { writeFile } from "fs";
-import { buffer } from "stream/consumers";
-// import glob from "glob";
+import Sale from "@/server/db/mongodb/models/sales";
 import connect from "@/server/config/mongodb";
 import { Types } from "mongoose";
+import { SaleColumns } from "@/server/db/mongodb/forms/sales";
 
 
 export const GET = async (req: Request) => { //, res: NextApiResponse
@@ -30,13 +24,13 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
 
   await connect()
 
-  let stocks    
+  let sales    
 
   try {
       if(!category){
-        stocks = await Stock.find().limit(parseInt(limit))
+        sales = await Sale.find().limit(parseInt(limit))
       }else{
-        stocks = await Stock.find({ category : category }).limit(parseInt(limit))
+        sales = await Sale.find({ category : category }).limit(parseInt(limit))
       }
   } catch (error) {
       // users = mongoose.model('users', userSchema)
@@ -44,7 +38,7 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
   }
 
 
-    return new NextResponse(JSON.stringify(stocks), {status: 200});
+    return new NextResponse(JSON.stringify(sales), {status: 200});
   } catch (error) {
     return new NextResponse(JSON.stringify({error: error.message}), {status: 500});
   }
@@ -52,51 +46,43 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
 
 export const POST = async (req: NextRequest) => {
   try{
-    const form : any =await req.formData()
-      const stock_name = form.get("stock_name")
-      const cost = form.get("cost")
-      const price = form.get("price")
-      const quantity = form.get("quantity")
-      const category = form.get("category")
-      const message = form.get("message")
-      const image = form.get("file")
+    const body =await req.json()
+    await connect();
+    if (!body.products && !body.status && !body.paymentStatus) {
+      return new NextResponse(JSON.stringify({message : "error handling cart items"}), {status: 400})
+  }
+    // const sale = new Sale(body)
+    // await sale.save()
 
-      if (!image) {
-      throw {message : "image of stock missing", status : "error"}
+     const postSale = async () => {
+      let newSale
+        try{
+            newSale = await Sale.create({
+            products: body.products,
+            totalSale: body.totalSale,
+            totalQty: body.totalQty,
+            status: body.status,
+            paymentStatus: body.paymentStatus,
+          })
+        }catch(error){console.log(error)}
+        return newSale
     }
-
-    const imageBytes = await image.arrayBuffer()
-    const file = Buffer.from(imageBytes)
-
-      if (!stock_name && !cost && !price && !quantity && !category && !message && !file) {
-          return new NextResponse(JSON.stringify({message : "incomplete fields inputed"}), {status: 400})
-      }
-
-      // const path = join("C:\Users\Ololade\Desktop\portfolio\next-temp-app\app\public","buffer", form.get("file").name)
-      // // const path = join("\c","buffer", form.get("file").name)
-      // await writeFile(path, file, ()=>{console.log(`file written to ${path}`)})
-
-     const postStock = async () => {
-        const uploaded : any = await cloud.uploadCloudinary(file, "/succo/img/stocks")
-        //const public_id = uploaded.public_id //path to image without extension or format
-        const url = uploaded.url
-        const newStock = await Stock.create({
-            name: stock_name,
-            price: Number(price),
-            description: message,
-            category: category,
-            img: url,
-            qty: Number(quantity),
-            cost: Number(cost),
-        })
-        return newStock
-    }
-    const stock = postStock()
-    return new NextResponse(JSON.stringify({message : stock}), {status: 200})
+    const sale = postSale()
+    console.log(body)
+    return new NextResponse(JSON.stringify({message : sale}), {status: 200})
   } catch (error) {
     return new NextResponse(JSON.stringify({error : error}), {status: 500})
   }
 }
+
+// {
+//   id: '6721e30e01905a916e1ac3b4',
+//   price: 600,
+//   quantity: 1,
+//   totalPrice: 600,
+//   name: 'Malta Guinness',
+//   img: 'https://res.cloudinary.com/dc5khnuiu/image/upload/v1730274064/succo/img/stocks/uiyelqtw8ohmzcgxpjh3.jpg'
+// }
 
 export const PATCH = async (req: Request) => {
   try{
@@ -126,16 +112,18 @@ export const PATCH = async (req: Request) => {
     }
 
     // Remove undefined fields from updates
-    const stockArray = Object.fromEntries(
+    const saleArray = Object.fromEntries(
       Object.entries(stock).filter(([key, value]) => value !== undefined)
     );
 
     // Update user document
-    Object.assign(Stock, stockArray);
+    let sale = new Sale()
+    // Object.assign(Sale, saleArray);
+    Object.assign(sale, saleArray);
 
-    const update = await Stock.findById(`${id}`)
+    // const update = await SaleColumns.findById(`${id}`)
 
-    const updatedStock = await Stock.save();
+    const updatedStock = await sale.save();
 
     // const updatedUser = await Stock.findOneAndUpdate(
     //   {_id: new Types.ObjectId(id)},  //new ObjectId(userId)
@@ -169,16 +157,16 @@ export const DELETE = async (req: Request) => {
       )
     }
     await connect();
-    const deletedStock = await Stock.findByIdAndDelete(
+    const deletedSale = await Sale.findByIdAndDelete(
       new Types.ObjectId(id)
     )
-    if (!deletedStock){
+    if (!deletedSale){
       return new NextResponse(
         JSON.stringify({ message: "stock not found"}),
         { status: 400}
       )
     }
-    return new NextResponse(JSON.stringify({message : "stock deleted"}), {status: 200})
+    return new NextResponse(JSON.stringify({message : "sale deleted"}), {status: 200})
   } catch (error) {
     return new NextResponse(JSON.stringify({error : error}), {status: 500})
   }

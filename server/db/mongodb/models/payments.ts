@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 
 const paymentSchema = new mongoose.Schema({
-    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Orders' },
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Sale' },
     paymentMethod: { type: String},
     paymentStatus: { type: String, enum: ['paid', 'unpaid'] },
     amount: { type: Number},

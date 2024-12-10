@@ -38,8 +38,7 @@ import {
 
 const UserForm = (props: {method : string,}) => {
   const [details, setDetails] = useState({
-    firstName : "",
-    lastName : "",
+    userName : "",
     email : "",
     password : "",
     role : "",
@@ -60,8 +59,7 @@ const UserForm = (props: {method : string,}) => {
     const addProduct =async (e : FormEvent) => {
       e.preventDefault();
       const formDataToSubmit = new FormData();
-      formDataToSubmit.append('firstName', details.firstName);
-      formDataToSubmit.append('lastName', `${details.lastName}`);
+      formDataToSubmit.append('userName', details.userName);
       formDataToSubmit.append('email', `${details.email}`);
       formDataToSubmit.append('password', `${details.password}`);
       formDataToSubmit.append('role', details.role);
@@ -117,9 +115,7 @@ const UserForm = (props: {method : string,}) => {
           </DrawerHeader>
             <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <Input type="text" id='firstName' name='firstName' onChange={handleChange} placeholder="Firstname" className="rounded-sm bg-background w-56" />
-                  
-                    <Input type="text" id="lastName" name="lastName" onChange={handleChange} placeholder="Lastname" className="rounded-sm bg-background w-56" />
+                    <Input type="text" id='userName' name='userName' onChange={handleChange} placeholder="User name" className="rounded-sm bg-background w-56" />
                   
                     <Input type="email" id="email" name="email" onChange={handleChange} placeholder="example@gmail.com" className="rounded-sm bg-background w-56" />
                 
@@ -195,17 +191,10 @@ export const UserColumns: ColumnDef<user>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "firstName",
-    header: "FirstName",
+    accessorKey: "userName",
+    header: "UserName",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("firstName")}</div>
-    ),
-  },
-  {
-    accessorKey: "lastName",
-    header: "LastName",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("lastName")}</div>
+      <div className="capitalize">{row.getValue("userName")}</div>
     ),
   },
   {

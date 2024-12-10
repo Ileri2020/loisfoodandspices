@@ -3,6 +3,8 @@ import connect from '@/server/config/mongodb';
 import User from '@/server/db/mongodb/models/users';
 import { NextResponse } from 'next/server';
 import { Types } from 'mongoose';
+import { redirect } from 'next/navigation';
+import { hashSync } from 'bcrypt-edge';
 
 export const GET = async (req: Request) => { //, res: NextApiResponse
   try {
@@ -56,11 +58,47 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
 
 export const POST = async (req: Request) => {
   try{
-    const body =await req.json()
+    const {userName, email, password, formRole} =await req.json()
+    if (!userName && !email && !password) {
+      return new NextResponse(JSON.stringify({message : "invalid credentials"}), {status: 400})
+    }
     await connect();
-    const user = new User(body)
-    await user.save()
-    return new NextResponse(JSON.stringify({message : "user created"}), {status: 200})
+    const existingUser = await User.findOne({ email })
+
+    if (existingUser) {console.log("user already exist"); redirect("account") ; return; } 
+    let role
+    if (!formRole) {
+      if ( email == "adepojuololade2020@gmail.com" || email == "adepojuololade2020@gmail.com"){
+        role = "admin"
+    } 
+    if ( email == "staff@gmail.com" || email == "rep@gmail.com"){
+        role = "staff"
+    }else{
+      role = "user"
+    } 
+    }else{
+      role = formRole
+    }
+    // const sale = new Sale(body)
+    // await sale.save()
+    const hashedPassword = await hashSync(password, 10)
+
+     const postMessage = async () => {
+      let newUser
+        try{
+            newUser = await User.create({
+              userName: userName,
+              email: email,
+              password: hashedPassword,
+              role: role,
+              authProviderId: "system",
+            })
+        }catch(error){console.log(error)}
+        return newUser
+    }
+    const user = postMessage()
+    console.log(user)
+    return new NextResponse(JSON.stringify({message : user}), {status: 200})
   } catch (error) {
     return new NextResponse(JSON.stringify({error : error}), {status: 500})
   }

@@ -22,14 +22,12 @@ import {
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from '@/components/ui/input'
-import { serveraddr } from '@/data/env'
 import { Label } from '@/components/ui/label'
 import { register } from '@/server/action/signup'
 
 const Signup = () => {
   const [details, setDetails] = useState({
-    firstName : "",
-    lastName : "",
+    userName : "",
     email : "",
     password : "",
   })
@@ -67,13 +65,8 @@ const Signup = () => {
           <form ref={form  as RefObject<HTMLFormElement>} action={register} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl">
             <div className="/grid /grid-cols-1 /md:grid-cols-2 /gap-2 flex flex-col gap-2">
               <div className='flex flex-row justify-between items-center'>
-                <Label htmlFor="firstName">First Name :</Label>
-                <Input type="text" id='firstName' name='firstName' onChange={handleChange} placeholder="Firstname" className="rounded-sm bg-background w-56" />
-              </div>
-              
-              <div className='flex flex-row justify-between items-center'>
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input type="text" id="lastName" name="lastName" onChange={handleChange} placeholder="Lastname" className="rounded-sm bg-background w-56" />
+                <Label htmlFor="userName">User Name :</Label>
+                <Input type="text" id='userName' name='userName' onChange={handleChange} placeholder="User name" className="rounded-sm bg-background w-56" />
               </div>
 
               <div className='flex flex-row justify-between items-center'>

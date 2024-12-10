@@ -53,13 +53,13 @@ const NotificationForm = (props: {method : string,}) => {
       const payment = {}
 
       const submitToServer =async ()=>{
-        await fetch("/api/v1/post/upload", {
+        await fetch("/api/data/notification", {
           //mode: 'no-cors',  mode: 'no-cores'   mode: 'cores'
           method: `${props.method}`,
           // headers: {
           //     "Content-Type": "application/json",
           // },
-          body: JSON.stringify(payment),
+          body: JSON.stringify(details),
           // body: JSON.stringify(form)
         })
         .then((response) => response.json())
