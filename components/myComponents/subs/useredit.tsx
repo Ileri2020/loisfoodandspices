@@ -25,59 +25,42 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { register } from '@/server/action/signup'
 import axios from 'axios'
+import { useAppContext } from '@/hooks/useAppContext'
+import { CldUploadWidget } from 'next-cloudinary'
+import {cloudUpload, uploadCloudinary} from '@/server/config/cloudinary'
 
-const Signup = () => {
-  // const [details, setDetails] = useState({
-  //   userName : "",
-  //   email : "",
-  //   password : "",
-  // })
-
-  // // const [render, setRender] = useState(0);
-
-  // // useEffect(() => {
-  // // }, [render]);
-
-  // interface RefObject<T> {
-  //   readonly current: T | null
-  // }
-
-  //   const form = useRef<HTMLFormElement>(null);
-
-
-  //   const handleChange = (e : any)=>{
-  //     const { name, value } = e.target;
-
-  //     setDetails((prevFormData) => ({ ...prevFormData, [name]: value }));
-  //   }
-  
-  const [users, setUsers] = useState([]);
+const EditUser = () => {
+  const { user, setUser } = useAppContext();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
-    avatarUrl: '',
+    username: '',
+    contact: '',
     department: 'member',
+    ministry: "684f74ca135dd6d0efeab37d",
     role: 'user',
-    sex: 'male'
   });
-  const [editId, setEditId] = useState(null);
+  const [editId, setEditId] = useState(true);
 
   useEffect(() => {
-
+    handleEdit(user)
   }, []);
 
-  const form = useRef<HTMLFormElement>(null);
+  const fetchUser = async () => {
+    const res = await axios.get(`/api/dbhandler?model=users&id=${user.id}`);
+    setUser(res.data);
+  };
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editId) {
-      await axios.put(`/api/dbhandler?model=users&id=${editId}`, formData);
-    } else {
-      await axios.post('/api/dbhandler?model=users', formData);
+    console.log("about to update edit data")
+    const response = await axios.put(`/api/dbhandler?model=users&id=${editId}`, formData);
+    if(response.status = 200){
+      fetchUser();
+      resetForm();
     }
-    resetForm();
   };
 
   const handleEdit = (item) => {
@@ -85,33 +68,37 @@ const Signup = () => {
     setEditId(item.id);
   };
 
-  const handleDelete = async (id) => {
-    await axios.delete(`/api/dbhandler?model=users&id=${id}`);
-  };
+  // const handleDelete = async (id) => {
+  //   await axios.delete(`/api/dbhandler?model=users&id=${id}`);
+  //   fetchUsers();
+  // };
 
   const resetForm = () => {
     setFormData({
       email: '',
       password: '',
       name: '',
-      avatarUrl: '',
-      department: '',
+      username: '',
+      contact: '',
+      department: 'member',
+      ministry: "684f74ca135dd6d0efeab37d",
       role: 'user',
-      sex: 'male'
     });
     setEditId(null);
   };
+
+  
 
   return (
     <div className='inline'>
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant="outline">Sign up</Button>
+          <Button variant="outline">edit</Button>
         </DrawerTrigger>
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 
           <DrawerHeader>
-            <DrawerTitle className='w-full text-center'>Create an account with <span className='text-accent'>Succo</span></DrawerTitle>
+            <DrawerTitle className='w-full text-center'>Edit your profile <span className='text-accent'>Succo</span></DrawerTitle>
             <DrawerDescription></DrawerDescription>
           </DrawerHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl"> 
@@ -122,34 +109,32 @@ const Signup = () => {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
             <Input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
-            <Input
               type="text"
               placeholder="Name"
               value={formData.name || ''}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
+            <Input
+              type="text"
+              placeholder="Username"
+              value={formData.username || ''}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            />
+            <Input
+              type="text"
+              placeholder="Contact"
+              value={formData.contact || ''}
+              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+            />
             <select
               value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department : e.target.value })}
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
             >
               <option value="member">Member</option>
               <option value="choir">Choir</option>
-              <option value="youth">Youth</option>
-              <option value="worker">Worker</option>
-              <option value="parochial">Parochial</option>
-              <option value="elder">Elder</option>
-            </select>
-            <select
-              value={formData.sex}
-              onChange={(e) => setFormData({ ...formData, sex: e.target.value })}
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
+              <option value="side men">Side Men</option>
+              <option value="prophet">Prophet and Prophetess</option>
+              <option value="minister">Minister</option>
             </select>
             
             <DrawerFooter className="flex flex-row w-full gap-2 mt-2">
@@ -157,7 +142,7 @@ const Signup = () => {
               <DrawerClose className='flex-1' asChild>
                 <Button className='flex-1' variant="outline">Cancel</Button>
               </DrawerClose>
-              <Button type="submit" className="flex-1 before:ani-shadow w-full">{editId ? 'Update' : 'Sign up'} &rarr;</Button>
+              <Button type="submit" className="flex-1 before:ani-shadow w-full">Update &rarr;</Button>
             </DrawerFooter>
           </form>
           {/* <AlertDialogFooter>
@@ -170,6 +155,6 @@ const Signup = () => {
   )
 }
 
-export default Signup
+export default EditUser
 
 

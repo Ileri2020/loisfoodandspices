@@ -14,9 +14,8 @@ const Store = () => {
       className="w-[100vw] overflow-clip p-1"
     >
       <div className="relative w-full h-full flex flex-col justify-center items-center">
-      <Filters />
-      <Stocks />
-      <Footer />
+        {/* <Filters /> */}
+        <Stocks />
       </div>
     </motion.section>
   )

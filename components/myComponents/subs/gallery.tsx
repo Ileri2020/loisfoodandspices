@@ -4,10 +4,19 @@ import { CiShoppingCart, } from "react-icons/ci"
 import { useSelector, useDispatch } from "react-redux"
 import { cartActions } from "@/store/cart-slice"
 import { RootState } from "@/store"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { motion, useInView, useAnimation } from "framer-motion"
 
 const Gallery = () => {
+
+  const ref = useRef(null)
+  const isInView = useInView(ref, {once: true})
+
+  useEffect(() => {
+    console.log(isInView)
+  }, [isInView])
+
   type stockCategory = {
     _id: string;
     name: string;
@@ -65,7 +74,7 @@ if (loading) {
 
   return (
     <section className="w-full max-w-[1000px] overflow-clip">
-      <div className="flex flex-col w-full gap-5">
+      <div ref={ref} className="flex flex-col w-full gap-5">
         {data.map((stock, index)=>{
           return (
             <div className="flex flex-col md:flex-row /bg-accent-secondary/5 w-full items-center md:items-start md:justify-between" key={index}>

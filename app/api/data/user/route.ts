@@ -9,9 +9,14 @@ import { hashSync } from 'bcrypt-edge';
 export const GET = async (req: Request) => { //, res: NextApiResponse
   try {
     const {searchParams} = new URL(req.url)
+    const limit = searchParams.get("limit")
     const useremail = searchParams.get("email")
-    console.log(useremail)
-    if (!useremail){
+    const username = searchParams.get("username")
+    const category = searchParams.get("category")//admin, staff, user, all
+    
+    console.log(useremail, username)
+    
+    if (!useremail || username || limit){
       return new NextResponse(
         JSON.stringify({ message: "invalid credentials"}),
         { status: 400}
@@ -22,15 +27,45 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
 
   await connect()
 
-  let user    
-
-  try {
-      user = await User.findOne({ email : useremail }).select("+password +role")
-  } catch (error) {
-      // users = mongoose.model('users', userSchema)
-      console.log("unable to get user from database")
+  let user 
+  
+  if (useremail){
+    try {
+        user = await User.findOne({ email : useremail }).select("+password +role")
+        return new NextResponse(JSON.stringify(user), {status: 200});
+    } catch (error) {
+        // users = mongoose.model('users', userSchema)
+        console.log("unable to get user from database")
+    }
   }
-
+  if (username){
+    try {
+        user = await User.findOne({ username : username }).select("+password +role")
+        return new NextResponse(JSON.stringify(user), {status: 200});
+    } catch (error) {
+        // users = mongoose.model('users', userSchema)
+        console.log("unable to get user from database")
+    }
+  }
+  if (limit && category){
+    try {
+        user = await User.find({ category : category }).limit(parseInt(limit))
+        return new NextResponse(JSON.stringify(user), {status: 200});
+    } catch (error) {
+        // users = mongoose.model('users', userSchema)
+        console.log("unable to get user from database")
+    }
+  }else{
+    {
+      try {
+          user = await User.find().limit(parseInt(limit))
+          return new NextResponse(JSON.stringify(user), {status: 200});
+      } catch (error) {
+          // users = mongoose.model('users', userSchema)
+          console.log("unable to get user from database")
+      }
+    }
+  }
 
     return new NextResponse(JSON.stringify(user), {status: 200});
   } catch (error) {

@@ -37,9 +37,9 @@ export default {Links : [
       name: <BiPhone />,
       path: "/contact",
     },
-    {
-      name: <CiShoppingCart />,
-      path: "/cart",
-    },
+    // {
+    //   name: <CiShoppingCart />,
+    //   path: "/cart",
+    // },
   ]
 }

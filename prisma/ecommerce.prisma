@@ -1,0 +1,283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
+  // relationMode = "prisma"
+}
+
+
+model User {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String   @unique
+  password String
+  role     String   @default("customer")
+  cart     Cart[]
+  orders   Order[]
+  reviews  Review[]
+  addresses ShippingAddress[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingAddress {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  name     String
+  address  String
+  city     String
+  state    String
+  zip      String
+  country  String
+  phone    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  items    CartItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  cart     Cart     @relation(fields: [cartId], references: [id])
+  cartId   String
+  product  Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  description String?
+  price    Float
+  stock    Stock    @relation(fields: [stockId], references: [id])
+  stockId  String
+  reviews  Review[]
+  cartItems CartItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Stock {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  product  Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  product  Product  @relation(fields: [productId], references: [id])
+  productId String
+  rating   Int
+  comment  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  code     String   @unique
+  discount Float
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  message  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  order    Order    @relation(fields: [orderId], references: [id])
+  orderId  String
+  method   String
+  amount   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Refund {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  order    Order    @relation(fields: [orderId], references: [id])
+  orderId  String
+  amount   Float
+  reason   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  slug     String   @unique
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Sale {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  total     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FeaturedProduct {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  products  OrderItem[]
+  total     Float
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model OrderItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+model Comment {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  ministryId String?   @db.ObjectId @default("684f74ca135dd6d0efeab37d")
+  contentId  String   @db.ObjectId
+  userId     String   @db.ObjectId
+  username     String
+  comment  String?
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  reply      Boolean  @default(false)
+  // replyId   String       @db.ObjectId
+}
+
+
+model Like {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  ministryId String?   @db.ObjectId @default("684f74ca135dd6d0efeab37d")
+  contentId  String   @db.ObjectId
+  userId     String   @db.ObjectId
+  // isArchived   Boolean      @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+
+
+
+//  $ prisma [command]
+
+//     Commands
+
+//                 init   Set up Prisma for your app
+//             generate   Generate artifacts (e.g. Prisma Client)
+//                   db   Manage your database schema and lifecycle
+//              migrate   Migrate your database
+//               studio   Browse your data with Prisma Studio
+//             validate   Validate your Prisma schema
+//               format   Format your Prisma schema
+//              version   Displays Prisma version info
+//                debug   Displays Prisma debug info
+//                  mcp   Starts an MCP server to use with AI development tools
+
+//     Flags
+
+//          --preview-feature   Run Preview Prisma commands
+//          --help, -h          Show additional information about a command
+
+// ┌──────────────────────────────────────────────────────────────────────────────────────┐
+// │  Optimize performance through connection pooling and caching with Prisma Accelerate  │
+// │  and capture real-time events from your database with Prisma Pulse.                  │
+// │  Learn more at https://pris.ly/cli/pdp                                               │
+// └──────────────────────────────────────────────────────────────────────────────────────┘
+
+//     Examples
+
+//       Set up a new Prisma project
+//       $ npx prisma init
+
+//       Generate artifacts (e.g. Prisma Client)
+//       $ prisma generate
+
+//       Browse your data
+//       $ prisma studio
+
+//       Create migrations from your Prisma schema, apply them to the database, generate artifacts (e.g. Prisma Client)
+//       $ prisma migrate dev
+
+//       Pull the schema from an existing database, updating the Prisma schema
+//       $ prisma db pull
+
+//       Push the Prisma schema state to the database
+//       $ prisma db push
+
+//       Validate your Prisma schema
+//       $ prisma validate
+
+//       Format your Prisma schema
+//       $ prisma format
+
+//       Display Prisma version info
+//       $ prisma version
+
+//       Display Prisma debug info
+//       $ prisma debug

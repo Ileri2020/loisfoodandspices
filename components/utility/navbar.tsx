@@ -10,6 +10,7 @@ import {AiOutlineSearch, AiOutlineHome, AiOutlineShop, AiOutlineMan, AiOutlineCo
 import { Advert } from "@/components/myComponents/subs"
 import logo from "@/public/logo.png"
 import Image from "next/image";
+import { Cart } from '../myComponents/subs/cart';
 
 const Navbar = () : JSX.Element => {
   return (
@@ -40,6 +41,7 @@ const Navbar = () : JSX.Element => {
                   <Button className="">Hire me</Button>
                 </Link>
               */}
+              <Cart />
               <ModeToggle />
             </div>
         </div>

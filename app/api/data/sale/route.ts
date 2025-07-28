@@ -11,8 +11,11 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
   try {
     const {searchParams} = new URL(req.url)
     const limit = searchParams.get("limit")
-    const category = searchParams.get("category")
-    console.log(limit, category)
+    const dateFrom = searchParams.get("from")
+    const dateTo = searchParams.get("to")
+    const id = searchParams.get("id")
+
+    console.log(limit, dateFrom, dateTo, id)
     // if (!limit || !category){
     //   return new NextResponse(
     //     JSON.stringify({ message: "invalid credentials"}),
@@ -27,10 +30,10 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
   let sales    
 
   try {
-      if(!category){
+      if(!id){
         sales = await Sale.find().limit(parseInt(limit))
       }else{
-        sales = await Sale.find({ category : category }).limit(parseInt(limit))
+        sales = await Sale.find({ dateFrom : dateFrom }).limit(parseInt(limit))//date to use ai for the query
       }
   } catch (error) {
       // users = mongoose.model('users', userSchema)

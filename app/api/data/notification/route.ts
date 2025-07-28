@@ -14,26 +14,28 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
   try {
     const {searchParams} = new URL(req.url)
     const limit = searchParams.get("limit")
-    const category = searchParams.get("category")
-    console.log(limit, category)
-    // if (!limit || !category){
-    //   return new NextResponse(
-    //     JSON.stringify({ message: "invalid credentials"}),
-    //     { status: 400}
-    //   )
-    // }
+    const category = searchParams.get("category")//advert, all, etc
+    const dateFrom = searchParams.get("from") //yet to be used
+    const dateTo = searchParams.get("to")
 
-  //   const userData = await fetchUserDataFromDatabase(userId);
+    console.log(limit, category)
+
+  if (!dateFrom && !dateTo || limit){
+    return new NextResponse(
+      JSON.stringify({ message: "invalid credentials"}),
+      { status: 400}
+    )
+  }
 
   await connect()
 
-  let sales    
+  let message    
 
   try {
       if(!category){
-        sales = await Sale.find().limit(parseInt(limit))
+        message = await Notification.find().limit(parseInt(limit))
       }else{
-        sales = await Sale.find({ category : category }).limit(parseInt(limit))
+        message = await Notification.find({ category : category }).limit(parseInt(limit))
       }
   } catch (error) {
       // users = mongoose.model('users', userSchema)
@@ -41,7 +43,7 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
   }
 
 
-    return new NextResponse(JSON.stringify(sales), {status: 200});
+    return new NextResponse(JSON.stringify(message), {status: 200});
   } catch (error) {
     return new NextResponse(JSON.stringify({error: error.message}), {status: 500});
   }
