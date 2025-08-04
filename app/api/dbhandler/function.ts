@@ -4,14 +4,21 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const modelMap = {
-  ministries: prisma.ministry,
-  departments: prisma.department,
-  books: prisma.book,
-  users: prisma.user,
-  comments: prisma.comment,
-  likes: prisma.like,
-  billboards: prisma.billboard,
-  posts: prisma.post,
+  //ministries: prisma.ministry,
+  cart: prisma.cart,
+  cartItem: prisma.cartItem,
+  category: prisma.category,
+  coupon: prisma.coupon,
+  featuredProduct: prisma.featuredProduct,
+  notification: prisma.notification,
+  payment: prisma.payment,
+  post: prisma.post,
+  product: prisma.product,
+  refund: prisma.refund,
+  review: prisma.review,
+  shippingAddress: prisma.shippingAddress,
+  stock: prisma.stock,
+  user: prisma.user,
 };
 
 async function dbHandler({

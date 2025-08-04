@@ -29,6 +29,55 @@ export default {
             value: "22 Akinagbe, Alapere, Ketu, Lagos State"
         },
     ],
+    team : [
+        {
+            position : "President",
+            name : "Deolu Adediran"
+        },
+        {
+            position : "Director of STEM",
+            name : "Joshua Ojerinde"
+        },
+        {
+            position : "Public Relations",
+            name : "Olamide Akinola"
+        },
+        {
+            position : "Logistics Team Lead",
+            name : "Kemi Falola"
+        },
+        {
+            position : "Health and Safety Consultant",
+            name : "Bolaji Ogunbunmi"
+        },
+        {
+            position : "Quality Control",
+            name : "Favour Akinsanya"
+        },
+        {
+            position : "Information Technology",
+            name : "Tolu Thomas"
+        },
+    ],
+    partners : [
+        {
+            uri : "../assets/alstein.webp",
+            name : "ALSTEIN",
+        },
+        {
+            uri : "../assets/adels.webp",
+            name : "Adels",
+        },
+        {
+            uri : "../assets/alstein.webp",
+            name : "SageIQ",
+        },
+        {
+            uri : "../assets/adels.webp",
+            name : "The Vemoye Foundation",
+        },
+    ],
+
 }
 
 

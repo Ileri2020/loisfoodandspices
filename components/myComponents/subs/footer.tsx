@@ -11,29 +11,29 @@ export function Footer({ className }: { className?: string }) {
     { href: "#", icon: <Facebook className="h-4 w-4" />, label: "Facebook" },
     { href: "#", icon: <Twitter className="h-4 w-4" />, label: "Twitter" },
     { href: "#", icon: <Instagram className="h-4 w-4" />, label: "Instagram" },
-    { href: "#", icon: <Github className="h-4 w-4" />, label: "GitHub" },
+    //{ href: "#", icon: <Github className="h-4 w-4" />, label: "GitHub" },
     { href: "#", icon: <Linkedin className="h-4 w-4" />, label: "LinkedIn" },
   ];
   
   const pageLinks = [
     { href: "/home", label: "Home" },
     { href: "/about", label: "About Us" },
-    { href: "/blog", label: "Blog" },
-    { href: "/preach/default", label: "Preachings" },
-    { href: "/contact", label: "Contact" },
+    { href: "/store", label: "Store" },
+    { href: "/help", label: "Help Center" },
+    { href: "/account", label: "User Account" },
   ];
   
-  const departmentLinks = [
-    { href: "/", label: "Youth" },
-    { href: "/", label: "Choir" },
-    { href: "/", label: "Sidemen and Women" },
-    { href: "/", label: "Prophet and Prophetess" },
-    { href: "/", label: "Sunday school" },
+  const categoryLinks = [
+    { href: "/", label: "Spices" },
+    { href: "/", label: "Food Item" },
+    { href: "/", label: "Cloth" },
+    { href: "/", label: "Poultry Food" },
+    { href: "/", label: "Content Tools" },
   ];
   
   const supportLinks = [
-    { href: "/contact", label: "Help Center" },
-    { href: "/contact", label: "Advert" },
+    { href: "/help", label: "Help Center" },
+    { href: "/contact", label: "Contact and Advert" },
     { href: "/privacy", label: "Privacy Policy" },  
     { href: "/terms", label: "Terms of Service" },
   ];
@@ -51,8 +51,8 @@ export function Footer({ className }: { className?: string }) {
       links : pageLinks,
     },
     {
-      label : 'Department',
-      links : departmentLinks,
+      label : 'Categories',
+      links : categoryLinks,
     },
     {
       label : 'Support and Advert',

@@ -21,15 +21,21 @@ export async function GET(req: NextRequest) {
 
 
   const modelMap = {
-    ministries: prisma.ministry,
-    departments: prisma.department,
-    books: prisma.book,
-    users: prisma.user,
-    comments: prisma.comment,
-    likes: prisma.like,
-    billboards: prisma.billboard,
-    posts: prisma.post,
-    bible: prisma.bible,
+    //ministries: prisma.ministry,
+    cart: prisma.cart,
+    cartItem: prisma.cartItem,
+    category: prisma.category,
+    coupon: prisma.coupon,
+    featuredProduct: prisma.featuredProduct,
+    notification: prisma.notification,
+    payment: prisma.payment,
+    post: prisma.post,
+    product: prisma.product,
+    refund: prisma.refund,
+    review: prisma.review,
+    shippingAddress: prisma.shippingAddress,
+    stock: prisma.stock,
+    user: prisma.user,
   };
 
   const prismaModel = modelMap[model];
@@ -46,27 +52,27 @@ export async function GET(req: NextRequest) {
   if (id == null){
 
 
-    if (model === 'likes' || model === 'comments' || model === 'posts')  {
+    if (model === 'review' || model === 'post')  {
       try {
         const items = await prismaModel.findMany();
-const userIds = items.map(item => item.userId);
-const users = await prisma.user.findMany({
-  where: {
-    id: { in: userIds },
-  },
-  select: {
-    id: true,
-    email: true,
-    username: true,
-    name: true,
-    avatarUrl: true,
-  },
-});
+        const userIds = items.map(item => item.userId);
+        const users = await prisma.user.findMany({
+          where: {
+            id: { in: userIds },
+          },
+          select: {
+            id: true,
+            email: true,
+            //username: true,
+            name: true,
+            avatarUrl: true,
+          },
+        });
 
-const result = items.map(item => {
-  const user = users.find(user => user.id === item.userId);
-  return { ...item, user };
-});
+        const result = items.map(item => {
+          const user = users.find(user => user.id === item.userId);
+          return { ...item, user };
+        });
 
         return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' }, });
       } catch (error) {
@@ -91,7 +97,7 @@ const result = items.map(item => {
       );
     }
   }else{
-    if(model === "likes" || model === "comments"){
+    if(model === "review"){
       try {
         const item = await prismaModel.findMany({
           where: {
@@ -168,15 +174,21 @@ export async function POST(req: NextRequest) {
 
 
   const modelMap = {
-    ministries: prisma.ministry,
-    departments: prisma.department,
-    books: prisma.book,
-    users: prisma.user,
-    comments: prisma.comment,
-    likes: prisma.like,
-    billboards: prisma.billboard,
-    posts: prisma.post,
-    bible: prisma.bible,
+    //ministries: prisma.ministry,
+    cart: prisma.cart,
+    cartItem: prisma.cartItem,
+    category: prisma.category,
+    coupon: prisma.coupon,
+    featuredProduct: prisma.featuredProduct,
+    notification: prisma.notification,
+    payment: prisma.payment,
+    post: prisma.post,
+    product: prisma.product,
+    refund: prisma.refund,
+    review: prisma.review,
+    shippingAddress: prisma.shippingAddress,
+    stock: prisma.stock,
+    user: prisma.user,
   };
 
   const prismaModel = modelMap[model];
@@ -194,7 +206,7 @@ export async function POST(req: NextRequest) {
     let data = body;
 
 
-    if (model === 'users') {
+    if (model === 'user') {
       try {
         const hashedPassword = await bcrypt.hash(data.password, parseInt(process.env.SALT_ROUNDS));
         data.password = hashedPassword;
@@ -252,15 +264,21 @@ export async function PUT(req: NextRequest) {
 
 
   const modelMap = {
-    ministries: prisma.ministry,
-    departments: prisma.department,
-    books: prisma.book,
-    users: prisma.user,
-    comments: prisma.comment,
-    likes: prisma.like,
-    billboards: prisma.billboard,
-    posts: prisma.post,
-    bible: prisma.bible,
+    //ministries: prisma.ministry,
+    cart: prisma.cart,
+    cartItem: prisma.cartItem,
+    category: prisma.category,
+    coupon: prisma.coupon,
+    featuredProduct: prisma.featuredProduct,
+    notification: prisma.notification,
+    payment: prisma.payment,
+    post: prisma.post,
+    product: prisma.product,
+    refund: prisma.refund,
+    review: prisma.review,
+    shippingAddress: prisma.shippingAddress,
+    stock: prisma.stock,
+    user: prisma.user,
   };
 
   const prismaModel = modelMap[model];
@@ -310,15 +328,21 @@ export async function DELETE(req: NextRequest) {
 
 
   const modelMap = {
-    ministries: prisma.ministry,
-    departments: prisma.department,
-    books: prisma.book,
-    users: prisma.user,
-    comments: prisma.comment,
-    likes: prisma.like,
-    billboards: prisma.billboard,
-    posts: prisma.post,
-    bible: prisma.bible
+    //ministries: prisma.ministry,
+    cart: prisma.cart,
+    cartItem: prisma.cartItem,
+    category: prisma.category,
+    coupon: prisma.coupon,
+    featuredProduct: prisma.featuredProduct,
+    notification: prisma.notification,
+    payment: prisma.payment,
+    post: prisma.post,
+    product: prisma.product,
+    refund: prisma.refund,
+    review: prisma.review,
+    shippingAddress: prisma.shippingAddress,
+    stock: prisma.stock,
+    user: prisma.user,
   };
 
   const prismaModel = modelMap[model];

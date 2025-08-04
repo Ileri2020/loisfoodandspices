@@ -48,7 +48,7 @@ const Login = () => {
   const form = useRef<HTMLFormElement>(null);
 
   const fetchUser = async () => {
-    const res = await axios.get('/api/dbhandler?model=users');
+    const res = await axios.get('/api/dbhandler?model=user');
     console.log(formData)
     setUsers(res.data);
   };
@@ -79,7 +79,7 @@ const Login = () => {
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 
           <DrawerHeader>
-            <DrawerTitle className='w-full text-center'>Login to <span className='text-accent'>CCC Ogudu</span></DrawerTitle>
+            <DrawerTitle className='w-full text-center'>Login to <span className='text-accent'>Lois Food and Spices</span></DrawerTitle>
             <DrawerDescription></DrawerDescription>
           </DrawerHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl"> 

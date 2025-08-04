@@ -1,4 +1,4 @@
-import {AiOutlineSearch, AiOutlineHome, AiOutlineShop, AiOutlineMan, AiOutlineContacts, AiOutlineWoman, AiOutlineProfile,} from "react-icons/ai"
+import {AiOutlineSearch, AiOutlineHome, AiOutlineShop, AiOutlineMan, AiOutlineContacts, AiOutlineWoman, AiOutlineProfile,AiOutlineHistory} from "react-icons/ai"
 import { BiPhoneCall, BiSolidContact, BiPhone,} from "react-icons/bi"
 import { CiShoppingCart, } from "react-icons/ci"
 import { IoMdHelp } from "react-icons/io";
@@ -17,13 +17,21 @@ export default {Links : [
       name: <AiOutlineShop />,
       path: "/store",
     },
+    // {
+    //   name: <IoMdHelp />,
+    //   path: "/help",
+    // },
+    // {
+    //   name: <IoFastFoodOutline />,
+    //   path: "/lunch",
+    // },
     {
-      name: <IoMdHelp />,
-      path: "/help",
+      name: <AiOutlineHistory />,
+      path: "/about",
     },
     {
-      name: <IoFastFoodOutline />,
-      path: "/lunch",
+      name: <BiPhone />,
+      path: "/contact",
     },
     {
       name: <VscAccount />,
@@ -33,10 +41,6 @@ export default {Links : [
     //   name: "blogs",
     //   path: "/blogs",
     // },
-    {
-      name: <BiPhone />,
-      path: "/contact",
-    },
     // {
     //   name: <CiShoppingCart />,
     //   path: "/cart",

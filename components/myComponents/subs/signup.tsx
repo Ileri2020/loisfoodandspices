@@ -57,9 +57,7 @@ const Signup = () => {
     password: '',
     name: '',
     avatarUrl: '',
-    department: 'member',
     role: 'user',
-    sex: 'male'
   });
   const [editId, setEditId] = useState(null);
 
@@ -73,9 +71,9 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editId) {
-      await axios.put(`/api/dbhandler?model=users&id=${editId}`, formData);
+      await axios.put(`/api/dbhandler?model=user&id=${editId}`, formData);
     } else {
-      await axios.post('/api/dbhandler?model=users', formData);
+      await axios.post('/api/dbhandler?model=user', formData);
     }
     resetForm();
   };
@@ -95,9 +93,7 @@ const Signup = () => {
       password: '',
       name: '',
       avatarUrl: '',
-      department: '',
       role: 'user',
-      sex: 'male'
     });
     setEditId(null);
   };
@@ -111,10 +107,16 @@ const Signup = () => {
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 
           <DrawerHeader>
-            <DrawerTitle className='w-full text-center'>Create an account with <span className='text-accent'>Succo</span></DrawerTitle>
+            <DrawerTitle className='w-full text-center'>Create an account with <span className='text-accent'>Lois Food and Spices</span></DrawerTitle>
             <DrawerDescription></DrawerDescription>
           </DrawerHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl"> 
+          <Input
+              type="text"
+              placeholder="Name"
+              value={formData.name || ''}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
             <Input
               type="email"
               placeholder="Email"
@@ -127,13 +129,7 @@ const Signup = () => {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
-            <Input
-              type="text"
-              placeholder="Name"
-              value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <select
+            {/* <select
               value={formData.department}
               onChange={(e) => setFormData({ ...formData, department : e.target.value })}
             >
@@ -143,14 +139,14 @@ const Signup = () => {
               <option value="worker">Worker</option>
               <option value="parochial">Parochial</option>
               <option value="elder">Elder</option>
-            </select>
-            <select
+            </select> */}
+            {/* <select
               value={formData.sex}
               onChange={(e) => setFormData({ ...formData, sex: e.target.value })}
             >
               <option value="male">Male</option>
               <option value="female">Female</option>
-            </select>
+            </select> */}
             
             <DrawerFooter className="flex flex-row w-full gap-2 mt-2">
               {/* <Button>Submit</Button> */}

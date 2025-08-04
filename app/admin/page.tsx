@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
 import { cartActions } from "@/store/cart-slice";
-import UserForm, { UserColumns } from "@/server/db/mongodb/forms/user";
+import  { UserColumns } from "@/server/db/mongodb/forms/user";
 import StockForm, { StockColumns } from "@/server/db/mongodb/forms/stock";
 import SaleForm, { SaleColumns } from "@/server/db/mongodb/forms/sales";
 // import { Button} from "@/components/ui/button"
@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/resizable"
 import { ArrowUp, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
+import UserForm from "@/prisma/forms/UserForm";
+import ProductForm from "@/prisma/forms/ProductForm";
 
 const forms = [
   {
@@ -152,7 +154,7 @@ const Admin = () => {
     >
       <div className="text-4xl font-semibold w-full text-center">Admin Dashboard</div>
 
-      <ResizablePanelGroup
+      {/* <ResizablePanelGroup
         direction="horizontal"
         className="w-full max-w-5xl mx-auto rounded-lg border"
       >
@@ -172,7 +174,10 @@ const Admin = () => {
             <ChartComponent />
           </div>
         </ResizablePanel>
-      </ResizablePanelGroup>
+      </ResizablePanelGroup> */}
+
+      <UserForm />
+      <ProductForm />
       
     <div>place the models list in a sidebar ,forms for stocks, coupons, notification, reviews and users</div>
       <div>List of database tables entries and their form on click</div>
