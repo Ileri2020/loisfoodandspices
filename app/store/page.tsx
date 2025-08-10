@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { Filters, Stocks, Footer } from "@/components/myComponents/subs"
+import { Filters, Stocks } from "@/components/myComponents/subs"
 
 
 const Store = () => {
