@@ -7,95 +7,42 @@ import Image from "next/image";
 
 const Hero = () => {
   return (
-    <div
-    className={`
-      relative overflow-hidden py-12
-      md:py-16
-    `}
-  >
-    <div
-      className={`
-        bg-grid-black/[0.02] absolute inset-0
-        bg-[length:20px_20px]
-      `}
-    />
-    <div
-      className={`
-        relative z-10 container mx-auto max-w-7xl px-4
-        sm:px-6
-        lg:px-8
-      `}
-    >
-      <div
-        className={`
-          grid items-center gap-10
-          lg:grid-cols-2 lg:gap-12
-        `}
-      >
+    <div className={`relative overflow-hidden py-12 md:py-16`}>
+    <div className={`bg-grid-black/[0.02] absolute inset-0 bg-[length:20px_20px]`}/>
+    <div className={`relative z-10 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8`}>
+      <div className={`grid items-center gap-10 grid-cols-1 lg:grid-cols-2 lg:gap-12`}>
         <div className="flex flex-col justify-center space-y-6">
           <div className="space-y-4">
             {/* <HeroBadge /> */}
-
-            <h1
-              className={`
-                font-display text-4xl leading-tight font-bold
-                tracking-tight text-foreground
-                sm:text-2xl
-                md:text-3xl
-                lg:leading-[1.1]
-              `}
+            <h1 className={`
+                font-display text-4xl leading-tight font-bold tracking-tight text-foreground
+                sm:text-2xl md:text-3xl lg:leading-[1.1]`}
             >
               <div>Your One-Stop Shop for </div>
-              <div
-                className={`
-                  /bg-gradient-to-r /from-primary /to-primary/70 bg-clip-text
-                  /text-transparent sm:text-4xl md:text-5xl text-accent
-                `}
+              <div className={` /bg-gradient-to-r /from-primary /to-primary/70 bg-clip-text
+                  /text-transparent sm:text-4xl md:text-5xl text-accent`}
               >
                 Food and Spice Blends
               </div>
             </h1>
-            <p
-              className={`
-                max-w-[700px] text-lg text-muted-foreground
-                md:text-xl
-              `}
-            >
+            <p className={`max-w-[700px] text-lg text-muted-foreground md:text-xl`}>
               Discover premium products at competitive prices, with fast
               shipping and exceptional customer service.
             </p>
           </div>
-          <div
-            className={`
-              flex flex-col gap-3
-              sm:flex-row
-            `}
-          >
+          <div className={`flex flex-col gap-3 sm:flex-row`}>
             <Link href="/products">
-              <Button
-                className={`
-                  h-12 gap-1.5 px-8 transition-colors duration-200 bg-accent/70
-                `}
-                size="lg"
-              >
+              <Button className={`h-12 gap-1.5 px-8 transition-colors duration-200 bg-accent/70`} size="lg">
                 Shop Now <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/showcase">
-              <Button
-                className="h-12 px-8 transition-colors duration-200"
-                size="lg"
-                variant="outline"
-              >
+              <Button className="h-12 px-8 transition-colors duration-200" size="lg" variant="outline">
                 View Showcase
               </Button>
             </Link>
           </div>
-          <div
-            className={`
-              flex flex-wrap gap-5 text-sm text-muted-foreground
-            `}
-          >
+          <div className={`flex flex-wrap gap-5 text-sm text-muted-foreground `}>
             <div className="flex items-center gap-1.5">
               <Truck className="h-5 w-5 text-primary/70" />
               <span>Free shipping over $50</span>
@@ -106,18 +53,11 @@ const Hero = () => {
             </div>
           </div>
         </div>
-        <div
-          className={`
-            relative mx-auto hidden aspect-square w-full max-w-md
-            overflow-hidden rounded-xl border shadow-lg
-            lg:block
-          `}
+        <div className={`relative mx-auto hidden aspect-square w-full max-w-md
+            overflow-hidden rounded-xl border shadow-lg lg:block`}
         >
-          <div
-            className={`
-              absolute inset-0 z-10 bg-gradient-to-tr from-primary/20
-              via-transparent to-transparent
-            `}
+          <div className={`absolute inset-0 z-10 bg-gradient-to-tr from-primary/20
+              via-transparent to-transparent`}
           />
           <img
             alt="Shopping experience"
