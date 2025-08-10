@@ -46,9 +46,9 @@ import './App.css';
             Learn React
           </a>
         </header>
-        <PaystackConsumer {...componentProps} >
+        {/* <PaystackConsumer {...componentProps} >
           {({initializePayment}) => <button onClick={() => initializePayment(handleSuccess, handleClose)}>Paystack Consumer Implementation</button>}
-        </PaystackConsumer>
+        </PaystackConsumer> */}
       </div>
     );
   }
