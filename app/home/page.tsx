@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { Filters, Gallery, Footer} from "@/components/myComponents/subs"
+import { Filters, Gallery} from "@/components/myComponents/subs"
 import ECommerceSalesPage from "@/components/myComponents/salestore"
 import Hero from "@/components/myComponents/subs/hero"
 import FeaturedCategories from "@/components/myComponents/subs/featuredCategories"
