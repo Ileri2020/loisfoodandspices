@@ -44,7 +44,7 @@ const FeaturedProducts = () => {
         `}
       >
         {featuredProductsHomepage.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.id} product={{ ...product, images: [product.image] }} />
         ))}
       </div>
       <div className="mt-10 flex justify-center">

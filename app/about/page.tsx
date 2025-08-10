@@ -10,7 +10,7 @@ import { motion } from "framer-motion"
 import Stats from "@/data/stats"
 import Countup from "react-countup"
 import contact from "@/data/cont"
-import Footer from "@/components/myComponents/subs/footer"
+// import Footer from "@/components/myComponents/subs/footer"
 import { useAppContext } from "@/hooks/useAppContext"
 
 const About = () => {

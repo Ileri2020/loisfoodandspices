@@ -1,8 +1,9 @@
 "use client";
 
+import { CartItem } from "@/components/myComponents/subs/cart";
 import * as React from "react";
 
-import type { CartItem } from "~/ui/components/cart";
+//import type { CartItem } from "~/ui/components/cart";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -138,7 +139,7 @@ export function CartProvider({ children }: React.PropsWithChildren) {
     ],
   );
 
-  return <CartContext value={value}>{children}</CartContext>;
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 /* -------------------------------------------------------------------------- */

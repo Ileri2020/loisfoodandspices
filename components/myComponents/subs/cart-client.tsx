@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useCart } from "@/hooks/use-cart";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,7 +20,7 @@ import * as React from "react";
 export interface CartItem {
   category: string;
   id: string;
-  image: string;
+  images: any;
   name: string;
   price: number;
   quantity: number;
@@ -27,41 +28,44 @@ export interface CartItem {
 
 interface CartProps {
   className?: string;
-  mockCart: CartItem[];
+  cart: any;//CartItem[];
 }
 
-export function CartClient({ className, mockCart }: CartProps) {
+export function CartClient({ className, cart }: CartProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [cartItems, setCartItems] = React.useState<CartItem[]>(mockCart);
+  // const [cartItems, setCartItems] = React.useState<any[]>(cart);//React.useState<CartItem[]>(mockCart);
   const [isMounted, setIsMounted] = React.useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const { items, addItem, removeItem, clearCart, subtotal, updateQuantity, itemCount } = useCart();
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
+  
+  // const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+  // const subtotal = cartItems.reduce(
+  //   (acc, item) => acc + item.price * item.quantity,
+  //   0,
+  // );
 
-  const handleUpdateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item,
-      ),
-    );
-  };
+  // const handleUpdateQuantity = (id: string, newQuantity: number) => {
+  //   if (newQuantity < 1) return;
+  //   setCartItems((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id ? { ...item, quantity: newQuantity } : item,
+  //     ),
+  //   );
+  // };
 
-  const handleRemoveItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  // const handleRemoveItem = (id: string) => {
+  //   setCartItems((prev) => prev.filter((item) => item.id !== id));
+  // };
 
-  const handleClearCart = () => {
-    setCartItems([]);
-  };
+  // const handleClearCart = () => {
+  //   setCartItems([]);
+  // };
 
   const CartTrigger = (
     <Button
@@ -71,14 +75,16 @@ export function CartClient({ className, mockCart }: CartProps) {
       variant="outline"
     >
       <ShoppingCart className="h-4 w-4" />
-      {totalItems > 0 && (
+      {itemCount > 0 && (
         <Badge
           className={`
             absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px]
           `}
           variant="default"
         >
-          {totalItems}
+          <div className="w-full h-full flex justify-center items-center text-center">
+            {itemCount}
+          </div>
         </Badge>
       )}
     </Button>
@@ -91,9 +97,9 @@ export function CartClient({ className, mockCart }: CartProps) {
           <div>
             <div className="text-xl font-semibold">Your Cart</div>
             <div className="text-sm text-muted-foreground">
-              {totalItems === 0
+              {itemCount === 0
                 ? "Your cart is empty"
-                : `You have ${totalItems} item${totalItems !== 1 ? "s" : ""} in your cart`}
+                : `You have ${itemCount} item${itemCount !== 1 ? "s" : ""} in your cart`}
             </div>
           </div>
           {isDesktop && (
@@ -107,7 +113,7 @@ export function CartClient({ className, mockCart }: CartProps) {
 
         <div className="flex-1 overflow-y-auto px-6">
           <AnimatePresence>
-            {cartItems.length === 0 ? (
+            {items.length === 0 ? (
               <motion.div
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center justify-center py-12"
@@ -142,7 +148,7 @@ export function CartClient({ className, mockCart }: CartProps) {
               </motion.div>
             ) : (
               <div className="space-y-4 py-4">
-                {cartItems.map((item) => (
+                {items.map((item) => (
                   <motion.div
                     animate={{ opacity: 1, y: 0 }}
                     className={`
@@ -161,7 +167,7 @@ export function CartClient({ className, mockCart }: CartProps) {
                         alt={item.name}
                         className="object-cover"
                         // fill
-                        src={item.image}
+                        src={item.images?.[0] ?? '/placeholder.jpg'}
                       />
                     </div>
                     <div className="ml-4 flex flex-1 flex-col justify-between">
@@ -183,7 +189,7 @@ export function CartClient({ className, mockCart }: CartProps) {
                               text-muted-foreground transition-colors
                               hover:bg-muted hover:text-destructive
                             `}
-                            onClick={() => handleRemoveItem(item.id)}
+                            onClick={() => removeItem(item.id)}
                             type="button"
                           >
                             <X className="h-4 w-4" />
@@ -205,7 +211,7 @@ export function CartClient({ className, mockCart }: CartProps) {
                             `}
                             disabled={item.quantity <= 1}
                             onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity - 1)
+                              updateQuantity(item.id, item.quantity - 1)
                             }
                             type="button"
                           >
@@ -228,7 +234,7 @@ export function CartClient({ className, mockCart }: CartProps) {
                               hover:bg-muted hover:text-foreground
                             `}
                             onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity + 1)
+                              updateQuantity(item.id, item.quantity + 1)
                             }
                             type="button"
                           >
@@ -248,12 +254,12 @@ export function CartClient({ className, mockCart }: CartProps) {
           </AnimatePresence>
         </div>
 
-        {cartItems.length > 0 && (
+        {items.length > 0 && (
           <div className="border-t px-6 py-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-medium">₦{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
@@ -263,7 +269,7 @@ export function CartClient({ className, mockCart }: CartProps) {
               <div className="flex items-center justify-between">
                 <span className="text-base font-semibold">Total</span>
                 <span className="text-base font-semibold">
-                  ${subtotal.toFixed(2)}
+                ₦{subtotal.toFixed(2)}
                 </span>
               </div>
               <Button className="w-full" size="lg">
@@ -281,7 +287,7 @@ export function CartClient({ className, mockCart }: CartProps) {
                 )}
                 <Button
                   className="ml-2"
-                  onClick={handleClearCart}
+                  onClick={clearCart}
                   variant="outline"
                 >
                   Clear Cart
@@ -304,14 +310,14 @@ export function CartClient({ className, mockCart }: CartProps) {
           variant="outline"
         >
           <ShoppingCart className="h-4 w-4" />
-          {totalItems > 0 && (
+          {itemCount > 0 && (
             <Badge
               className={`
                 absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px]
               `}
               variant="default"
             >
-              {totalItems}
+              {itemCount}
             </Badge>
           )}
         </Button>

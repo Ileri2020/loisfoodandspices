@@ -26,50 +26,110 @@ import { useEffect, useState } from 'react';
 
 export default function ProductForm() {
   const [products, setProducts] = useState<any>([]);
-  const [formData, setFormData] = useState<Omit<any, 'id' | 'createdAt' | 'updatedAt'>>({
+  const [formData, setFormData] = useState<any>({ //useState<Omit<any, 'id' | 'createdAt' | 'updatedAt'>>({
     name: '',
     description: '',
     category: '',
+    categoryId: '',
     price: 0,
-    images: '',
+    images: null,
   });
+  const [file, setFile] = useState(null);
+  const [categories, setCategories] = useState([]);//categories to be mapped to the select input
+  const [preview, setPreview] = useState(null);
+  const [uploadStatus , setUploadStatus] = useState("");
+
+  const [productImage, setProductImage] = useState(null);
   const [editId, setEditId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchBooks();
-  }, []);
+    fetchProducts();
+    fetchCategories()
+  }, [preview,]);
 
-  const fetchBooks = async () => {
+  const fetchProducts = async () => {
     try {
       const res = await axios.get('/api/dbhandler?model=product');
       setProducts(res.data);
     } catch (err) {
-      console.error('Failed to fetch books', err);
+      console.error('Failed to fetch products', err);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editId) {
-        await axios.put(`/api/dbhandler?model=product&id=${editId}`, formData);
-      } else {
-        await axios.post('/api/dbhandler?model=product', formData);
-      }
-      resetForm();
-      fetchBooks();
-    } catch (err) {
-      alert('Failed to save book.');
+  const fetchCategories = async () => {
+    const res = await axios.get('/api/dbhandler?model=category');
+    setCategories(res.data);
+    if (res.data.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        categoryId: res.data[0].id,
+        category: res.data[0].name
+      }));
     }
   };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      categoryId: '',
+      category: '',
+      price: 0,
+      images: null,
+    });
+    setEditId(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log('product',formData)
+    const pformData = new FormData();
+    pformData.append("file", file);
+    pformData.append("description", formData.description)
+    pformData.append("name", formData.name)
+    pformData.append("category", formData.category)
+    pformData.append("categoryId", formData.categoryId)
+    pformData.append("price", formData.price)
+    pformData.append("productImage", "true")
+    
+    try {
+      if (editId) {
+        await axios.put(`/api/product?id=${editId}`, pformData);
+      } else {
+        const response = await axios.post(`/api/product`, pformData);
+        if (response.status === 200) {
+          const data = response.data;
+          // do something with the data
+          console.log(data)
+        } else {
+          alert("wrong input or connection error")
+        }
+      }
+    } catch (error) {
+      // handle error
+      alert('Failed to save product.');
+    }
+    resetForm();
+    fetchProducts();
+    // fetchUsers();
+  };
+
+  const handleImageChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile.size > 3 * 1024){
+      alert("file size greater than 300kb file may not upload")
+    }
+    setFile(selectedFile);
+    setPreview(URL.createObjectURL(selectedFile));
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this book?')) return;
     try {
       await axios.delete(`/api/dbhandler?model=product&id=${id}`);
-      fetchBooks();
+      fetchProducts();
     } catch (err) {
-      alert('Failed to delete book.');
+      alert('Failed to delete product.');
     }
   };
 
@@ -78,59 +138,80 @@ export default function ProductForm() {
     setFormData({
       name: product.name,
       description: product.description,
+      categoryId: product.categoryId,
       category: product.category,
       price: product.price,
       images: product.images,
     });
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      category: '',
-      price: 0,
-      images: null,
-    });
-    setEditId(null);
-  };
+  
 
   return (
     <div>
       
       <form onSubmit={handleSubmit} className='flex flex-col w-full max-w-sm gap-2 justify-center items-center p-3 border-2 border-secondary-foreground rounded-sm m-2'>
         <h2>Product Form</h2>
+
+        <div>Product Name </div>
         <Input
-          placeholder="Ministry ID"
-          value={formData.ministryId}
-          onChange={(e) => setFormData({ ...formData, ministryId: e.target.value })}
+          placeholder="Name of product"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
+
+
+        <div>Product Description </div>
         <Input
-          placeholder="Title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          placeholder="Description of product"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         />
+
+
+        <div>Product Category </div>
+        <select 
+          value={formData.categoryId} 
+          onChange={(e) => {
+            const selectedCategory = categories.find(cat => cat.id === e.target.value);
+            setFormData({ 
+              ...formData, 
+              categoryId: e.target.value, 
+              category: selectedCategory ? selectedCategory.name : ''
+            });
+          }}
+        >
+          {categories.length > 0 ? categories.map((category, index) => (
+            <option key={index} value={`${category.id}`}>
+              {category.name}
+            </option>
+          )) : <option value="">No categories</option>}
+        </select>
+
+
+        <div>Product Price </div>
         <Input
-          placeholder="Author"
-          value={formData.author || ''}
-          onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-        />
-        <Input
-          placeholder="Cover URL"
-          value={formData.coverUrl || ''}
-          onChange={(e) => setFormData({ ...formData, coverUrl: e.target.value })}
-        />
-        <Input
-          placeholder="PDF/EPUB URL"
-          value={formData.fileUrl}
-          onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-        />
-        <Input
+          placeholder="Price of product"
+          value={formData.price}
+          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
           type="number"
-          placeholder="Downloads"
-          value={formData.downloads}
-          onChange={(e) => setFormData({ ...formData, downloads: Number(e.target.value) })}
         />
+
+        <div>Product Image </div>
+        {(preview) && (        //{(preview || formData?.images[0]!=null) && (
+              <div style={{ marginTop: '1rem' }}>
+                <img src={preview} alt="Selected preview" style={{ maxHeight: '300px' }} />
+              </div>
+            )}
+            <Input
+              type="file"
+              name='image'
+              id='image'
+              placeholder="Product image"
+              // value={formData.avatarUrl || ''}
+              // onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+              onChange={handleImageChange}
+            />
         <Button type="submit">{editId ? 'Update' : 'Create'}</Button>
         {editId && <Button type="button" onClick={resetForm}>Cancel</Button>}
 

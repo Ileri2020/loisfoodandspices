@@ -6,6 +6,7 @@ import { Providers } from "@/store/providers";
 import Navbar from "@/components/utility/navbar";
 import { AppContextProvider } from "@/context/appContext";
 import { Footer } from "@/components/myComponents/subs/footer";
+import { CartProvider } from "@/hooks/use-cart";
 // import {Roboto} from "next/font/google"
 
 // const roboto = Roboto({
@@ -56,17 +57,19 @@ export default function RootLayout({
           // ${geistSans.variable} ${geistMono.variable}
         >
           <Providers>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <Navbar />
-                {children}
-                <Footer />
-              </ThemeProvider>
-            </Providers>
+            <CartProvider>
+              <ThemeProvider
+                  attribute="class"
+                  defaultTheme="light"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </ThemeProvider>
+            </CartProvider>
+          </Providers>
         </body>
       </AppContextProvider>
     </html>

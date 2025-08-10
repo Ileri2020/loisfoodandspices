@@ -27,6 +27,8 @@ interface AppContextProps {
   // setUser: (user: UserProps) => void;
   user: UserProps;
   setUser: (user: UserProps) => void;
+  cart: any[]//UserProps;
+  setCart: (cart: any[]) => void;
   isModal: boolean;
   setIsModal: (isModal: boolean) => void;
   useMock: boolean;
@@ -43,6 +45,7 @@ export const AppContextProvider: React.FC<any> = ({ children }) => {
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
   const [user, setUser] = useState<UserProps>({ name: "visitor", id: "nil", email: "nil", avatarUrl: "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png", role: "user", contact: "xxxx" });
+  const [cart, setCart] = useState<any[]>([]);
   const [isModal, setIsModal] = useState(false);
   const [useMock, setUseMock] = useState(true);
   const [comments, setComments] = useState([])
@@ -60,6 +63,8 @@ export const AppContextProvider: React.FC<any> = ({ children }) => {
     setSelectedVideo,
     user,
     setUser,
+    cart,
+    setCart,
     isModal,
     setIsModal,
     useMock,

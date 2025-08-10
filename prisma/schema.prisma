@@ -37,8 +37,8 @@ model Post {
   contentUrl   String?
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String     @db.ObjectId
-  product    Product?     @relation(fields: [productId], references: [id])
-  productId   String?  @db.ObjectId
+  // product    Product?     @relation(fields: [productId], references: [id])
+  // productId   String?  @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -55,6 +55,7 @@ model Notification {
 model Category {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   name     String   @unique
+  description String?
   //slug     String   @unique
   products Product[]
   createdAt DateTime @default(now())
@@ -73,7 +74,7 @@ model Product {
   reviews  Review[]
   cartItems CartItem[]
   Featured    FeaturedProduct?
-  images    Post[]
+  images    String[]
   //orderItems OrderItem[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,7 +87,7 @@ model Stock {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   product  Product  @relation(fields: [productId], references: [id])
   productId String   @unique @db.ObjectId
-  availableQuantity Int?
+  addedQuantity Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

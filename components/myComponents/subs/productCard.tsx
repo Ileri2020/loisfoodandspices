@@ -14,12 +14,12 @@ type ProductCardProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "onError"
 > & {
-  onAddToCart?: (productId: string) => void;
+  onAddToCart?: (product: any) => void;//(productId: string) => void;
   onAddToWishlist?: (productId: string) => void;
   product: {
     category: string;
     id: string;
-    image: string;
+    images: any//string;
     inStock?: boolean;
     name: string;
     originalPrice?: number;
@@ -47,7 +47,8 @@ export function ProductCard({
       setIsAddingToCart(true);
       // Simulate API call
       setTimeout(() => {
-        onAddToCart(product.id);
+        //onAddToCart(product.id);
+        onAddToCart(product);
         setIsAddingToCart(false);
       }, 600);
     }
@@ -96,6 +97,14 @@ export function ProductCard({
     );
   };
 
+
+
+
+
+
+
+
+
   return (
     <div className={cn("group", className)} {...props}>
       <Link href={`/products/${product.id}`}>
@@ -112,7 +121,7 @@ export function ProductCard({
           onMouseLeave={() => setIsHovered(false)}
         >
           <div className="relative aspect-square overflow-hidden rounded-t-lg">
-            {product.image && (
+            {product.images && (
               <img
                 alt={product.name}
                 className={cn(
@@ -120,7 +129,7 @@ export function ProductCard({
                   isHovered && "scale-105"
                 )}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                src={product.image}
+                src={product.images[0]}
               />
             )}
 
@@ -188,11 +197,11 @@ export function ProductCard({
                 <div className="mt-1.5">{renderStars()}</div>
                 <div className="mt-2 flex items-center gap-1.5">
                   <span className="font-medium text-foreground">
-                    ${product.price.toFixed(2)}
+                  ₦{product.price.toFixed(2)}
                   </span>
                   {product.originalPrice ? (
                     <span className="text-sm text-muted-foreground line-through">
-                      ${product.originalPrice.toFixed(2)}
+                      ₦{product.originalPrice.toFixed(2)}
                     </span>
                   ) : null}
                 </div>
