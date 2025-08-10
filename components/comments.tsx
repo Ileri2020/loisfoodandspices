@@ -6,7 +6,7 @@ import Modal from "./modal";
 import TextArea from "./textArea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { ChevronsUpDown } from "lucide-react";
-import { commentsObject } from "@/mock/comments";
+// import { commentsObject } from "@/mock/comments";
 import { BASE_URL, headers } from "@/utils/constants";
 import axios from "axios";
 import { Button } from '@/components/ui/button'
@@ -35,7 +35,7 @@ const Comments = ( props : {videoId : string}) => {
     try {
       const response = await axios.post('/api/dbhandler?model=comments', {
         userId: user.id,
-        username: user.username,
+        username: user.name,
         contentId: videoId,
         comment: comment,
       });
@@ -128,7 +128,7 @@ const Comments = ( props : {videoId : string}) => {
             className="bg-secondary overflow-clip"
           >
             <h3 className="text-base my-2">
-              <span className="font-semibold">@{user.username}</span>
+              <span className="font-semibold">@{user.name}</span>
             </h3>
             <TextArea onChange={(e) => setComment(e.target.value)} className="h-[15%]" />
           </Modal>

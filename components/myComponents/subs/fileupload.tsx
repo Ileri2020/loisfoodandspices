@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import axios from 'axios'
 import { useAppContext } from '@/hooks/useAppContext'
 import { CldUploadWidget } from 'next-cloudinary'
-import {cloudUpload, uploadCloudinary} from '@/server/config/cloudinary'
+// import {cloudUpload, uploadCloudinary} from '@/server/config/cloudinary'
 import { CiCamera, CiCirclePlus } from 'react-icons/ci'
 import { BiPlus } from 'react-icons/bi'
 
@@ -210,7 +210,7 @@ export const PostButton = () => {
 
 
   const handleSubmit = async (e) => {
-    if (user.username === "visitor" && user.email === "nil"){
+    if (user.name === "visitor" && user.email === "nil"){
       alert("login or create an account to make a post")
       return
     }
@@ -326,7 +326,7 @@ export const PostButton = () => {
                 )}
               </div>
             )}
-            <div>{user.username}</div>
+            <div>{user.name}</div>
             <Input type="file" name='image' id='image' placeholder="Avatar URL" onChange={handleImageChange} />
             {isAdminOrModerator && (
               <Input type="text" placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
