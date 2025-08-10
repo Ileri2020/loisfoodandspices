@@ -96,7 +96,7 @@ const Comments = ( props : {videoId : string}) => {
         <CollapsibleTrigger asChild>
           <div className="w-full rounded-md border px-2 py-1 /hover:bg-secondary/90">
             {loading&&compComments?.length<1 ? <div>no comment ...</div> : <CommentCard 
-            username={comments?.at(0)?.username} 
+            name={comments?.at(0)?.name} 
             createdAt={comments?.at(0)?.createdAt} 
             comment={comments?.at(0)?.comment}
             id={comments?.at(0)?.id}
@@ -112,7 +112,7 @@ const Comments = ( props : {videoId : string}) => {
         {compComments?.map((comment) => (
           <div key={comment.id}>
             <CommentCard 
-              username={comment.username} 
+              name={comment.name} 
               createdAt={comment.createdAt} 
               comment={comment.comment} 
               id={comment.id}

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAppContext } from "@/hooks/useAppContext";
 import { Button } from '@/components/ui/button'
 
-const CommentCard = (prop: { username: string, createdAt: string, comment: string, id: string }) => {
+const CommentCard = (prop: { name: string, createdAt: string, comment: string, id: string }) => {
   const { user } = useAppContext();
 
   const handleDelete = async () => {
@@ -22,7 +22,7 @@ const CommentCard = (prop: { username: string, createdAt: string, comment: strin
     <div className="w-full mb-1 py-1">
       <div className="w-full bg-m-hover p-1 flex justify-between items-center">
         <div>
-          <span className="font-semibold italic pr-2">{prop.username}</span>
+          <span className="font-semibold italic pr-2">{prop.name}</span>
           <span className="text-xs">[{normalizeDateTime(prop.createdAt)}]</span>
         </div>
         {(user.role === "admin" || user.role === "moderator") && (

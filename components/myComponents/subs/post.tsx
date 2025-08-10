@@ -64,7 +64,7 @@ const Post = (props: post = {
 
 
   const handleLike = async () => {
-    if(user.username === "visitor" && user.email === "nil"){
+    if(user.name === "visitor" && user.email === "nil"){
       alert("Login to react")
       return
     }
@@ -93,7 +93,7 @@ const Post = (props: post = {
 
 
   const postComment = async (id : any) => {
-    if(user.username === "visitor" && user.email === "nil") {
+    if(user.name === "visitor" && user.email === "nil") {
       alert("Login to comment")
       return
     }
@@ -101,7 +101,7 @@ const Post = (props: post = {
       console.log('comment id', id)
       const response = await axios.post('/api/dbhandler?model=comments', {
         userId: user.id,
-        username: user.username,
+        username: user.name,
         contentId: id,
         comment: comment,
       });
@@ -215,7 +215,7 @@ const handleDelete = async () => {
             className="bg-secondary overflow-clip"
           >
             <h3 className="text-base my-2">
-              <span className="font-semibold">@{user.username}</span>
+              <span className="font-semibold">@{user.name}</span>
               {/* {", "}
               <span>
                 a comment will be created
