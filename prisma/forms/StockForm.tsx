@@ -130,7 +130,7 @@ export default function StockForm() {
           type="number"
           placeholder="Quantity of Product to Add to Stock"
           value={formData.QuantityToAdd}
-          onChange={(e) => setFormData({ ...formData, QuantityToAdd: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, QuantityToAdd: Number(e.target.value) })}
         />
         <Button type="submit">{editId ? 'Update' : 'Create'}</Button>
         {editId && <button onClick={resetForm}>Cancel</button>}
