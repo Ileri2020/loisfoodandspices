@@ -27,7 +27,7 @@ import { register } from '@/server/action/signup'
 import axios from 'axios'
 import { useAppContext } from '@/hooks/useAppContext'
 import { CldUploadWidget } from 'next-cloudinary'
-import {cloudUpload, uploadCloudinary} from '@/server/config/cloudinary'
+// import {cloudUpload, uploadCloudinary} from '@/server/config/cloudinary'
 
 const EditUser = () => {
   const { user, setUser } = useAppContext();
