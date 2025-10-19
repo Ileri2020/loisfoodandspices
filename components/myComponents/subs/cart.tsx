@@ -37,7 +37,7 @@ interface CartProps {
 //   },
 // ];
 
-export function Cart({ className }: CartProps) {
+export function Cart({ className }: CartProps) { 
   const { user, setUser, cart, setCart } = useAppContext();
   return (
     <div className={cn("relative", className)}>

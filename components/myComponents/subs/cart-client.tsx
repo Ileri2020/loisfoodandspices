@@ -31,7 +31,7 @@ interface CartProps {
   cart: any;//CartItem[];
 }
 
-export function CartClient({ className, cart }: CartProps) {
+export function CartClient({ className, cart }: CartProps) { 
   const [isOpen, setIsOpen] = React.useState(false);
   // const [cartItems, setCartItems] = React.useState<any[]>(cart);//React.useState<CartItem[]>(mockCart);
   const [isMounted, setIsMounted] = React.useState(false);
