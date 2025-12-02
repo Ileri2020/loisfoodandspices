@@ -11,6 +11,7 @@ import { useAppContext } from "@/hooks/useAppContext";
 import axios from "axios";
 import { ProductCard } from "./productCard";
 import { useCart } from "@/hooks/use-cart";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Stocks = () => {
   const { user, setUser, cart, setCart } = useAppContext();
@@ -38,7 +39,7 @@ const Stocks = () => {
       const res = await axios.get('/api/dbhandler?model=product');
       setProducts(res.data.slice().sort(()=>Math.random()-0.5));
     } catch (err) {
-      alert("Failed to fetch products, please check your network connection");
+      setError("Failed to fetch products, please check your network connection");
       setLoading(true);
     }
   };
@@ -48,13 +49,11 @@ const Stocks = () => {
       setLoading(false);
   }, []);
 
-if (loading) {
-  return <p>Loading...</p>;
-}
+// if (loading) {
+//   return <p>Loading...</p>;
+// }
 
-if (error) {
-  return <p>Error: {error}</p>;
-}
+
 
 // const handleAddToCart = (product) => {
 //   //alert(`Adding product ${productId} to cart`);
@@ -67,6 +66,28 @@ const handleAddToWishlist = (productId) => {
   alert(`Adding product ${productId} to wishlist`);
   // Add actual wishlist logic here
 };
+
+
+  // if(!products){
+  if (loading) {
+    return(
+      <div className='h-full max-w-[500px] md:max-w-[1000px] flex gap-5 flex-wrap relative p-2 self-center mx-auto justify-between overflow-clip'>
+        <div className="absolute w-full h-full flex /justify-center items-center z-10 bg-black/30 p-2">
+          {error && <p className="w-full text-center">Error: {error}</p>}
+        </div>
+      {
+        [1,2,3,4,5,6,7,8].map((stock, index)=>{
+          return(
+              <Skeleton 
+                key={index}
+                className="w-[100vw] md:w-[200px] h-[150px] /md:h-[300px] mb-5 flex flex-row md:flex-col overflow-clip"
+              />
+          )
+        })
+      }
+    </div>
+    )
+  }
 
 
   return (

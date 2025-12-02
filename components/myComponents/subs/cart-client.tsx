@@ -8,11 +8,13 @@ import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 import { useCart } from "@/hooks/use-cart";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
+import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 // import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
+import { useAppContext } from '@/hooks/useAppContext';
 
 
 
@@ -38,10 +40,21 @@ export function CartClient({ className, cart }: CartProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const { items, addItem, removeItem, clearCart, subtotal, updateQuantity, itemCount } = useCart();
+  const {user } = useAppContext();
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
+
+
+
+
+
+
+
+
+
+
 
   
   // const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -67,6 +80,50 @@ export function CartClient({ className, cart }: CartProps) {
   //   setCartItems([]);
   // };
 
+
+
+
+
+  const handleCheckout = async () => {
+    if (items.length === 0) return;
+
+    try {
+      // Prepare payload
+      const payload = {
+        userId: user.id, // replace with actual logged-in user ID
+        products: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+        total: subtotal,
+        status: "pending", // or "paid" depending on your logic
+      };
+
+      console.log("Checkout payload:", payload);
+
+      // POST to your API route
+      const res = await axios.post("/api/dbhandler?model=cart", payload);
+
+      if (res.status === 200) {
+        console.log("Checkout successful:", res.data);
+        clearCart(); // empty local cart
+        alert("Checkout successful!");
+        // Optionally redirect to order summary page
+        // window.location.href = `/orders/${res.data.id}`;
+      }
+    } catch (err) {
+      // console.error("Checkout failed:", err);
+      alert("Checkout failed, please try again.");
+      alert("Checkout failed, please try again.");
+    }
+  };
+
+
+
+
+
+
+
   const CartTrigger = (
     <Button
       aria-label="Open cart"
@@ -89,6 +146,16 @@ export function CartClient({ className, cart }: CartProps) {
       )}
     </Button>
   );
+
+
+
+
+
+
+
+
+
+
 
   const CartContent = (
     <>
@@ -134,13 +201,13 @@ export function CartClient({ className, cart }: CartProps) {
                 </p>
                 {isDesktop ? (
                   <SheetClose asChild>
-                    <Link href="/products">
+                    <Link href="/store">
                       <Button>Browse Products</Button>
                     </Link>
                   </SheetClose>
                 ) : (
                   <DrawerClose asChild>
-                    <Link href="/products">
+                    <Link href="/store">
                       <Button>Browse Products</Button>
                     </Link>
                   </DrawerClose>
@@ -151,11 +218,7 @@ export function CartClient({ className, cart }: CartProps) {
                 {items.map((item) => (
                   <motion.div
                     animate={{ opacity: 1, y: 0 }}
-                    className={`
-                      group relative flex rounded-lg border bg-card p-2
-                      shadow-sm transition-colors
-                      hover:bg-accent/50
-                    `}
+                    className={`group relative flex rounded-lg border bg-card p-2 shadow-sm transition-colors hover:bg-accent/50`}
                     exit={{ opacity: 0, y: -10 }}
                     initial={{ opacity: 0, y: 10 }}
                     key={item.id}
@@ -174,21 +237,14 @@ export function CartClient({ className, cart }: CartProps) {
                       <div>
                         <div className="flex items-start justify-between">
                           <Link
-                            className={`
-                              line-clamp-2 text-sm font-medium
-                              group-hover:text-primary
-                            `}
+                            className={`line-clamp-2 text-sm font-medium group-hover:text-primary`}
                             href={`/products/${item.id}`}
                             onClick={() => setIsOpen(false)}
                           >
                             {item.name}
                           </Link>
                           <button
-                            className={`
-                              -mt-1 -mr-1 ml-2 rounded-full p-1
-                              text-muted-foreground transition-colors
-                              hover:bg-muted hover:text-destructive
-                            `}
+                            className={` -mt-1 -mr-1 ml-2 rounded-full p-1 text-muted-foreground transition-colors  hover:bg-muted hover:text-destructive`}
                             onClick={() => removeItem(item.id)}
                             type="button"
                           >
@@ -203,12 +259,7 @@ export function CartClient({ className, cart }: CartProps) {
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center rounded-md border">
                           <button
-                            className={`
-                              flex h-7 w-7 items-center justify-center
-                              rounded-l-md border-r text-muted-foreground
-                              transition-colors
-                              hover:bg-muted hover:text-foreground
-                            `}
+                            className={`flex h-7 w-7 items-center justify-center rounded-l-md border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
                             disabled={item.quantity <= 1}
                             onClick={() =>
                               updateQuantity(item.id, item.quantity - 1)
@@ -219,20 +270,12 @@ export function CartClient({ className, cart }: CartProps) {
                             <span className="sr-only">Decrease quantity</span>
                           </button>
                           <span
-                            className={`
-                              flex h-7 w-7 items-center justify-center text-xs
-                              font-medium
-                            `}
+                            className={`flex h-7 w-7 items-center justify-center text-xs font-medium `}
                           >
                             {item.quantity}
                           </span>
                           <button
-                            className={`
-                              flex h-7 w-7 items-center justify-center
-                              rounded-r-md border-l text-muted-foreground
-                              transition-colors
-                              hover:bg-muted hover:text-foreground
-                            `}
+                            className={`flex h-7 w-7 items-center justify-center rounded-r-md border-l text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
                             onClick={() =>
                               updateQuantity(item.id, item.quantity + 1)
                             }
@@ -249,6 +292,11 @@ export function CartClient({ className, cart }: CartProps) {
                     </div>
                   </motion.div>
                 ))}
+
+                <div className="flex flex-row gap-3 w-full max-w-sm px-2">
+                  <Button>Order</Button>
+                  <Button>Save</Button>
+                </div>
               </div>
             )}
           </AnimatePresence>
@@ -272,7 +320,7 @@ export function CartClient({ className, cart }: CartProps) {
                 ₦{subtotal.toFixed(2)}
                 </span>
               </div>
-              <Button className="w-full" size="lg">
+              <Button className="w-full" size="lg" onClick={handleCheckout}>
                 Checkout
               </Button>
               <div className="flex items-center justify-between">
@@ -300,6 +348,15 @@ export function CartClient({ className, cart }: CartProps) {
     </>
   );
 
+
+
+
+
+
+
+
+
+
   if (!isMounted) {
     return (
       <div className={cn("relative", className)}>
@@ -324,6 +381,17 @@ export function CartClient({ className, cart }: CartProps) {
       </div>
     );
   }
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div className={cn("relative", className)}>

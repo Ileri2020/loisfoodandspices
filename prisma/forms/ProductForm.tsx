@@ -82,16 +82,23 @@ export default function ProductForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('product',formData)
+
+    console.log('product',formData, 'file', file);
     const pformData = new FormData();
     pformData.append("file", file);
     pformData.append("description", formData.description)
     pformData.append("name", formData.name)
-    pformData.append("category", formData.category)
+    // pformData.append("category", formData.category)
     pformData.append("categoryId", formData.categoryId)
     pformData.append("price", formData.price)
     pformData.append("productImage", "true")
-    
+
+    console.log("Submitting product data:", pformData, "Edit ID:", editId);
+    for (const [key, value] of pformData.entries() as Iterable<[string, any]>) {
+      console.log(key + ": ", value);
+    }
+
+
     try {
       if (editId) {
         await axios.put(`/api/product?id=${editId}`, pformData);

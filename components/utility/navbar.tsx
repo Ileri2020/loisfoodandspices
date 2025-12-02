@@ -8,11 +8,24 @@ import { ModeToggle } from '@/components/ui/mode-toggle';
 import { Suspense } from "react"
 import {AiOutlineSearch, AiOutlineHome, AiOutlineShop, AiOutlineMan, AiOutlineContacts} from "react-icons/ai"
 import { Advert } from "@/components/myComponents/subs"
-import logo from "@/public/logo.png"
+import logo from "@/public/whitelogo.png"
+import greenlogo from "@/public/greenlogo.png"
 import Image from "next/image";
 import { Cart } from '../myComponents/subs/cart';
+import { SearchInput } from '../myComponents/subs/searchcomponent';
+import { useSession } from "next-auth/react";
+import { useAppContext } from '@/hooks/useAppContext';
 
 const Navbar = () : JSX.Element => {
+  const {setUser, user } = useAppContext();
+  const { data: session, status, update } = useSession();
+  if (status === "authenticated" && user.email === "nil") {
+    // console.log('navbar session', session)
+    setUser({
+      ...session.user,
+      avatarUrl: session.user.image
+    });
+  }
   return (
     <div className="w-[100vw] overflow-clip flex flex-col m-0 p-0 relative">
       <header className="w-[100%] py-4 bg-background sticky top-0 z-10">
@@ -20,17 +33,17 @@ const Navbar = () : JSX.Element => {
             <div className="lg:hidden">
               <Sidenav />
             </div>
-            <Link href={"/"} className="flex-1 md:flex-none max-h-[43px] md:max-h-[50px] overflow-clip flex justify-center items-center py-5">
+            <Link href={"/"} className="flex dark:hidden flex-1 md:flex-none max-h-[43px] md:max-h-[50px] overflow-clip flex justify-center items-center py-5 /rounded-full">
+                <Image src={greenlogo} alt="" className="w-[100px] h-auto"/>
+            </Link>
+            <Link href={"/"} className="hidden dark:flex flex-1 md:flex-none max-h-[43px] md:max-h-[50px] overflow-clip justify-center items-center py-5 /rounded-full">
                 <Image src={logo} alt="" className="w-[100px] h-auto"/>
             </Link>
             
             
             <Button variant={"outline"} className="lg:hidden relative flex justify-center items-center rounded-full w-[35px] h-[35px] overflow-clip text-accent text-xl"><AiOutlineSearch /></Button>
 
-            <div className="hidden lg:flex w-[23%] relative flex-row justify-center items-center my-10">
-                <Input placeholder="search" className="flex-1 border-0 dark:border-2" />
-                <Button className="absolute right-0 h-full rounded-sm text-background text-xl"><AiOutlineSearch /></Button>
-            </div>
+            <SearchInput />
 
 
             <div className="hidden lg:flex items-center gap-8">

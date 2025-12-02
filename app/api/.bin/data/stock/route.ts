@@ -1,41 +1,41 @@
-import { NextApiRequest, NextApiResponse } from "next"
+// import nc from "next-connect"
+// import { createRouter } from "next-connect"
+// import { uploadimg } from "@/server/config/multersetup"
 import { NextRequest, NextResponse } from 'next/server';
-import cloud from "@/server/config/cloudinary"
-import Sale from "@/server/db/mongodb/models/sales";
+import Stock from "@/server/db/mongodb/models/stocks"
+// import { join } from "path";
+// import { writeFile } from "fs";
+import { buffer } from "stream/consumers";
+// import glob from "glob";
 import connect from "@/server/config/mongodb";
 import { Types } from "mongoose";
-import { SaleColumns } from "@/server/db/mongodb/forms/sales";
-import Notification from "@/server/db/mongodb/models/notifications";
-import User from "@/server/db/mongodb/models/users";
-
+import uploadCloudinary from '@/server/config/cloudinary';
 
 
 export const GET = async (req: Request) => { //, res: NextApiResponse
   try {
     const {searchParams} = new URL(req.url)
     const limit = searchParams.get("limit")
-    const category = searchParams.get("category")//advert, all, etc
-    const dateFrom = searchParams.get("from") //yet to be used
-    const dateTo = searchParams.get("to")
-
+    const category = searchParams.get("category")
     console.log(limit, category)
+    // if (!limit || !category){
+    //   return new NextResponse(
+    //     JSON.stringify({ message: "invalid credentials"}),
+    //     { status: 400}
+    //   )
+    // }
 
-  if (!dateFrom && !dateTo || limit){
-    return new NextResponse(
-      JSON.stringify({ message: "invalid credentials"}),
-      { status: 400}
-    )
-  }
+  //   const userData = await fetchUserDataFromDatabase(userId);
 
   await connect()
 
-  let message    
+  let stocks    
 
   try {
       if(!category){
-        message = await Notification.find().limit(parseInt(limit))
+        stocks = await Stock.find().limit(parseInt(limit))
       }else{
-        message = await Notification.find({ category : category }).limit(parseInt(limit))
+        stocks = await Stock.find({ category : category }).limit(parseInt(limit))
       }
   } catch (error) {
       // users = mongoose.model('users', userSchema)
@@ -43,7 +43,7 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
   }
 
 
-    return new NextResponse(JSON.stringify(message), {status: 200});
+    return new NextResponse(JSON.stringify(stocks), {status: 200});
   } catch (error) {
     return new NextResponse(JSON.stringify({error: error.message}), {status: 500});
   }
@@ -51,44 +51,51 @@ export const GET = async (req: Request) => { //, res: NextApiResponse
 
 export const POST = async (req: NextRequest) => {
   try{
-    const {email, emailto, category, message, username} = await req.json()
-    await connect();
-    if (!email && !emailto && !category) {
-      return new NextResponse(JSON.stringify({message : "error handling cart items"}), {status: 400})
+    const form : any =await req.formData()
+      const stock_name = form.get("stock_name")
+      const cost = form.get("cost")
+      const price = form.get("price")
+      const quantity = form.get("quantity")
+      const category = form.get("category")
+      const message = form.get("message")
+      const image = form.get("file")
+
+      if (!image) {
+      throw {message : "image of stock missing", status : "error"}
     }
-    const sender = await User.findOne({ email })
-    const receiver = await User.findOne({ emailto })
-    if (!sender && !receiver) {
-      return new NextResponse(JSON.stringify({message : "invalid user or recipient"}), {status: 400})
-    }
-    // const sale = new Sale(body)
-    // await sale.save()
-    let newMessage
-    const postMessage = async () => {
-      console.log("about to create message in database")
-      
-        try{
-          newMessage = await Notification.create({
-            from: sender._id,
-            to: receiver._id,
+
+    const imageBytes = await image.arrayBuffer()
+    const file = Buffer.from(imageBytes)
+
+      if (!stock_name && !cost && !price && !quantity && !category && !message && !file) {
+          return new NextResponse(JSON.stringify({message : "incomplete fields inputed"}), {status: 400})
+      }
+
+      // const path = join("C:\Users\Ololade\Desktop\portfolio\next-temp-app\app\public","buffer", form.get("file").name)
+      // // const path = join("\c","buffer", form.get("file").name)
+      // await writeFile(path, file, ()=>{console.log(`file written to ${path}`)})
+
+     const postStock = async () => {
+        const uploaded : any = await uploadCloudinary(file, "/succo/img/stocks")
+        //const public_id = uploaded.public_id //path to image without extension or format
+        const url = uploaded.url
+        const newStock = await Stock.create({
+            name: stock_name,
+            price: Number(price),
+            description: message,
             category: category,
-            message: message,
-            read: false,
-          })
-        }catch(error){console.log("message creation error :",error)}
-        return newMessage
+            img: url,
+            qty: Number(quantity),
+            cost: Number(cost),
+        })
+        return newStock
     }
-
-    postMessage()
-
-    console.log(sender, receiver, category, message, newMessage)
-
-    return new NextResponse(JSON.stringify({message : newMessage}), {status: 200})
+    const stock = postStock()
+    return new NextResponse(JSON.stringify({message : stock}), {status: 200})
   } catch (error) {
     return new NextResponse(JSON.stringify({error : error}), {status: 500})
   }
 }
-
 
 export const PATCH = async (req: Request) => {
   try{
@@ -118,18 +125,16 @@ export const PATCH = async (req: Request) => {
     }
 
     // Remove undefined fields from updates
-    const saleArray = Object.fromEntries(
+    const stockArray = Object.fromEntries(
       Object.entries(stock).filter(([key, value]) => value !== undefined)
     );
 
     // Update user document
-    let sale = new Sale()
-    // Object.assign(Sale, saleArray);
-    Object.assign(sale, saleArray);
+    Object.assign(Stock, stockArray);
 
-    // const update = await SaleColumns.findById(`${id}`)
+    const update = await Stock.findById(`${id}`)
 
-    const updatedStock = await sale.save();
+    const updatedStock = await Stock.save();
 
     // const updatedUser = await Stock.findOneAndUpdate(
     //   {_id: new Types.ObjectId(id)},  //new ObjectId(userId)
@@ -163,16 +168,16 @@ export const DELETE = async (req: Request) => {
       )
     }
     await connect();
-    const deletedSale = await Sale.findByIdAndDelete(
+    const deletedStock = await Stock.findByIdAndDelete(
       new Types.ObjectId(id)
     )
-    if (!deletedSale){
+    if (!deletedStock){
       return new NextResponse(
         JSON.stringify({ message: "stock not found"}),
         { status: 400}
       )
     }
-    return new NextResponse(JSON.stringify({message : "sale deleted"}), {status: 200})
+    return new NextResponse(JSON.stringify({message : "stock deleted"}), {status: 200})
   } catch (error) {
     return new NextResponse(JSON.stringify({error : error}), {status: 500})
   }
