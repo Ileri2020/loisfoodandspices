@@ -26,7 +26,7 @@ interface AppContextProps {
   // user: UserProps;
   // setUser: (user: UserProps) => void;
   user: UserProps;
-  setUser: (user: UserProps) => void;
+  setUser: (user: any) => void;
   cart: any[]//UserProps;
   setCart: (cart: any[]) => void;
   isModal: boolean;
