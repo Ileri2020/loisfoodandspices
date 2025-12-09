@@ -10,6 +10,7 @@ import {AiOutlineSearch, AiOutlineHome, AiOutlineShop, AiOutlineMan, AiOutlineCo
 import { Advert } from "@/components/myComponents/subs"
 import logo from "@/public/whitelogo.png"
 import greenlogo from "@/public/greenlogo.png"
+import loyzspiceslogo from "@/public/logo.png"
 import Image from "next/image";
 import { Cart } from '../myComponents/subs/cart';
 import { SearchInput } from '../myComponents/subs/searchcomponent';
@@ -34,10 +35,10 @@ const Navbar = () : JSX.Element => {
               <Sidenav />
             </div>
             <Link href={"/"} className="flex dark:hidden flex-1 md:flex-none max-h-[43px] md:max-h-[50px] overflow-clip flex justify-center items-center py-5 /rounded-full">
-                <Image src={greenlogo} alt="" className="w-[100px] h-auto"/>
+                <Image src={loyzspiceslogo} alt="" className="w-[100px] h-auto"/>
             </Link>
             <Link href={"/"} className="hidden dark:flex flex-1 md:flex-none max-h-[43px] md:max-h-[50px] overflow-clip justify-center items-center py-5 /rounded-full">
-                <Image src={logo} alt="" className="w-[100px] h-auto"/>
+                <Image src={loyzspiceslogo} alt="" className="w-[100px] h-auto"/>
             </Link>
             
             
