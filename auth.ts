@@ -2,13 +2,13 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import bcrypt, { compare } from "bcryptjs";
+import bcrypt, { compareSync } from "bcrypt-edge";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  trustHost: true,
+  // trustHost: true,
 
   providers: [
     Credentials({
@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid email or password");
         }
 
-        const isMatched = await compare(password, user.password);
+        const isMatched = await compareSync(password, user.password);
         if (!isMatched) {
           throw new Error("Invalid email or password");
         }
