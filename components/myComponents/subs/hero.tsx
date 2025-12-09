@@ -4,14 +4,11 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Clock, Truck } from 'lucide-react'
 import Image from "next/image";
-import landingimg from '@/public/pharmacist.png'
-import whitelandingimgmobile from '@/public/landingmobilewhite.png'
-import bluelandingimgmobile from '@/public/landingmobileblue.png'
-import greenlandingimgmobile from '@/public/landingmobilegreen.png'
 
 const Hero = () => {
+  //hero
   return (
-    <div className={`relative overflow-hidden py-5 md:py-16`}>
+    <div className={`relative overflow-hidden py-12 md:py-16`}>
     <div className={`bg-grid-black/[0.02] absolute inset-0 bg-[length:20px_20px]`}/>
     <div className={`relative z-10 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8`}>
       <div className={`grid items-center gap-10 grid-cols-1 lg:grid-cols-2 lg:gap-12`}>
@@ -22,37 +19,15 @@ const Hero = () => {
                 font-display text-4xl leading-tight font-bold tracking-tight text-foreground
                 sm:text-2xl md:text-3xl lg:leading-[1.1]`}
             >
-              <div className='hidden dark:flex md:dark:hidden md:hidden animate-pulse'>
-               <Image
-                  alt="Shopping experience"
-                  className="object-cover w-full h-full "
-                  // fill
-                  // priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  //src="https://images.unsplash.com/photo-1624767735494-1929dc24ad43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-                  src={whitelandingimgmobile}
-                />
-              </div>
-              <div className='md:hidden dark:hidden animate-pulse'>
-               <Image
-                  alt="Shopping experience"
-                  className="object-cover w-full h-full "
-                  // fill
-                  // priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  //src="https://images.unsplash.com/photo-1624767735494-1929dc24ad43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-                  src={greenlandingimgmobile}
-                />
-              </div>
-              <div className='text-2xl  text-center md:text-start'>With a click, get your Premium </div>
+              <div>Your One-Stop Shop for </div>
               <div className={` /bg-gradient-to-r /from-primary /to-primary/70 bg-clip-text
-                  /text-transparent sm:text-4xl md:text-5xl text-center md:text-start text-accent`}
+                  /text-transparent sm:text-4xl md:text-5xl text-accent`}
               >
-                Drug, Pharmaceuticals & Medical Equipment
+                Food and Spice Blends
               </div>
             </h1>
             <p className={`max-w-[700px] text-lg text-muted-foreground md:text-xl`}>
-              Discover products at competitive prices, with fast
+              Discover premium products at competitive prices, with fast
               shipping and exceptional customer service.
             </p>
           </div>
@@ -85,14 +60,14 @@ const Hero = () => {
           <div className={`absolute inset-0 z-10 bg-gradient-to-tr from-primary/20
               via-transparent to-transparent`}
           />
-          <Image
+          <img
             alt="Shopping experience"
             className="object-cover w-full h-full"
             // fill
             // priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             //src="https://images.unsplash.com/photo-1624767735494-1929dc24ad43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-            src={landingimg}
+            src="./logo.png"
           />
         </div>
       </div>
