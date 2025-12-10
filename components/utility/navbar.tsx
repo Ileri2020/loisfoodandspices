@@ -24,7 +24,7 @@ const Navbar = () : JSX.Element => {
     // console.log('navbar session', session)
     setUser({
       ...session.user,
-      avatarUrl: session.user.image
+      // avatarUrl: session.user.image
     });
   }
   return (
