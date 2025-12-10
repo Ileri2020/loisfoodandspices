@@ -1,15 +1,15 @@
-// @ts-ignore
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import bcrypt, { compareSync } from "bcrypt-edge";
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
+import { PrismaAdapter } from '@auth/prisma-adapter';
 
 const prisma = new PrismaClient();
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  // trustHost: true,
-
+export default NextAuth({
+  trustHost: true,
+  adapter: PrismaAdapter(prisma),
   providers: [
     Credentials({
       name: "Credentials",
@@ -17,7 +17,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-
       authorize: async (credentials) => {
         const email = credentials?.email;
         const password = credentials?.password;
@@ -26,82 +25,66 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Please provide both email & password");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
+        const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user || !user.password) {
           throw new Error("Invalid email or password");
         }
 
-        const isMatched = await compareSync(password, user.password);
+        const isMatched = await bcrypt.compare(password, user.password);
         if (!isMatched) {
           throw new Error("Invalid email or password");
         }
 
-        // Return EXACT user data for token + session
+        // Map all existing user fields
         return {
           id: user.id,
           name: user.name,
-          username: user.username,
           email: user.email,
           contact: user.contact,
           role: user.role,
           avatarUrl: user.avatarUrl,
-          department: user.department,
-          sex: user.sex,
+          providerid: user.providerid,
         };
       },
     }),
 
     Google({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
+      clientId: process.env.GOOGLE_ID!,
+      clientSecret: process.env.GOOGLE_SECRET!,
     }),
   ],
 
   callbacks: {
     async signIn({ user, account }) {
-      // ────────────────────────────────
-      // GOOGLE LOGIN FLOW
-      // ────────────────────────────────
       if (account?.provider === "google") {
         try {
-          const email = user.email;
-          const name = user.name;
-          const googleId = user.id;
-
-          const avatarUrl =
-            user.image?.replace(/=s\d+(-c)?$/, "=s500-c") ?? null;
+          const email = user.email!;
+          const name = user.name!;
+          const googleId = user.id!;
+          const avatarUrl = user.image?.replace(/=s\d+(-c)?$/, "=s500-c") ?? null;
 
           let existingUser = await prisma.user.findUnique({ where: { email } });
 
-          // CREATE USER IF NOT FOUND
           if (!existingUser) {
             existingUser = await prisma.user.create({
               data: {
                 email,
                 name,
-                username: name.replace(/\s+/g, "").toLowerCase(),
                 avatarUrl,
-                role: "user",
-                department: "none",
-                providerid: await bcrypt.hash(
-                  googleId,
-                  parseInt(process.env.SALT_ROUNDS)
-                ),
+                role: "customer",
+                providerid: await bcrypt.hash(googleId, parseInt(process.env.SALT_ROUNDS!)),
               },
             });
           }
 
-          // Pass Prisma user back into NextAuth "user"
+          // Map DB user data back to session
           user.id = existingUser.id;
-          user.username = existingUser.username;
+          user.name = existingUser.name;
           user.role = existingUser.role;
-          user.department = existingUser.department;
           user.contact = existingUser.contact;
           user.avatarUrl = existingUser.avatarUrl;
-          user.sex = existingUser.sex;
+          user.providerid = existingUser.providerid;
 
           return true;
         } catch (err) {
@@ -110,38 +93,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
 
-      return true; // credentials success
+      // Credentials login always returns true if authorize succeeded
+      return true;
     },
 
-    // ────────────────────────────────
-    // JWT CALLBACK  → Saves user into token
-    // ────────────────────────────────
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.username = user.username;
-        token.role = user.role;
-        token.department = user.department;
-        token.contact = user.contact;
-        token.avatarUrl = user.avatarUrl;
-        token.sex = user.sex;
+        token.name = user.name ?? null;
+        token.email = user.email ?? null;
+        token.contact = user.contact ?? null;
+        token.role = user.role ?? null;
+        token.avatarUrl = user.avatarUrl ?? null;
+        token.providerid = user.providerid ?? null;
       }
-
       return token;
     },
 
-    // ────────────────────────────────
-    // SESSION CALLBACK  → Expose token to session
-    // ────────────────────────────────
     async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.username = token.username;
-      session.user.role = token.role;
-      session.user.department = token.department;
-      session.user.contact = token.contact;
-      session.user.avatarUrl = token.avatarUrl;
-      session.user.sex = token.sex;
-
+      session.user.id = token.id!;
+      session.user.name = token.name ?? null;
+      session.user.email = token.email ?? null;
+      session.user.contact = token.contact ?? null;
+      session.user.role = token.role ?? null;
+      session.user.avatarUrl = token.avatarUrl ?? null;
+      session.user.providerid = token.providerid ?? null;
       return session;
     },
   },

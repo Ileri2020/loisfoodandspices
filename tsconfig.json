@@ -35,7 +35,6 @@
     ".next/dev/types/**/*.ts",
     "app/api/auth/[...nextauth]",
     "app/api/data/stock",
-    ".next-auth.d.ts",
   ],
 
   "exclude": ["node_modules"]
