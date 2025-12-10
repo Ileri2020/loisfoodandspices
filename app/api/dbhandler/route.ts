@@ -43,11 +43,6 @@ async function parseJson(req: NextRequest) {
   }
 }
 
-function parseId(id: string | null, model: string) {
-  if (!id) return null;
-  return ["user", "category", "product"].includes(model) ? id : Number(id);
-}
-
 async function handleUpload(file: File | string) {
   let dataURI = typeof file === "string" ? file : "";
 
@@ -60,6 +55,13 @@ async function handleUpload(file: File | string) {
   const res = await cloudinary.v2.uploader.upload(dataURI, { resource_type: "auto" });
   return res;
 }
+
+function parseId(id: string | null, model: string) {
+  if (!id) return null;
+  return ["user", "category", "product"].includes(model) ? id : Number(id);
+}
+
+
 
 // ==================== GET ====================
 export async function GET(req: NextRequest) {
@@ -297,9 +299,10 @@ export async function PUT(req: NextRequest) {
 
 // ==================== DELETE ====================
 export async function DELETE(req: NextRequest) {
+  console.log("DELETE request received");
   const { searchParams } = new URL(req.url);
   const model = searchParams.get("model");
-  const id = parseId(searchParams.get("id"), model || "");
+  const id =  `${parseId(searchParams.get("id"), model || "")}`
 
   if (!model || !modelMap[model]) return NextResponse.json({ error: "Invalid model" }, { status: 400 });
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -307,10 +310,11 @@ export async function DELETE(req: NextRequest) {
   const prismaModel = modelMap[model];
 
   try {
-    await prismaModel.delete({ where: { id } });
+    console.log(`Attempting to delete ${model} with id:`, id);
+    await prismaModel.delete({ where: {  id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Database DELETE error:", error);
+    console.error("Database DELETE error:,", error);
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
   }
 }

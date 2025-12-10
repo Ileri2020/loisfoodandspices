@@ -130,10 +130,13 @@ export default function ProductForm() {
     setPreview(URL.createObjectURL(selectedFile));
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this book?')) return;
+  const handleDelete = async (product : any) => {
+    if (!confirm(`Are you sure you want to delete ${product.name} product?`)) return;
     try {
-      await axios.delete(`/api/dbhandler?model=product&id=${id}`);
+      const res = await axios.delete(`/api/dbhandler?model=product&id=${product.id}`);
+      if (res.status === 200  || res.status === 201) {
+        alert('Product deleted successfully.');
+      }
       fetchProducts();
     } catch (err) {
       alert('Failed to delete product.');
@@ -234,7 +237,7 @@ export default function ProductForm() {
                 <p>Price : {item.price || <em>No price tag</em>}</p>
                 <div className='flex flex-row gap-2 p-1 w-full'>
                   <Button onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  <Button onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
                 </div>
               </li>
             ))
