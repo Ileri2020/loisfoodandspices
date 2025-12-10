@@ -12,10 +12,6 @@
     "node": "20.15.0"
   },
   "packageManager": "npm@10.9.0",
-  "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom"
-  },
   "dependencies": {
     "@hellouxpavel/cssanimation": "^6.8.0",
     "@hookform/resolvers": "^3.9.1",
@@ -102,10 +98,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/next": "^9.0.0",
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.8",
     "postcss": "^8",
