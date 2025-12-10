@@ -1,17 +1,15 @@
-import Link from 'next/link'
-import { categories } from '@/data/mock'
+"use client";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 // Fetch categories from backend
 async function getCategories() {
-  const res = await fetch(`/api/dbhandler?model=category`, {
-    next: { revalidate: 60 } // ISR
-  });
+  const res = await fetch(`/api/dbhandler?model=category`);
 
   if (!res.ok) return [];
 
   const categories = await res.json();
 
-  // Transform backend categories to match mock format
   return categories.map((cat: any) => ({
     image: cat.image || "/placeholder.png",
     name: cat.name,
@@ -19,8 +17,17 @@ async function getCategories() {
   }));
 }
 
-const FeaturedCategories = async () => {
-  const categories = await getCategories();
+const FeaturedCategories = () => {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const cats = await getCategories();
+      setCategories(cats);
+    };
+
+    fetchCategories(); // <-- you need to call it
+  }, []); // <-- run only once
 
   return (
     <section className="py-12 md:py-16">

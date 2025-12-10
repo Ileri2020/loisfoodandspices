@@ -5,7 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Sidenav from './sidenav';
 import { ModeToggle } from '@/components/ui/mode-toggle';
-import { Suspense } from "react"
+import { Suspense, useEffect } from "react"
 import {AiOutlineSearch, AiOutlineHome, AiOutlineShop, AiOutlineMan, AiOutlineContacts} from "react-icons/ai"
 import { Advert } from "@/components/myComponents/subs"
 import logo from "@/public/whitelogo.png"
@@ -20,13 +20,15 @@ import { useAppContext } from '@/hooks/useAppContext';
 const Navbar = () : JSX.Element => {
   const {setUser, user } = useAppContext();
   const { data: session, status, update } = useSession();
-  if (status === "authenticated" && user.email === "nil") {
-    // console.log('navbar session', session)
-    setUser({
-      ...session.user,
-      // avatarUrl: session.user.image
-    });
-  }
+
+  useEffect(() => {
+    if (status === "authenticated" && user.email === "nil") {
+      setUser({
+        ...session.user,
+      });
+    }
+  }, [status, session, user.email, setUser]);
+  
   return (
     <div className="w-[100vw] overflow-clip flex flex-col m-0 p-0 relative">
       <header className="w-[100%] py-4 bg-background sticky top-0 z-10">

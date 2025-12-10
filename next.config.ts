@@ -1,14 +1,10 @@
 import type { NextConfig } from "next";
 
-interface CustomNextConfig extends NextConfig {
-  eslint?: {
-    ignoreDuringBuilds: boolean;
-  };
-}
+const nextConfig: NextConfig = {
+  reactStrictMode: false,
 
-const nextConfig: CustomNextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
+  turbopack: {
+    root: "./",
   },
 };
 
