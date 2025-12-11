@@ -84,6 +84,8 @@ model Product {
   //orderItems OrderItem[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // add product features like dosage form, strength, manufacturer, etc
 }
 
 
