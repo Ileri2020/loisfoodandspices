@@ -199,7 +199,7 @@ export default function ProductDetailPage() {
   /* ------------------------------ Markup --------------------------------- */
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col w-screen overflow-clip">
       <main className="flex-1 py-10">
         <div className="container px-4 md:px-6">
           {/* Back link */}

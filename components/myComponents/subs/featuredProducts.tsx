@@ -5,6 +5,15 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { ProductCard } from "./productCard";
+import Autoplay from "embla-carousel-autoplay";
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { featuredProductsHomepage } from '@/data/mock'
 
 
@@ -22,6 +31,10 @@ export interface FeaturedProductType {
 const FeaturedProducts = () => {
   const [products, setProducts] = useState<FeaturedProductType[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const plugin = React.useRef(
+      Autoplay({ delay: 2000, stopOnInteraction: true })
+  );
 
   useEffect(() => {
     async function fetchFeaturedProducts() {
@@ -71,15 +84,31 @@ const FeaturedProducts = () => {
         {loading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <Carousel 
+            plugins={[plugin.current]}
+            className="w-screen overflow-clip lg:max-w-[850px] xl:max-w-[1000px] mx-auto mt-10"
+            opts={{ loop: true }}
+            orientation="horizontal"
+            // className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            <CarouselContent>
+              {products.map((product, index) => (
+                <CarouselItem
+                  key={index}
+                  className="basis-1/3 md:basis-1/5 lg:basis-1/7 flex flex-col overflow-clip justify-center items-center w-full ml-2"
+                >
+                  <ProductCard key={product.id} product={product} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         )}
 
         <div className="mt-10 flex justify-center">
-          <Link href="/products">
+          <Link href="/store">
             <Button className="group h-12 px-8" size="lg" variant="outline">
               View All Products
               <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -92,3 +121,22 @@ const FeaturedProducts = () => {
 };
 
 export default FeaturedProducts;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
