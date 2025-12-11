@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import Similar from "@/components/myComponents/subs/similar";
 
 /* -------------------------------------------------------------------------- */
 /*                               Type declarations                            */
@@ -55,6 +56,7 @@ export default function ProductDetailPage() {
   const { items, addItem, updateQuantity, removeItem } = useCart();
 
   const [product, setProduct] = React.useState<Product | null>(null);
+  const [allProduct, setAllProduct] = React.useState<Product[] | null>([]);
   const [rawproduct, setrawProduct] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [isAdding, setIsAdding] = React.useState(false);
@@ -93,6 +95,19 @@ export default function ProductDetailPage() {
         };
 
         setProduct(transformed);
+
+        const allProduct = await fetch(`/api/dbhandler?model=product`);
+        const productsdata = await allProduct.json();
+
+        if (!allProduct.ok) {
+          console.error("Failed to fetch product:", data.error);
+          return;
+        }
+
+        console.log("all products", productsdata);
+
+        setAllProduct(productsdata);
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching product:", err);
@@ -200,7 +215,7 @@ export default function ProductDetailPage() {
           {/* Main grid */}
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {/* Product image */}
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-muted max-w-md flex justify-center items-center">
               <img
                 alt={product.name}
                 className="object-cover"
@@ -347,8 +362,12 @@ export default function ProductDetailPage() {
                 ))}
               </div>
             </section>
+            <div>
+              <div><Similar similar={allProduct} /></div>
+            </div>
           </div>
         </div>
+        
       </main>
     </div>
   );

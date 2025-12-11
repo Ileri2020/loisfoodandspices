@@ -120,7 +120,7 @@ export function ProductCard({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="relative aspect-square overflow-hidden rounded-t-lg w-[40%] md:w-full">
+          <div className="relative aspect-square overflow-hidden rounded-t-lg w-[40%] md:w-full flex justify-center items-center bg-muted">
             {product.images && (
               <img
                 alt={product.name}
