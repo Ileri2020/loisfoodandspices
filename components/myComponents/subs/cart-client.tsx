@@ -15,6 +15,9 @@ import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { useAppContext } from '@/hooks/useAppContext';
+import FlutterWaveButtonHook from '../../payment/flutterwavehook';
+import { user } from '../../../server/db/mongodb/forms/user';
+import contact from '@/data/cont';
 
 
 
@@ -39,8 +42,9 @@ export function CartClient({ className, cart }: CartProps) {
   const [isMounted, setIsMounted] = React.useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const { items, addItem, removeItem, clearCart, subtotal, updateQuantity, itemCount } = useCart();
+  const { items, addItem, removeItem, clearCart, subtotal, updateQuantity, itemCount, setCheckoutData, checkoutData, clearCheckoutData } = useCart();
   const {user } = useAppContext();
+  // const [checkoutData, setCheckoutData] = React.useState<any>(null)
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -84,39 +88,73 @@ export function CartClient({ className, cart }: CartProps) {
 
 
 
-  const handleCheckout = async () => {
-    if (items.length === 0) return;
+  // const handleCheckout = async () => {
+  //   if (items.length === 0) return;
+
+  //   try {
+  //     // Prepare payload
+  //     const payload = {
+  //       userId: user.id, // replace with actual logged-in user ID
+  //       products: items.map((item) => ({
+  //         productId: item.id,
+  //         quantity: item.quantity,
+  //       })),
+  //       total: subtotal,
+  //       status: "pending", // or "paid" depending on your logic
+  //     };
+
+  //     console.log("Checkout payload:", payload);
+
+  //     // POST to your API route
+  //     const res = await axios.post("/api/dbhandler?model=cart", payload);
+
+  //     if (res.status === 200) {
+  //       console.log("Checkout successful:", res.data);
+  //       clearCart(); // empty local cart
+  //       alert("Checkout successful!");
+  //       // Optionally redirect to order summary page
+  //       // window.location.href = `/orders/${res.data.id}`;
+  //     }
+  //   } catch (err) {
+  //     // console.error("Checkout failed:", err);
+  //     alert("Checkout failed, please try again.");
+  //     alert("Checkout failed, please try again.");
+  //   }
+  // };
+  
+
+  const prepareCheckout = async () => {
+    console.log('Preparing checkout...');
+    if (!user?.id || items.length === 0) return;
 
     try {
-      // Prepare payload
-      const payload = {
-        userId: user.id, // replace with actual logged-in user ID
-        products: items.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
+      const payload: any = {
+        userId: user.id,
+        items: items.map((i) => ({
+          productId: i.id,
+          quantity: i.quantity,
         })),
-        total: subtotal,
-        status: "pending", // or "paid" depending on your logic
       };
 
-      console.log("Checkout payload:", payload);
-
-      // POST to your API route
-      const res = await axios.post("/api/dbhandler?model=cart", payload);
-
-      if (res.status === 200) {
-        console.log("Checkout successful:", res.data);
-        clearCart(); // empty local cart
-        alert("Checkout successful!");
-        // Optionally redirect to order summary page
-        // window.location.href = `/orders/${res.data.id}`;
+      // ✅ Include cartId if checkoutData exists to update existing cart
+      if (checkoutData?.cartId) {
+        payload.cartId = checkoutData.cartId;
       }
+
+      const res = await axios.post("/api/payment", payload);
+
+      // Save checkoutData for Flutterwave or confirmation button
+      setCheckoutData(res.data);
+
     } catch (err) {
-      // console.error("Checkout failed:", err);
-      alert("Checkout failed, please try again.");
+      console.error("Checkout initiation failed:", err);
       alert("Checkout failed, please try again.");
     }
   };
+
+
+  console.log('checkoutData', checkoutData);
+
 
 
 
@@ -294,7 +332,7 @@ export function CartClient({ className, cart }: CartProps) {
                 ))}
 
                 <div className="flex flex-row gap-3 w-full max-w-sm px-2">
-                  <Button>Order</Button>
+                  {/* <Button>Order</Button> */}
                   <Button>Save</Button>
                 </div>
               </div>
@@ -320,9 +358,77 @@ export function CartClient({ className, cart }: CartProps) {
                 ₦{subtotal.toFixed(2)}
                 </span>
               </div>
-              <Button className="w-full" size="lg" onClick={handleCheckout}>
+              {/* <Button className="w-full" size="lg" onClick={handleCheckout}>
                 Checkout
-              </Button>
+              </Button> */}
+              {(!user.email || user.email === 'nil') && (
+                <p className="text-sm text-red-600">
+                  Please login to proceed to checkout.
+                </p>
+              )}
+              {checkoutData ? (
+                <div className="flex flex-col gap-2">
+                  <FlutterWaveButtonHook
+                    tx_ref={checkoutData.tx_ref}
+                    amount={checkoutData.amount}
+                    currency="NGN"
+                    email={user.email}
+                    phonenumber={user.contact}
+                    name={user.name}
+                    onSuccess={async () => {
+                      try {
+                        // Confirm payment on server
+                        const res = await axios.post(`/api/payment?action=confirm`, {
+                          tx_ref: checkoutData.tx_ref,
+                        });
+                        if (res.data.success) {
+                          alert("Payment confirmed!");
+                          clearCart();            // Clear local cart
+                          clearCheckoutData();    // Clear checkout info
+                          setCheckoutData(null);
+                        } else {
+                          alert(res.data.message || "Payment not found. Please try again.");
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        alert("Error confirming payment.");
+                      }
+                    }}
+                  />
+
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const res = await axios.post(`/api/payment?action=confirm`, {
+                          tx_ref: checkoutData.tx_ref,
+                        });
+                        if (res.data.success) {
+                          alert("Payment confirmed!");
+                          clearCart();
+                          clearCheckoutData();
+                          setCheckoutData(null);
+                        } else {
+                          alert(res.data.message || "Payment not found. Please try again.");
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        alert("Error confirming payment.");
+                      }
+                    }}
+                  >
+                    Confirm Payment
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  disabled={!user.email || user.email === "nil"}
+                  onClick={prepareCheckout}
+                >
+                  Checkout
+                </Button>
+              )}
+
               <div className="flex items-center justify-between">
                 {isDesktop ? (
                   <SheetClose asChild>
@@ -400,7 +506,7 @@ export function CartClient({ className, cart }: CartProps) {
           <SheetTrigger asChild>{CartTrigger}</SheetTrigger>
           <SheetContent className="flex w-[400px] flex-col p-0">
             <SheetHeader>
-              <SheetTitle>Shopping Cart</SheetTitle>
+              <SheetTitle className="mx-2 my-4 text-xl font-semibold">Shopping Cart</SheetTitle>
             </SheetHeader>
             {CartContent}
           </SheetContent>

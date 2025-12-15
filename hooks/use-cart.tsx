@@ -3,13 +3,19 @@
 import { CartItem } from "@/components/myComponents/subs/cart";
 import * as React from "react";
 
-//import type { CartItem } from "~/ui/components/cart";
-
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
 /* -------------------------------------------------------------------------- */
 
+export interface CheckoutData {
+  cartId: string;
+  tx_ref: string;
+  amount: number;
+  currency: string;
+}
+
 export interface CartContextType {
+  // Cart
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   clearCart: () => void;
   itemCount: number;
@@ -17,6 +23,11 @@ export interface CartContextType {
   removeItem: (id: string) => void;
   subtotal: number;
   updateQuantity: (id: string, quantity: number) => void;
+
+  // Checkout
+  checkoutData: CheckoutData | null;
+  setCheckoutData: (data: CheckoutData | null) => void;
+  clearCheckoutData: () => void;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -29,22 +40,33 @@ const CartContext = React.createContext<CartContextType | undefined>(undefined);
 /*                         Local-storage helpers                              */
 /* -------------------------------------------------------------------------- */
 
-const STORAGE_KEY = "cart";
+const CART_STORAGE_KEY = "cart";
+const CHECKOUT_STORAGE_KEY = "checkout";
 const DEBOUNCE_MS = 500;
 
 const loadCartFromStorage = (): CartItem[] => {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (Array.isArray(parsed)) {
-      return parsed as CartItem[];
-    }
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed as CartItem[];
   } catch (err) {
     console.error("Failed to load cart:", err);
   }
   return [];
+};
+
+const loadCheckoutFromStorage = (): CheckoutData | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CHECKOUT_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CheckoutData;
+  } catch (err) {
+    console.error("Failed to load checkout:", err);
+    return null;
+  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -52,16 +74,20 @@ const loadCartFromStorage = (): CartItem[] => {
 /* -------------------------------------------------------------------------- */
 
 export function CartProvider({ children }: React.PropsWithChildren) {
+  /* ----------------------------- State ---------------------------------- */
   const [items, setItems] = React.useState<CartItem[]>(loadCartFromStorage);
+  const [checkoutData, setCheckoutDataState] =
+    React.useState<CheckoutData | null>(loadCheckoutFromStorage);
 
-  /* -------------------- Persist to localStorage (debounced) ------------- */
-  const saveTimeout = React.useRef<null | ReturnType<typeof setTimeout>>(null);
+  /* -------------------- Persist Cart (debounced) ------------------------- */
+  const saveTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
+
     saveTimeout.current = setTimeout(() => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
       } catch (err) {
         console.error("Failed to save cart:", err);
       }
@@ -72,7 +98,35 @@ export function CartProvider({ children }: React.PropsWithChildren) {
     };
   }, [items]);
 
-  /* ----------------------------- Actions -------------------------------- */
+  /* -------------------- Persist Checkout (immediate) --------------------- */
+  React.useEffect(() => {
+    try {
+      if (checkoutData) {
+        localStorage.setItem(
+          CHECKOUT_STORAGE_KEY,
+          JSON.stringify(checkoutData)
+        );
+      } else {
+        localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+      }
+    } catch (err) {
+      console.error("Failed to save checkout:", err);
+    }
+  }, [checkoutData]);
+
+  /* --------------------------- Checkout Actions -------------------------- */
+  const setCheckoutData = React.useCallback(
+    (data: CheckoutData | null) => {
+      setCheckoutDataState(data);
+    },
+    []
+  );
+
+  const clearCheckoutData = React.useCallback(() => {
+    setCheckoutDataState(null);
+  }, []);
+
+  /* ----------------------------- Cart Actions ---------------------------- */
   const addItem = React.useCallback(
     (newItem: Omit<CartItem, "quantity">, qty = 1) => {
       if (qty <= 0) return;
@@ -80,74 +134,94 @@ export function CartProvider({ children }: React.PropsWithChildren) {
         const existing = prev.find((i) => i.id === newItem.id);
         if (existing) {
           return prev.map((i) =>
-            i.id === newItem.id ? { ...i, quantity: i.quantity + qty } : i,
+            i.id === newItem.id
+              ? { ...i, quantity: i.quantity + qty }
+              : i
           );
         }
         return [...prev, { ...newItem, quantity: qty }];
       });
+      clearCheckoutData(); // clear checkout only when user edits cart
     },
-    [],
+    [clearCheckoutData]
   );
 
-  const removeItem = React.useCallback((id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-  }, []);
+  const removeItem = React.useCallback(
+    (id: string) => {
+      setItems((prev) => prev.filter((i) => i.id !== id));
+      clearCheckoutData(); // clear checkout only when user edits cart
+    },
+    [clearCheckoutData]
+  );
 
-  const updateQuantity = React.useCallback((id: string, qty: number) => {
-    setItems((prev) =>
-      prev.flatMap((i) => {
-        if (i.id !== id) return i;
-        if (qty <= 0) return []; // treat zero/negative as remove
-        if (qty === i.quantity) return i;
-        return { ...i, quantity: qty };
-      }),
-    );
-  }, []);
+  const updateQuantity = React.useCallback(
+    (id: string, qty: number) => {
+      setItems((prev) =>
+        prev.flatMap((i) => {
+          if (i.id !== id) return i;
+          if (qty <= 0) return [];
+          if (qty === i.quantity) return i;
+          return { ...i, quantity: qty };
+        })
+      );
+      clearCheckoutData(); // clear checkout only when user edits cart
+    },
+    [clearCheckoutData]
+  );
 
-  const clearCart = React.useCallback(() => setItems([]), []);
+  const clearCart = React.useCallback(() => {
+    setItems([]); // Clear all cart items
+    clearCheckoutData(); // Also clear checkout data
+  }, [clearCheckoutData]);
 
-  /* --------------------------- Derived data ----------------------------- */
+  /* --------------------------- Derived data ------------------------------ */
   const itemCount = React.useMemo(
     () => items.reduce((t, i) => t + i.quantity, 0),
-    [items],
+    [items]
   );
 
   const subtotal = React.useMemo(
     () => items.reduce((t, i) => t + i.price * i.quantity, 0),
-    [items],
+    [items]
   );
 
-  /* ----------------------------- Context value -------------------------- */
+  /* ----------------------------- Context value --------------------------- */
   const value = React.useMemo<CartContextType>(
     () => ({
       addItem,
+      removeItem,
+      updateQuantity,
       clearCart,
       itemCount,
       items,
-      removeItem,
       subtotal,
-      updateQuantity,
+      checkoutData,
+      setCheckoutData,
+      clearCheckoutData,
     }),
     [
-      items,
       addItem,
       removeItem,
       updateQuantity,
       clearCart,
       itemCount,
+      items,
       subtotal,
-    ],
+      checkoutData,
+      setCheckoutData,
+      clearCheckoutData,
+    ]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                 Hook                                      */
+/*                                   Hook                                     */
 /* -------------------------------------------------------------------------- */
 
 export function useCart(): CartContextType {
-  const ctx = React.use(CartContext);
+  const ctx = React.useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used within a CartProvider");
   return ctx;
 }

@@ -25,7 +25,7 @@ interface AppContextProps {
   setSelectedVideo: (selVideo: VideoType) => void;
   // user: UserProps;
   // setUser: (user: UserProps) => void;
-  user: UserProps;
+  user: any;
   setUser: (user: any) => void;
   cart: any[]//UserProps;
   setCart: (cart: any[]) => void;

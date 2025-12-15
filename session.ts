@@ -1,5 +1,7 @@
 'use server'
 import { auth } from "./auth";
+import type { Session } from "next-auth";
+
 
 export const usersession = async () => {
     const session = await auth();

@@ -132,6 +132,7 @@ model Payment {
   cart    Cart    @relation(fields: [cartId], references: [id],  onDelete: Cascade)
   cartId  String   @unique @db.ObjectId
   //method must be converted to an enum
+  tx_ref String?    @unique
   method   String
   amount   Float
   createdAt DateTime @default(now())
