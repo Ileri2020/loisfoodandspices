@@ -32,7 +32,7 @@ const Hero = () => {
             </p>
           </div>
           <div className={`flex flex-col gap-3 sm:flex-row`}>
-            <Link href="/products">
+            <Link href="/store">
               <Button className={`h-12 gap-1.5 px-8 transition-colors duration-200 bg-accent/70`} size="lg">
                 Shop Now <ArrowRight className="h-4 w-4" />
               </Button>

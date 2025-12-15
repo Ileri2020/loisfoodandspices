@@ -276,7 +276,7 @@ export function CartClient({ className, cart }: CartProps) {
                         <div className="flex items-start justify-between">
                           <Link
                             className={`line-clamp-2 text-sm font-medium group-hover:text-primary`}
-                            href={`/products/${item.id}`}
+                            href={`/store/${item.id}`}
                             onClick={() => setIsOpen(false)}
                           >
                             {item.name}

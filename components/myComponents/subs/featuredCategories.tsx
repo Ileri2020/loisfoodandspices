@@ -47,7 +47,7 @@ const FeaturedCategories = () => {
           {categories.map((category: any) => (
             <Link
               key={category.name}
-              href={`/products?category=${category.name.toLowerCase()}`}
+              href={`/store?category=${category.name.toLowerCase()}`}
               aria-label={`Browse ${category.name} products`}
               className="group relative flex flex-col space-y-4 overflow-hidden
                          rounded-2xl border bg-card shadow transition-all duration-300 hover:shadow-lg"
