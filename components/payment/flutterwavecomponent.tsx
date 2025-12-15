@@ -26,7 +26,7 @@ export default async function FlutterwavePaymentButton({
     payment_options: 'card,mobilemoney,ussd',
     customer: {
       email,
-      phonenumber,
+      phone_number: phonenumber,
       name,
     },
     customizations: {
