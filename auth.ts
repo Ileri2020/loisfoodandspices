@@ -40,21 +40,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Map all existing user fields
-        // return {
-        //   id: user.id,
-        //   name: user.name,
-        //   email: user.email,
-        //   contact: user.contact,
-        //   role: user.role,
-        //   image: user.image,
-        //   providerid: user.providerid,
-        // };
         return {
           id: user.id,
           name: user.name,
           email: user.email,
+          contact: user.contact,
+          role: user.role,
           image: user.image,
+          providerid: user.providerid,
         };
+        // return {
+        //   id: user.id,
+        //   name: user.name,
+        //   email: user.email,
+        //   image: user.image,
+        // };
 
       },
     }),
@@ -142,23 +142,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
 
-  events: {
-    async error(error) {
-      console.error("AUTH_ERROR:", {
-        name: error.name,
-        message: error.message,
-        cause: error.cause,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
-      });
-    },
-  },
+  // events: {
+  //   async error(error) {
+  //     console.error("AUTH_ERROR:", {
+  //       name: error.name,
+  //       message: error.message,
+  //       cause: error.cause,
+  //       stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+  //     });
+  //   },
+  // },
 
   
 
 
 
-  // debug: false,
-  debug: true,
+  debug: false,
+  // debug: true,
 });
 
 
