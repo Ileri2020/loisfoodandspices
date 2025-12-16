@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from '@auth/prisma-adapter';
 
+
+
 const prisma = new PrismaClient();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -124,7 +126,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // },
 
   session: {
-    strategy: "jwt",
+    strategy: "database",
     maxAge: 10 * 60 * 60, // 10 hours in seconds
   },
   jwt: {
@@ -134,3 +136,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   debug: false,
 });
+
+
+export const runtime = "nodejs";

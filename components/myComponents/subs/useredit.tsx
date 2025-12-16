@@ -92,8 +92,8 @@ const EditUser = () => {
   return (
     <div className='inline'>
       <Drawer>
-        <DrawerTrigger asChild>
-          <Button variant="outline">edit</Button>
+        <DrawerTrigger className='w-full flex-1' asChild>
+          <Button className='flex-1 w-full bg-green-500 text-background hover:bg-green-500/30'>edit</Button>
         </DrawerTrigger>
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 

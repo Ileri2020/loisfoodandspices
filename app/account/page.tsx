@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useAppContext } from "@/hooks/useAppContext"
 import { CiCamera } from "react-icons/ci"
 import {ProfileImg} from "@/components/myComponents/subs/fileupload"
+import { signOut } from "next-auth/react";
 
 const Account = () => {
   const { selectedVideo, setSelectedVideo, useMock, user, setUser } = useAppContext();
@@ -37,7 +38,7 @@ const Account = () => {
     >
       <div className="w-full h-full flex flex-col items-center">
         <div className="relative my-10 mx-2 flex justify-center items-center">
-          <div className="w-64 h-64  rounded-full flex-1 overflow-clip justify-center items-center">
+          <div className="w-44 h-44  rounded-full flex-1 overflow-clip justify-center items-center">
             <img src={(user.image==null || user.image == undefined || user.image =='') ? "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png" : user.image } className="w-full" alt="" />
           </div>
           <ProfileImg /> 
@@ -90,8 +91,25 @@ const Account = () => {
             </div>
           </div>
         </div>
-        <div>
-          <Button onClick={()=> setUser({ name: "visitor", id: "nil", email: "nil", image: "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png", role: "user", contact: "xxxx" })}>Logout</Button>
+        <div className="flex flex-row max-w-sm gap-2" >
+          <Button
+            className="bg-red border-2 border-red-500 text-red-600 w-full flex-1"
+            variant="outline"
+            onClick={() => {
+              signOut({ callbackUrl: "/" }); // redirects after logout
+              setUser({
+                username: "visitor",
+                id: "nil",
+                email: "nil",
+                avatarUrl: "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png",
+                role: "user",
+                department: "nil",
+                contact: "xxxx",
+              });
+            }}
+          >
+            Logout
+          </Button>
           <EditUser />
         </div>
       </div>
