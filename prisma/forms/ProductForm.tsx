@@ -218,8 +218,8 @@ export default function ProductForm() {
               name='image'
               id='image'
               placeholder="Product image"
-              // value={formData.avatarUrl || ''}
-              // onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+              // value={formData.image || ''}
+              // onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               onChange={handleImageChange}
             />
         <Button type="submit">{editId ? 'Update' : 'Create'}</Button>

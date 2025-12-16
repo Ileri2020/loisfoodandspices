@@ -38,7 +38,7 @@ const Account = () => {
       <div className="w-full h-full flex flex-col items-center">
         <div className="relative my-10 mx-2 flex justify-center items-center">
           <div className="w-64 h-64  rounded-full flex-1 overflow-clip justify-center items-center">
-            <img src={(user.avatarUrl==null || user.avatarUrl == undefined || user.avatarUrl =='') ? "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png" : user.avatarUrl } className="w-full" alt="" />
+            <img src={(user.image==null || user.image == undefined || user.image =='') ? "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png" : user.image } className="w-full" alt="" />
           </div>
           <ProfileImg /> 
         </div>
@@ -91,7 +91,7 @@ const Account = () => {
           </div>
         </div>
         <div>
-          <Button onClick={()=> setUser({ name: "visitor", id: "nil", email: "nil", avatarUrl: "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png", role: "user", contact: "xxxx" })}>Logout</Button>
+          <Button onClick={()=> setUser({ name: "visitor", id: "nil", email: "nil", image: "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png", role: "user", contact: "xxxx" })}>Logout</Button>
           <EditUser />
         </div>
       </div>

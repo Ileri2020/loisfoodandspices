@@ -10,7 +10,7 @@ export default function UserForm() {
     email: '',
     password: '',
     name: '',
-    avatarUrl: '',
+    image: '',
     role: 'user',
   });
   const [editId, setEditId] = useState(null);
@@ -50,7 +50,7 @@ export default function UserForm() {
       email: '',
       password: '',
       name: '',
-      avatarUrl: '',
+      image: '',
       role: 'user',
     });
     setEditId(null);
@@ -82,8 +82,8 @@ export default function UserForm() {
         <Input
           type="text"
           placeholder="Avatar URL"
-          value={formData.avatarUrl || ''}
-          onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+          value={formData.image || ''}
+          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
         />
         <select
           value={formData.role}

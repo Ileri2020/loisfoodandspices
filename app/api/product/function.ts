@@ -77,7 +77,7 @@ async function dbHandler({
             console.log("about to change user profile image")
             await prisma.user.update({
               where: { id: body.userId },
-              data: { avatarUrl: body.url },
+              data: { image: body.url },
             });
           } catch (error) {
             console.error('Database error:', error);

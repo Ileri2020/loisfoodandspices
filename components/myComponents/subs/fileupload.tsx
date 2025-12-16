@@ -78,7 +78,7 @@ export const ProfileImg = () => {
         const data = response.data;
         // do something with the data
         console.log(data)
-        setUser({...user, avatarUrl : data.url});
+        setUser({...user, image : data.url});
       } else {
         alert("wrong input or connection error")
       }
@@ -149,8 +149,8 @@ export const ProfileImg = () => {
               name='image'
               id='image'
               placeholder="Avatar URL"
-              // value={formData.avatarUrl || ''}
-              // onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+              // value={formData.image || ''}
+              // onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               onChange={handleImageChange}
             />
             
@@ -230,7 +230,7 @@ export const PostButton = () => {
         const data = response.data;
         // do something with the data
         console.log(data)
-        // setUser({...user, avatarUrl : data.url});
+        // setUser({...user, image : data.url});
       } else {
         alert("wrong input or connection error")
       }

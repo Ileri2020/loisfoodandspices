@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
-  // adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma),
   providers: [
     Credentials({
       name: "Credentials",
@@ -44,7 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           contact: user.contact,
           role: user.role,
-          avatarUrl: user.avatarUrl,
+          image: user.image,
           providerid: user.providerid,
         };
       },
@@ -56,76 +56,81 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
 
-  callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        try {
-          const email = user.email!;
-          const name = user.name!;
-          const googleId = user.id!;
-          const avatarUrl = user.image?.replace(/=s\d+(-c)?$/, "=s500-c") ?? null;
+  // callbacks: {
+  //   async signIn({ user, account }) {
+  //     if (account?.provider === "google") {
+  //       try {
+  //         const email = user.email!;
+  //         const name = user.name!;
+  //         const googleId = user.id!;
+  //         const image = user.image?.replace(/=s\d+(-c)?$/, "=s500-c") ?? null;
 
-          let existingUser = await prisma.user.findUnique({ where: { email } });
+  //         let existingUser = await prisma.user.findUnique({ where: { email } });
 
-          if (!existingUser) {
-            existingUser = await prisma.user.create({
-              data: {
-                email,
-                name,
-                avatarUrl,
-                role: "customer",
-                providerid: await bcrypt.hash(googleId, parseInt(process.env.SALT_ROUNDS!)),
-              },
-            });
-          }
+  //         if (!existingUser) {
+  //           existingUser = await prisma.user.create({
+  //             data: {
+  //               email,
+  //               name,
+  //               image,
+  //               role: "customer",
+  //               providerid: await bcrypt.hash(googleId, parseInt(process.env.SALT_ROUNDS!)),
+  //             },
+  //           });
+  //         }
 
-          // Map DB user data back to session
-          user.id = existingUser.id;
-          user.name = existingUser.name;
-          user.role = existingUser.role;
-          user.contact = existingUser.contact;
-          user.avatarUrl = existingUser.avatarUrl;
-          user.providerid = existingUser.providerid;
+  //         // Map DB user data back to session
+  //         user.id = existingUser.id;
+  //         user.name = existingUser.name;
+  //         user.role = existingUser.role;
+  //         user.contact = existingUser.contact;
+  //         user.image = existingUser.image;
+  //         user.providerid = existingUser.providerid;
 
-          return true;
-        } catch (err) {
-          console.error("Google signIn error:", err);
-          return false;
-        }
-      }
+  //         return true;
+  //       } catch (err) {
+  //         console.error("Google signIn error:", err);
+  //         return false;
+  //       }
+  //     }
 
-      // Credentials login always returns true if authorize succeeded
-      return true;
-    },
+  //     // Credentials login always returns true if authorize succeeded
+  //     return true;
+  //   },
 
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name ?? null;
-        token.email = user.email ?? null;
-        token.contact = user.contact ?? null;
-        token.role = user.role ?? null;
-        token.avatarUrl = user.avatarUrl ?? null;
-        token.providerid = user.providerid ?? null;
-      }
-      return token;
-    },
+  //   async jwt({ token, user }) {
+  //     if (user) {
+  //       token.id = user.id;
+  //       token.name = user.name ?? null;
+  //       token.email = user.email ?? null;
+  //       token.contact = user.contact ?? null;
+  //       token.role = user.role ?? null;
+  //       token.image = user.image ?? null;
+  //       token.providerid = user.providerid ?? null;
+  //     }
+  //     return token;
+  //   },
 
-    async session({ session, token }) {
-      session.user.id = token.id!;
-      session.user.name = token.name ?? null;
-      session.user.email = token.email ?? null;
-      session.user.contact = token.contact ?? null;
-      session.user.role = token.role ?? null;
-      session.user.avatarUrl = token.avatarUrl ?? null;
-      session.user.providerid = token.providerid ?? null;
-      return session;
-    },
-  },
+  //   async session({ session, token }) {
+  //     session.user.id = token.id!;
+  //     session.user.name = token.name ?? null;
+  //     session.user.email = token.email ?? null;
+  //     session.user.contact = token.contact ?? null;
+  //     session.user.role = token.role ?? null;
+  //     session.user.image = token.image ?? null;
+  //     session.user.providerid = token.providerid ?? null;
+  //     return session;
+  //   },
+  // },
 
   session: {
     strategy: "jwt",
+    maxAge: 10 * 60 * 60, // 10 hours in seconds
   },
+  jwt: {
+    maxAge: 10 * 60 * 60, // 10 hours
+  },
+
 
   debug: false,
 });

@@ -55,7 +55,7 @@ const register = async (formData: FormData) => {
     data: {
       email,
       username,
-      // avatarUrl : image,
+      // image : image,
       // authProviderId: id,
       password: hashedPassword,
     },

@@ -90,7 +90,7 @@ async function dbHandler({
         if (profileImage && model === "user" && body.userId && body.url) {
           await prisma.user.update({
             where: { id: body.userId },
-            data: { avatarUrl: body.url },
+            data: { image: body.url },
           });
         }
 

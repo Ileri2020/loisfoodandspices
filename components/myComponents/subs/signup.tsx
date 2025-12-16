@@ -56,7 +56,7 @@ const Signup = () => {
     email: '',
     password: '',
     name: '',
-    avatarUrl: '',
+    image: '',
   });
   const [editId, setEditId] = useState(null);
 
@@ -91,7 +91,7 @@ const Signup = () => {
       email: '',
       password: '',
       name: '',
-      avatarUrl: '',
+      image: '',
     });
     setEditId(null);
   };

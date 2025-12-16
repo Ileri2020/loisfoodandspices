@@ -64,7 +64,7 @@ const Posts = ({ page }) => {
             <Post 
               key={index} 
               url={post.url} 
-              ownerurl={(post?.user?.avatarUrl==undefined) ? 'https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png' : post.user.avatarUrl}
+              ownerurl={(post?.user?.image==undefined) ? 'https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png' : post.user.image}
               time={post.updatedAt} 
               owner={post?.user?.name == undefined ? "Engr Adepoju" : post.user.name} 
               event={post.event} 

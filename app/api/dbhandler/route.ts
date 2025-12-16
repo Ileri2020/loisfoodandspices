@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
 
       if (model === "review" || model === "post") {
         const items = await prismaModel.findMany({
-          include: { user: { select: { id: true, email: true, name: true, avatarUrl: true } } },
+          include: { user: { select: { id: true, email: true, name: true, image: true } } },
         });
         return NextResponse.json(items);
       }
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (model === "product") body.images = urls;
-      if (model === "user") body.avatarUrl = urls[0]; // single avatar
+      if (model === "user") body.image = urls[0]; // single avatar
       if (model === "category") body.image = urls[0]; // single category image
     }
 
@@ -235,7 +235,7 @@ export async function PUT(req: NextRequest) {
         const uploadRes = await handleUpload(file);
         console.log("Upload cloudinary response:", uploadRes);
         if (model === "category") body.image = uploadRes.url;
-        if (model === "user") body.avatarUrl = uploadRes.url;
+        if (model === "user") body.image = uploadRes.url;
         if (model === "product") body.images = [uploadRes.url];
       } catch (err) {
         console.error("Cloudinary upload failed:", err);
@@ -256,8 +256,8 @@ export async function PUT(req: NextRequest) {
     data = await req.json();
     Object.assign(body, data); // merge JSON into body
 
-    // If JSON includes file URLs (e.g., avatarUrl, images, image), preserve them
-    if (data.avatarUrl && model === "user") body.avatarUrl = data.avatarUrl;
+    // If JSON includes file URLs (e.g., image, images, image), preserve them
+    if (data.image && model === "user") body.image = data.image;
     if (data.image && model === "category") body.image = data.image;
     if (data.images && model === "product") body.images = data.images;
   } 
@@ -347,7 +347,7 @@ export async function DELETE(req: NextRequest) {
 //     }
 
 //     if (model === "product") body.images = urls;
-//     if (model === "user") body.avatarUrl = urls[0]; // single avatar
+//     if (model === "user") body.image = urls[0]; // single avatar
 //     if (model === "category") body.image = urls[0]; // single category image
 //   }
 
@@ -557,7 +557,7 @@ export async function DELETE(req: NextRequest) {
 //       if (model === 'review' || model === 'post') {
 //         const items = await prismaModel.findMany({
 //           include: {
-//             user: { select: { id: true, email: true, name: true, avatarUrl: true } },
+//             user: { select: { id: true, email: true, name: true, image: true } },
 //           },
 //         });
 //         return new Response(JSON.stringify(items), { status: 200, headers: { 'Content-Type': 'application/json' } });
