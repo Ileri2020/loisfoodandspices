@@ -134,6 +134,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
 
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: '.*\\.vercel\\.app',
+          },
+        ],
+        destination: 'https://www.loyzfoodsandspices.com/:path*',
+        permanent: true,
+      },
+    ]
+  },
+
+
+
   debug: false,
 });
 
