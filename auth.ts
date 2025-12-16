@@ -40,15 +40,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Map all existing user fields
+        // return {
+        //   id: user.id,
+        //   name: user.name,
+        //   email: user.email,
+        //   contact: user.contact,
+        //   role: user.role,
+        //   image: user.image,
+        //   providerid: user.providerid,
+        // };
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          contact: user.contact,
-          role: user.role,
           image: user.image,
-          providerid: user.providerid,
         };
+
       },
     }),
 
