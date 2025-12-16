@@ -141,25 +141,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
 
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: '.*\\.vercel\\.app',
-          },
-        ],
-        destination: 'https://www.loyzfoodsandspices.com/:path*',
-        permanent: true,
-      },
-    ]
+  events: {
+    async error(error) {
+      console.error("AUTH_ERROR:", {
+        name: error.name,
+        message: error.message,
+        cause: error.cause,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      });
+    },
   },
 
+  
 
 
-  debug: false,
+
+  // debug: false,
+  debug: true,
 });
 
 
