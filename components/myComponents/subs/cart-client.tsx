@@ -2,26 +2,84 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useCart } from "@/hooks/use-cart";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
-// import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
-import { useAppContext } from '@/hooks/useAppContext';
-import FlutterWaveButtonHook from '../../payment/flutterwavehook';
-import { user } from '../../../server/db/mongodb/forms/user';
-import contact from '@/data/cont';
+import { useAppContext } from "@/hooks/useAppContext";
+import FlutterWaveButtonHook from "../../payment/flutterwavehook";
 
+/* ----------------------------------
+   DELIVERY FEES (EDIT PRICES HERE)
+----------------------------------- */
+export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
+  Kwara: 1000,
 
+  Kogi: 2500,
+  Niger: 3000,
+  Oyo: 3000,
+  Osun: 3000,
 
+  Ogun: 3500,
+  Ondo: 3500,
+  Ekiti: 3500,
+  Benue: 3500,
+  Nasarawa: 3500,
 
+  Lagos: 4000,
+  FCT: 4000,
+  Edo: 4000,
+
+  Anambra: 4500,
+  Enugu: 4500,
+  Imo: 4500,
+  Abia: 4500,
+  Ebonyi: 4500,
+
+  Delta: 4500,
+  Rivers: 5000,
+  Akwa_Ibom: 5500,
+  Cross_River: 5500,
+  Bayelsa: 5500,
+
+  Kaduna: 4500,
+  Kano: 5000,
+  Katsina: 5000,
+  Jigawa: 5000,
+  Zamfara: 5000,
+  Sokoto: 5500,
+  Kebbi: 5500,
+
+  Bauchi: 5500,
+  Gombe: 5500,
+  Adamawa: 6000,
+  Taraba: 6000,
+  Borno: 6500,
+  Yobe: 6500,
+};
+
+/* ----------------------------------
+   TYPES
+----------------------------------- */
 export interface CartItem {
   category: string;
   id: string;
@@ -33,99 +91,96 @@ export interface CartItem {
 
 interface CartProps {
   className?: string;
-  cart: any;//CartItem[];
+  cart: any;
 }
 
-export function CartClient({ className, cart }: CartProps) { 
+interface Address {
+  id: string;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+}
+
+/* ----------------------------------
+   HELPERS
+----------------------------------- */
+const normalizeState = (state?: string | null): string | null => {
+  if (!state) return null;
+  return state
+    .replace(/state/i, "")
+    .replace(/[-\s]/g, "_")
+    .trim();
+};
+
+/* ----------------------------------
+   COMPONENT
+----------------------------------- */
+export function CartClient({ className }: CartProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  // const [cartItems, setCartItems] = React.useState<any[]>(cart);//React.useState<CartItem[]>(mockCart);
   const [isMounted, setIsMounted] = React.useState(false);
+
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const { items, addItem, removeItem, clearCart, subtotal, updateQuantity, itemCount, setCheckoutData, checkoutData, clearCheckoutData } = useCart();
-  const {user } = useAppContext();
-  // const [checkoutData, setCheckoutData] = React.useState<any>(null)
+  const {
+    items,
+    removeItem,
+    clearCart,
+    subtotal,
+    updateQuantity,
+    itemCount,
+    setCheckoutData,
+    checkoutData,
+    clearCheckoutData,
+  } = useCart();
+
+  const { user } = useAppContext();
+
+  /* ----------------------------------
+     ADDRESS STATE
+  ----------------------------------- */
+  const [selectedAddressId, setSelectedAddressId] =
+    React.useState<string | null>(
+      user?.addresses?.[0]?.id ?? null
+    );
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  React.useEffect(() => {
+    if (!selectedAddressId && user?.addresses?.length) {
+      setSelectedAddressId(user.addresses[0].id);
+    }
+  }, [user?.addresses, selectedAddressId]);
 
+  /* ----------------------------------
+     DELIVERY FEE LOGIC
+  ----------------------------------- */
+  const calculateDeliveryFee = (address?: Address | null): number => {
+    const normalizedState = normalizeState(address?.state);
+    if (!normalizedState) return 0;
 
+    return (
+      DELIVERY_FEES_BY_STATE[normalizedState] ??
+      6500 // fallback for unknown states
+    );
+  };
 
+  const selectedAddress: Address | undefined =
+    user?.addresses?.find(
+      (a: Address) => a.id === selectedAddressId
+    );
 
+  const deliveryFee =
+    items.length > 0 ? calculateDeliveryFee(selectedAddress) : 0;
 
+  const totalAmount = subtotal + deliveryFee;
 
-
-
-
-
-  
-  // const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
-  // const subtotal = cartItems.reduce(
-  //   (acc, item) => acc + item.price * item.quantity,
-  //   0,
-  // );
-
-  // const handleUpdateQuantity = (id: string, newQuantity: number) => {
-  //   if (newQuantity < 1) return;
-  //   setCartItems((prev) =>
-  //     prev.map((item) =>
-  //       item.id === id ? { ...item, quantity: newQuantity } : item,
-  //     ),
-  //   );
-  // };
-
-  // const handleRemoveItem = (id: string) => {
-  //   setCartItems((prev) => prev.filter((item) => item.id !== id));
-  // };
-
-  // const handleClearCart = () => {
-  //   setCartItems([]);
-  // };
-
-
-
-
-
-  // const handleCheckout = async () => {
-  //   if (items.length === 0) return;
-
-  //   try {
-  //     // Prepare payload
-  //     const payload = {
-  //       userId: user.id, // replace with actual logged-in user ID
-  //       products: items.map((item) => ({
-  //         productId: item.id,
-  //         quantity: item.quantity,
-  //       })),
-  //       total: subtotal,
-  //       status: "pending", // or "paid" depending on your logic
-  //     };
-
-  //     console.log("Checkout payload:", payload);
-
-  //     // POST to your API route
-  //     const res = await axios.post("/api/dbhandler?model=cart", payload);
-
-  //     if (res.status === 200) {
-  //       console.log("Checkout successful:", res.data);
-  //       clearCart(); // empty local cart
-  //       alert("Checkout successful!");
-  //       // Optionally redirect to order summary page
-  //       // window.location.href = `/orders/${res.data.id}`;
-  //     }
-  //   } catch (err) {
-  //     // console.error("Checkout failed:", err);
-  //     alert("Checkout failed, please try again.");
-  //     alert("Checkout failed, please try again.");
-  //   }
-  // };
-  
-
+  /* ----------------------------------
+     CHECKOUT
+  ----------------------------------- */
   const prepareCheckout = async () => {
-    console.log('Preparing checkout...');
-    if (!user?.id || items.length === 0) return;
+    if (!user?.id || !selectedAddressId || items.length === 0) return;
 
     try {
       const payload: any = {
@@ -134,34 +189,26 @@ export function CartClient({ className, cart }: CartProps) {
           productId: i.id,
           quantity: i.quantity,
         })),
+        deliveryFee,
+        total: totalAmount,
+        deliveryAddressId: selectedAddressId,
       };
 
-      // ✅ Include cartId if checkoutData exists to update existing cart
       if (checkoutData?.cartId) {
         payload.cartId = checkoutData.cartId;
       }
 
       const res = await axios.post("/api/payment", payload);
-
-      // Save checkoutData for Flutterwave or confirmation button
       setCheckoutData(res.data);
-
     } catch (err) {
       console.error("Checkout initiation failed:", err);
       alert("Checkout failed, please try again.");
     }
   };
 
-
-  console.log('checkoutData', checkoutData);
-
-
-
-
-
-
-
-
+  /* ----------------------------------
+     CART TRIGGER
+  ----------------------------------- */
   const CartTrigger = (
     <Button
       aria-label="Open cart"
@@ -171,13 +218,8 @@ export function CartClient({ className, cart }: CartProps) {
     >
       <ShoppingCart className="h-4 w-4" />
       {itemCount > 0 && (
-        <Badge
-          className={`
-            absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px]
-          `}
-          variant="default"
-        >
-          <div className="w-full h-full flex justify-center items-center text-center">
+        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px]">
+          <div className="w-full h-full flex justify-center items-center">
             {itemCount}
           </div>
         </Badge>
@@ -185,338 +227,182 @@ export function CartClient({ className, cart }: CartProps) {
     </Button>
   );
 
-
-
-
-
-
-
-
-
-
-
+  /* ----------------------------------
+     CART CONTENT
+  ----------------------------------- */
   const CartContent = (
-    <>
-      <div className="flex flex-col">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div>
-            <div className="text-xl font-semibold">Your Cart</div>
-            <div className="text-sm text-muted-foreground">
-              {itemCount === 0
-                ? "Your cart is empty"
-                : `You have ${itemCount} item${itemCount !== 1 ? "s" : ""} in your cart`}
-            </div>
+    <div className="flex flex-col">
+      {/* HEADER */}
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <div>
+          <div className="text-xl font-semibold">Your Cart</div>
+          <div className="text-sm text-muted-foreground">
+            {itemCount === 0
+              ? "Your cart is empty"
+              : `You have ${itemCount} item${itemCount !== 1 ? "s" : ""}`}
           </div>
-          {isDesktop && (
-            <SheetClose asChild>
-              <Button size="icon" variant="ghost">
-                <X className="h-5 w-5" />
-              </Button>
-            </SheetClose>
+        </div>
+        {isDesktop && (
+          <SheetClose asChild>
+            <Button size="icon" variant="ghost">
+              <X className="h-5 w-5" />
+            </Button>
+          </SheetClose>
+        )}
+      </div>
+
+      {/* ITEMS */}
+      <div className="flex-1 overflow-y-auto px-6">
+        <AnimatePresence>
+          {items.length === 0 ? (
+            <motion.div className="py-12 text-center">
+              <ShoppingCart className="mx-auto mb-4 h-10 w-10 text-muted-foreground" />
+              <p className="text-muted-foreground">Your cart is empty</p>
+            </motion.div>
+          ) : (
+            <div className="space-y-4 py-4">
+              {items.map((item) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  className="flex rounded-lg border bg-card p-2"
+                >
+                  <img
+                    src={item.images?.[0] ?? "/placeholder.jpg"}
+                    alt={item.name ?? "Product"}
+                    className="h-20 w-20 rounded object-cover"
+                  />
+                  <div className="ml-4 flex flex-1 flex-col justify-between">
+                    <div className="flex justify-between">
+                      <Link
+                        href={`/store/${item.id}`}
+                        className="text-sm font-medium"
+                      >
+                        {item.name ?? "Unnamed product"}
+                      </Link>
+                      <button onClick={() => removeItem(item.id)}>
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="mt-2 flex justify-between items-center">
+                      <div className="flex items-center border rounded">
+                        <button
+                          disabled={item.quantity <= 1}
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
+                          className="px-2"
+                        >
+                          <Minus size={12} />
+                        </button>
+                        <span className="px-3 text-sm">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="px-2"
+                        >
+                          <Plus size={12} />
+                        </button>
+                      </div>
+                      <span className="text-sm font-medium">
+                        ₦{(item.price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* SUMMARY */}
+      {items.length > 0 && (
+        <div className="border-t px-6 py-4 space-y-3">
+          <div className="space-y-1">
+            <label className="text-sm font-medium">
+              Delivery Address
+            </label>
+            <select
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              value={selectedAddressId ?? ""}
+              onChange={(e) => setSelectedAddressId(e.target.value)}
+            >
+              {user?.addresses?.map((address: Address) => (
+                <option key={address.id} value={address.id}>
+                  {[address.address, address.city, address.state]
+                    .filter(Boolean)
+                    .join(", ")}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span>Subtotal</span>
+            <span>₦{subtotal.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span>Delivery Fee</span>
+            <span>₦{deliveryFee.toFixed(2)}</span>
+          </div>
+
+          <Separator />
+
+          <div className="flex justify-between font-semibold">
+            <span>Total</span>
+            <span>₦{totalAmount.toFixed(2)}</span>
+          </div>
+
+          {checkoutData ? (
+            <FlutterWaveButtonHook
+              tx_ref={checkoutData.tx_ref}
+              amount={totalAmount}
+              currency="NGN"
+              email={user?.email ?? "noemail@loyzfoods.com"}
+              phonenumber={user?.contact ?? "0000000000"}
+              name={user?.name ?? "Customer"}
+              onSuccess={async () => {
+                await axios.post(`/api/payment?action=confirm`, {
+                  tx_ref: checkoutData.tx_ref,
+                });
+                clearCart();
+                clearCheckoutData();
+              }}
+            />
+          ) : (
+            <Button disabled={!selectedAddressId} onClick={prepareCheckout}>
+              Checkout
+            </Button>
           )}
         </div>
-
-        <div className="flex-1 overflow-y-auto px-6">
-          <AnimatePresence>
-            {items.length === 0 ? (
-              <motion.div
-                animate={{ opacity: 1 }}
-                className="flex flex-col items-center justify-center py-12"
-                exit={{ opacity: 0 }}
-                initial={{ opacity: 0 }}
-              >
-                <div
-                  className={`
-                    mb-4 flex h-20 w-20 items-center justify-center rounded-full
-                    bg-muted
-                  `}
-                >
-                  <ShoppingCart className="h-10 w-10 text-muted-foreground" />
-                </div>
-                <h3 className="mb-2 text-lg font-medium">Your cart is empty</h3>
-                <p className="mb-6 text-center text-sm text-muted-foreground">
-                  Looks like you haven't added anything to your cart yet.
-                </p>
-                {isDesktop ? (
-                  <SheetClose asChild>
-                    <Link href="/store">
-                      <Button>Browse Products</Button>
-                    </Link>
-                  </SheetClose>
-                ) : (
-                  <DrawerClose asChild>
-                    <Link href="/store">
-                      <Button>Browse Products</Button>
-                    </Link>
-                  </DrawerClose>
-                )}
-              </motion.div>
-            ) : (
-              <div className="space-y-4 py-4">
-                {items.map((item) => (
-                  <motion.div
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`group relative flex rounded-lg border bg-card p-2 shadow-sm transition-colors hover:bg-accent/50`}
-                    exit={{ opacity: 0, y: -10 }}
-                    initial={{ opacity: 0, y: 10 }}
-                    key={item.id}
-                    layout
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="relative h-20 w-20 overflow-hidden rounded">
-                      <img
-                        alt={item.name}
-                        className="object-cover"
-                        // fill
-                        src={item.images?.[0] ?? '/placeholder.jpg'}
-                      />
-                    </div>
-                    <div className="ml-4 flex flex-1 flex-col justify-between">
-                      <div>
-                        <div className="flex items-start justify-between">
-                          <Link
-                            className={`line-clamp-2 text-sm font-medium group-hover:text-primary`}
-                            href={`/store/${item.id}`}
-                            onClick={() => setIsOpen(false)}
-                          >
-                            {item.name}
-                          </Link>
-                          <button
-                            className={` -mt-1 -mr-1 ml-2 rounded-full p-1 text-muted-foreground transition-colors  hover:bg-muted hover:text-destructive`}
-                            onClick={() => removeItem(item.id)}
-                            type="button"
-                          >
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Remove item</span>
-                          </button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {item.category}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center rounded-md border">
-                          <button
-                            className={`flex h-7 w-7 items-center justify-center rounded-l-md border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
-                            disabled={item.quantity <= 1}
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
-                            type="button"
-                          >
-                            <Minus className="h-3 w-3" />
-                            <span className="sr-only">Decrease quantity</span>
-                          </button>
-                          <span
-                            className={`flex h-7 w-7 items-center justify-center text-xs font-medium `}
-                          >
-                            {item.quantity}
-                          </span>
-                          <button
-                            className={`flex h-7 w-7 items-center justify-center rounded-r-md border-l text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
-                            type="button"
-                          >
-                            <Plus className="h-3 w-3" />
-                            <span className="sr-only">Increase quantity</span>
-                          </button>
-                        </div>
-                        <div className="text-sm font-medium">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                <div className="flex flex-row gap-3 w-full max-w-sm px-2">
-                  {/* <Button>Order</Button> */}
-                  <Button>Save</Button>
-                </div>
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Conditional checkout */}
-        {items.length > 0 && (
-          <div className="border-t px-6 py-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">₦{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className="font-medium">Calculated at checkout</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-base font-semibold">Total</span>
-                <span className="text-base font-semibold">
-                  ₦{subtotal.toFixed(2)}
-                </span>
-              </div>
-
-              {/* Show warning if required user info is missing */}
-              {(!user?.email || !user?.contact || !user?.addresses?.[0]?.address) && (
-                <p className="text-sm text-red-600">
-                  Please complete your profile (email, contact, address) before checkout.
-                </p>
-              )}
-
-              {checkoutData ? (
-                <div className="flex flex-col gap-2">
-                  <FlutterWaveButtonHook
-                    tx_ref={checkoutData.tx_ref}
-                    amount={checkoutData.amount}
-                    currency="NGN"
-                    email={user.email}
-                    phonenumber={user.contact}
-                    name={user.name}
-                    onSuccess={async () => {
-                      try {
-                        const res = await axios.post(`/api/payment?action=confirm`, {
-                          tx_ref: checkoutData.tx_ref,
-                        });
-                        if (res.data.success) {
-                          alert("Payment confirmed!");
-                          clearCart();
-                          clearCheckoutData();
-                          setCheckoutData(null);
-                        } else {
-                          alert(res.data.message || "Payment not found. Please try again.");
-                        }
-                      } catch (err) {
-                        console.error(err);
-                        alert("Error confirming payment.");
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      try {
-                        const res = await axios.post(`/api/payment?action=confirm`, {
-                          tx_ref: checkoutData.tx_ref,
-                        });
-                        if (res.data.success) {
-                          alert("Payment confirmed!");
-                          clearCart();
-                          clearCheckoutData();
-                          setCheckoutData(null);
-                        } else {
-                          alert(res.data.message || "Payment not found. Please try again.");
-                        }
-                      } catch (err) {
-                        console.error(err);
-                        alert("Error confirming payment.");
-                      }
-                    }}
-                  >
-                    Confirm Payment
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  disabled={
-                    !user?.email ||
-                    !user?.contact ||
-                    !user?.addresses?.[0]?.address
-                  }
-                  onClick={prepareCheckout}
-                >
-                  Checkout
-                </Button>
-              )}
-
-              <div className="flex items-center justify-between mt-2">
-                {isDesktop ? (
-                  <SheetClose asChild>
-                    <Button variant="outline">Continue Shopping</Button>
-                  </SheetClose>
-                ) : (
-                  <DrawerClose asChild>
-                    <Button variant="outline">Continue Shopping</Button>
-                  </DrawerClose>
-                )}
-                <Button
-                  className="ml-2"
-                  onClick={clearCart}
-                  variant="outline"
-                >
-                  Clear Cart
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
-    </>
+      )}
+    </div>
   );
 
-
-
-
-
-
-
-
-
-
-  if (!isMounted) {
-    return (
-      <div className={cn("relative", className)}>
-        <Button
-          aria-label="Open cart"
-          className="relative h-9 w-9 rounded-full"
-          size="icon"
-          variant="outline"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {itemCount > 0 && (
-            <Badge
-              className={`
-                absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px]
-              `}
-              variant="default"
-            >
-              {itemCount}
-            </Badge>
-          )}
-        </Button>
-      </div>
-    );
-  }
-
-
-
-
-
-
-
-
-
-
-
+  if (!isMounted) return null;
 
   return (
     <div className={cn("relative", className)}>
       {isDesktop ? (
-        <Sheet onOpenChange={setIsOpen} open={isOpen}>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>{CartTrigger}</SheetTrigger>
-          <SheetContent className="flex w-[400px] flex-col p-0">
+          <SheetContent className="p-0 w-[400px]">
             <SheetHeader>
-              <SheetTitle className="mx-2 my-4 text-xl font-semibold">Shopping Cart</SheetTitle>
+              <SheetTitle className="px-6 pt-4">
+                Shopping Cart
+              </SheetTitle>
             </SheetHeader>
             {CartContent}
           </SheetContent>
         </Sheet>
       ) : (
-        <Drawer onOpenChange={setIsOpen} open={isOpen}>
+        <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerTrigger asChild>{CartTrigger}</DrawerTrigger>
           <DrawerContent>{CartContent}</DrawerContent>
         </Drawer>

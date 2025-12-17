@@ -62,6 +62,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role ?? null;
         token.image = user.image ?? null;
         token.providerid = user.providerid ?? null;
+        token.addresses = await prisma.shippingAddress.findMany({
+          where: { userId: user.id },
+        });
       }
       return token;
     },
@@ -75,6 +78,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.role = token.role ?? null;
       session.user.image = token.image ?? null;
       session.user.providerid = token.providerid ?? null;
+      session.user.addresses = await prisma.shippingAddress.findMany({
+        where: { userId: token.id },
+      });
       return session;
     },
   },

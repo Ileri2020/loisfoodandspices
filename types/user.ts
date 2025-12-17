@@ -5,4 +5,5 @@ export interface UserProps {
   image: string;
   role: string;
   contact: string;
+  addresses : any[];
 }

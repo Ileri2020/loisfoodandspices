@@ -61,6 +61,59 @@ function parseId(id: string | null, model: string) {
   return ["user", "category", "product"].includes(model) ? id : Number(id);
 }
 
+
+const DELIVERY_FEES_BY_STATE: Record<string, number> = {
+  Kwara: 1000,
+
+  Kogi: 2500,
+  Niger: 3000,
+  Oyo: 3000,
+  Osun: 3000,
+
+  Ogun: 3500,
+  Ondo: 3500,
+  Ekiti: 3500,
+  Benue: 3500,
+  Nasarawa: 3500,
+
+  Lagos: 4000,
+  FCT: 4000,
+  Edo: 4000,
+
+  Anambra: 4500,
+  Enugu: 4500,
+  Imo: 4500,
+  Abia: 4500,
+  Ebonyi: 4500,
+
+  Delta: 4500,
+  Rivers: 5000,
+  Akwa_Ibom: 5500,
+  Cross_River: 5500,
+  Bayelsa: 5500,
+
+  Kaduna: 4500,
+  Kano: 5000,
+  Katsina: 5000,
+  Jigawa: 5000,
+  Zamfara: 5000,
+  Sokoto: 5500,
+  Kebbi: 5500,
+
+  Bauchi: 5500,
+  Gombe: 5500,
+  Adamawa: 6000,
+  Taraba: 6000,
+  Borno: 6500,
+  Yobe: 6500,
+};
+
+const normalizeState = (state?: string | null): string | null => {
+  if (!state) return null;
+  return state.replace(/state/i, "").replace(/[-\s]/g, "_").trim();
+};
+
+
 // ==================== GET ====================
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -165,61 +218,74 @@ export async function POST(req: NextRequest) {
   }
 
   const prismaModel = modelMap[model];
-  const contentType = req.headers.get("content-type") || "";
-  let body: any = {};
-
-  // Handle FormData
-  if (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded")) {
-    const formData = await req.formData();
-    const files = formData.getAll("file") as File[];
-
-    if (files?.length > 0) {
-      const urls: string[] = [];
-      for (const file of files) {
-        const uploadRes = await handleUpload(file);
-        urls.push(uploadRes.url);
-      }
-      if (model === "product") body.images = urls;
-      if (model === "user" || model === "category") body.image = urls[0];
-    }
-
-    formData.forEach((value, key) => {
-      if (key === "file") return;
-      body[key] = value;
-    });
-  } else if (contentType.includes("application/json")) {
-    body = await req.json();
-  } else {
-    return NextResponse.json({ error: "Unsupported Content-Type" }, { status: 415 });
-  }
+  const body = await parseJson(req);
 
   try {
+    /**
+     * =========================
+     * CART / PAYMENT CREATION
+     * =========================
+     */
     if (model === "cart") {
-      const { userId, products, status } = body;
-      const productIds = products.map((p: any) => p.productId);
+      const { userId, items, deliveryAddressId } = body;
+
+      if (!userId || !items?.length || !deliveryAddressId) {
+        return NextResponse.json({ error: "Missing checkout data" }, { status: 400 });
+      }
+
+      /** 1️⃣ Fetch products from DB */
+      const productIds = items.map((i: any) => i.productId);
       const dbProducts = await prisma.product.findMany({
         where: { id: { in: productIds } },
         select: { id: true, price: true },
       });
 
-      let total = 0;
-      products.forEach((item: any) => {
-        const found = dbProducts.find((p) => p.id === item.productId);
-        if (found) total += found.price * item.quantity;
+      /** 2️⃣ Calculate subtotal */
+      let subtotal = 0;
+      for (const item of items) {
+        const product = dbProducts.find(p => p.id === item.productId);
+        if (!product) continue;
+        subtotal += product.price * item.quantity;
+      }
+
+      /** 3️⃣ Get delivery address */
+      const address = await prisma.shippingAddress.findUnique({
+        where: { id: deliveryAddressId },
+        select: { state: true },
       });
 
-      const newCart = await prisma.cart.create({
+      const normalizedState = normalizeState(address?.state);
+      const deliveryFee =
+        (normalizedState && DELIVERY_FEES_BY_STATE[normalizedState]) ?? 6500;
+
+      /** 4️⃣ Final total */
+      const total = subtotal + deliveryFee;
+
+      /** 5️⃣ Create cart */
+      const cart = await prisma.cart.create({
         data: {
           userId,
-          total,
-          status: status || "pending",
-          products: { create: products.map((p: any) => ({ productId: p.productId, quantity: p.quantity })) },
+          total, // only total is stored
+          status: "pending",
+          products: {
+            create: items.map((i: any) => ({
+              productId: i.productId,
+              quantity: i.quantity,
+            })),
+          },
         },
         include: { products: true },
       });
-      return NextResponse.json(newCart);
+
+      return NextResponse.json(cart);
     }
 
+
+    /**
+     * =========================
+     * USER PASSWORD HASHING
+     * =========================
+     */
     if (model === "user" && body.password) {
       const salt = await bcrypt.genSalt();
       body.password = await bcrypt.hash(body.password, salt);
@@ -231,9 +297,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(newItem);
   } catch (error) {
     console.error("Database POST error:", error);
-    return NextResponse.json({ error: "Failed to create item" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create item" },
+      { status: 500 }
+    );
   }
 }
+
+
 
 // ==================== PUT ====================
 export async function PUT(req: NextRequest) {

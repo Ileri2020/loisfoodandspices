@@ -72,7 +72,7 @@ const Hero = () => {
             // priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             //src="https://images.unsplash.com/photo-1624767735494-1929dc24ad43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-            src="./logo.png"
+            // src="./logo.png"
           />
         </div>
       </div>
