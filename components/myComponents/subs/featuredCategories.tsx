@@ -11,7 +11,7 @@ async function getCategories() {
   const categories = await res.json();
 
   return categories.map((cat: any) => ({
-    image: cat.image || "/placeholder.png",
+    image: cat.image || "/logo.png",
     name: cat.name,
     productCount: cat.products?.length || 0,
   }));
