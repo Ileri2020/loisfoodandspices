@@ -331,7 +331,7 @@ export default function ProductDetailPage() {
 
           {/* Features & Specs */}
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <section>
+            {/* <section>
               <h2 className="mb-4 text-2xl font-bold">Features</h2>
               <ul className="space-y-2">
                 {product.features.map((feature) => (
@@ -361,7 +361,7 @@ export default function ProductDetailPage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </section> */}
             <div>
               <div><Similar similar={allProduct} /></div>
             </div>

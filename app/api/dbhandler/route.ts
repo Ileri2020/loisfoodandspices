@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fallback: search for products by previous syntax
-    if (model === "productss" && searchQuery.length >= 3) {
+    if (model === "products" && searchQuery.length >= 3) {
       const items = await prisma.product.findMany({
         where: {
           OR: [

@@ -15,7 +15,7 @@ import { signOut } from "next-auth/react";
 import UserShippingAddressForm from "@/prisma/forms/userShippingAddressForm"
 
 const Account = () => {
-  const { selectedVideo, setSelectedVideo, useMock, user, setUser } = useAppContext();
+  const {user, setUser } = useAppContext();
   if (user.name === "visitor" && user.email === "nil"){
     return(
       <div className="w-full h-[50vh] flex flex-col justify-center items-center">
