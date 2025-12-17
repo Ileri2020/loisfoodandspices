@@ -37,7 +37,7 @@ interface Session {
 }
 
 const metadata: Metadata = {
-  title: "Succo",
+  title: "Loyz Foods and Spces",
   description: "Your one stop store for food items",
 };
 
