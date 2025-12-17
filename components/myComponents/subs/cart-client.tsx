@@ -28,62 +28,23 @@ import * as React from "react";
 import { useAppContext } from "@/hooks/useAppContext";
 import FlutterWaveButtonHook from "../../payment/flutterwavehook";
 
-/* ----------------------------------
-   DELIVERY FEES (EDIT PRICES HERE)
------------------------------------ */
+/* DELIVERY FEES */
 export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
-  Kwara: 1000,
-
-  Kogi: 2500,
-  Niger: 3000,
-  Oyo: 3000,
-  Osun: 3000,
-
-  Ogun: 3500,
-  Ondo: 3500,
-  Ekiti: 3500,
-  Benue: 3500,
-  Nasarawa: 3500,
-
-  Lagos: 4000,
-  FCT: 4000,
-  Edo: 4000,
-
-  Anambra: 4500,
-  Enugu: 4500,
-  Imo: 4500,
-  Abia: 4500,
-  Ebonyi: 4500,
-
-  Delta: 4500,
-  Rivers: 5000,
-  Akwa_Ibom: 5500,
-  Cross_River: 5500,
-  Bayelsa: 5500,
-
-  Kaduna: 4500,
-  Kano: 5000,
-  Katsina: 5000,
-  Jigawa: 5000,
-  Zamfara: 5000,
-  Sokoto: 5500,
-  Kebbi: 5500,
-
-  Bauchi: 5500,
-  Gombe: 5500,
-  Adamawa: 6000,
-  Taraba: 6000,
-  Borno: 6500,
-  Yobe: 6500,
+  Kwara: 1000, Kogi: 2500, Niger: 3000, Oyo: 3000, Osun: 3000,
+  Ogun: 3500, Ondo: 3500, Ekiti: 3500, Benue: 3500, Nasarawa: 3500,
+  Lagos: 4000, FCT: 4000, Edo: 4000,
+  Anambra: 4500, Enugu: 4500, Imo: 4500, Abia: 4500, Ebonyi: 4500,
+  Delta: 4500, Rivers: 5000, Akwa_Ibom: 5500, Cross_River: 5500, Bayelsa: 5500,
+  Kaduna: 4500, Kano: 5000, Katsina: 5000, Jigawa: 5000, Zamfara: 5000,
+  Sokoto: 5500, Kebbi: 5500, Bauchi: 5500, Gombe: 5500, Adamawa: 6000,
+  Taraba: 6000, Borno: 6500, Yobe: 6500,
 };
 
-/* ----------------------------------
-   TYPES
------------------------------------ */
+/* TYPES */
 export interface CartItem {
   category: string;
   id: string;
-  images: any;
+  images: any[];
   name: string;
   price: number;
   quantity: number;
@@ -91,7 +52,7 @@ export interface CartItem {
 
 interface CartProps {
   className?: string;
-  cart: any;
+  cart?: any;
 }
 
 interface Address {
@@ -101,51 +62,26 @@ interface Address {
   state?: string | null;
 }
 
-/* ----------------------------------
-   HELPERS
------------------------------------ */
+/* HELPERS */
 const normalizeState = (state?: string | null): string | null => {
   if (!state) return null;
-  return state
-    .replace(/state/i, "")
-    .replace(/[-\s]/g, "_")
-    .trim();
+  return state.replace(/state/i, "").replace(/[-\s]/g, "_").trim();
 };
 
-/* ----------------------------------
-   COMPONENT
------------------------------------ */
+/* COMPONENT */
 export function CartClient({ className }: CartProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  const {
-    items,
-    removeItem,
-    clearCart,
-    subtotal,
-    updateQuantity,
-    itemCount,
-    setCheckoutData,
-    checkoutData,
-    clearCheckoutData,
-  } = useCart();
-
+  const { items, removeItem, clearCart, subtotal, updateQuantity, itemCount, setCheckoutData, checkoutData, clearCheckoutData } = useCart();
   const { user } = useAppContext();
 
-  /* ----------------------------------
-     ADDRESS STATE
-  ----------------------------------- */
-  const [selectedAddressId, setSelectedAddressId] =
-    React.useState<string | null>(
-      user?.addresses?.[0]?.id ?? null
-    );
+  const [selectedAddressId, setSelectedAddressId] = React.useState<string | null>(
+    user?.addresses?.[0]?.id ?? null
+  );
 
-  React.useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  React.useEffect(() => setIsMounted(true), []);
 
   React.useEffect(() => {
     if (!selectedAddressId && user?.addresses?.length) {
@@ -153,37 +89,26 @@ export function CartClient({ className }: CartProps) {
     }
   }, [user?.addresses, selectedAddressId]);
 
-  /* ----------------------------------
-     DELIVERY FEE LOGIC
-  ----------------------------------- */
+  /* DELIVERY FEE LOGIC */
   const calculateDeliveryFee = (address?: Address | null): number => {
     const normalizedState = normalizeState(address?.state);
     if (!normalizedState) return 0;
-
-    return (
-      DELIVERY_FEES_BY_STATE[normalizedState] ??
-      6500 // fallback for unknown states
-    );
+    return DELIVERY_FEES_BY_STATE[normalizedState] ?? 6500;
   };
 
-  const selectedAddress: Address | undefined =
-    user?.addresses?.find(
-      (a: Address) => a.id === selectedAddressId
-    );
+  const selectedAddress: Address | undefined = user?.addresses?.find(
+    (a: Address) => a.id === selectedAddressId
+  );
 
-  const deliveryFee =
-    items.length > 0 ? calculateDeliveryFee(selectedAddress) : 0;
+  const deliveryFee = items.length > 0 ? calculateDeliveryFee(selectedAddress) : 0;
+  const totalAmount = Number(subtotal || 0) + Number(deliveryFee || 0);
 
-  const totalAmount = subtotal + deliveryFee;
-
-  /* ----------------------------------
-     CHECKOUT
-  ----------------------------------- */
+  /* CHECKOUT */
   const prepareCheckout = async () => {
     if (!user?.id || !selectedAddressId || items.length === 0) return;
 
     try {
-      const payload: any = {
+      const payload = {
         userId: user.id,
         items: items.map((i) => ({
           productId: i.id,
@@ -192,11 +117,8 @@ export function CartClient({ className }: CartProps) {
         deliveryFee,
         total: totalAmount,
         deliveryAddressId: selectedAddressId,
+        ...(checkoutData?.cartId ? { cartId: checkoutData.cartId } : {}),
       };
-
-      if (checkoutData?.cartId) {
-        payload.cartId = checkoutData.cartId;
-      }
 
       const res = await axios.post("/api/payment", payload);
       setCheckoutData(res.data);
@@ -206,30 +128,19 @@ export function CartClient({ className }: CartProps) {
     }
   };
 
-  /* ----------------------------------
-     CART TRIGGER
-  ----------------------------------- */
+  /* CART TRIGGER */
   const CartTrigger = (
-    <Button
-      aria-label="Open cart"
-      className="relative h-9 w-9 rounded-full"
-      size="icon"
-      variant="outline"
-    >
+    <Button aria-label="Open cart" className="relative h-9 w-9 rounded-full" size="icon" variant="outline">
       <ShoppingCart className="h-4 w-4" />
       {itemCount > 0 && (
-        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px]">
-          <div className="w-full h-full flex justify-center items-center">
-            {itemCount}
-          </div>
+        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-[10px] flex justify-center items-center">
+          {itemCount}
         </Badge>
       )}
     </Button>
   );
 
-  /* ----------------------------------
-     CART CONTENT
-  ----------------------------------- */
+  /* CART CONTENT */
   const CartContent = (
     <div className="flex flex-col">
       {/* HEADER */}
@@ -237,9 +148,7 @@ export function CartClient({ className }: CartProps) {
         <div>
           <div className="text-xl font-semibold">Your Cart</div>
           <div className="text-sm text-muted-foreground">
-            {itemCount === 0
-              ? "Your cart is empty"
-              : `You have ${itemCount} item${itemCount !== 1 ? "s" : ""}`}
+            {itemCount === 0 ? "Your cart is empty" : `You have ${itemCount} item${itemCount !== 1 ? "s" : ""}`}
           </div>
         </div>
         {isDesktop && (
@@ -261,60 +170,52 @@ export function CartClient({ className }: CartProps) {
             </motion.div>
           ) : (
             <div className="space-y-4 py-4">
-              {items.map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  className="flex rounded-lg border bg-card p-2"
-                >
-                  <img
-                    src={item.images?.[0] ?? "/placeholder.jpg"}
-                    alt={item.name ?? "Product"}
-                    className="h-20 w-20 rounded object-cover"
-                  />
-                  <div className="ml-4 flex flex-1 flex-col justify-between">
-                    <div className="flex justify-between">
-                      <Link
-                        href={`/store/${item.id}`}
-                        className="text-sm font-medium"
-                      >
-                        {item.name ?? "Unnamed product"}
-                      </Link>
-                      <button onClick={() => removeItem(item.id)}>
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
+              {items.map((item) => {
+                // Safely extract image URL
+                const imageUrl = Array.isArray(item.images) && item.images.length > 0
+                  ? typeof item.images[0] === "string"
+                    ? item.images[0]
+                    : item.images[0]
+                  : "/placeholder.jpg";
 
-                    <div className="mt-2 flex justify-between items-center">
-                      <div className="flex items-center border rounded">
-                        <button
-                          disabled={item.quantity <= 1}
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
-                          }
-                          className="px-2"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="px-3 text-sm">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
-                          }
-                          className="px-2"
-                        >
-                          <Plus size={12} />
+                return (
+                  <motion.div key={item.id} layout className="flex rounded-lg border bg-card p-2">
+                    <img src={imageUrl} alt={item.name ?? "Product"} className="h-20 w-20 rounded object-cover" />
+                    <div className="ml-4 flex flex-1 flex-col justify-between">
+                      <div className="flex justify-between">
+                        <Link href={`/store/${item.id}`} className="text-sm font-medium">
+                          {item.name ?? "Unnamed product"}
+                        </Link>
+                        <button onClick={() => removeItem(item.id)}>
+                          <X className="h-4 w-4" />
                         </button>
                       </div>
-                      <span className="text-sm font-medium">
-                        ₦{(item.price * item.quantity).toFixed(2)}
-                      </span>
+
+                      <div className="mt-2 flex justify-between items-center">
+                        <div className="flex items-center border rounded">
+                          <button
+                            disabled={item.quantity <= 1}
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="px-2"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="px-3 text-sm">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="px-2"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+                        <span className="text-sm font-medium">
+                          ₦{(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </AnimatePresence>
@@ -324,9 +225,7 @@ export function CartClient({ className }: CartProps) {
       {items.length > 0 && (
         <div className="border-t px-6 py-4 space-y-3">
           <div className="space-y-1">
-            <label className="text-sm font-medium">
-              Delivery Address
-            </label>
+            <label className="text-sm font-medium">Delivery Address</label>
             <select
               className="w-full rounded-md border px-3 py-2 text-sm"
               value={selectedAddressId ?? ""}
@@ -334,9 +233,7 @@ export function CartClient({ className }: CartProps) {
             >
               {user?.addresses?.map((address: Address) => (
                 <option key={address.id} value={address.id}>
-                  {[address.address, address.city, address.state]
-                    .filter(Boolean)
-                    .join(", ")}
+                  {[address.address, address.city, address.state].filter(Boolean).join(", ")}
                 </option>
               ))}
             </select>
@@ -344,12 +241,12 @@ export function CartClient({ className }: CartProps) {
 
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
-            <span>₦{subtotal.toFixed(2)}</span>
+            <span>₦{Number(subtotal || 0).toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between text-sm">
             <span>Delivery Fee</span>
-            <span>₦{deliveryFee.toFixed(2)}</span>
+            <span>₦{Number(deliveryFee || 0).toFixed(2)}</span>
           </div>
 
           <Separator />
@@ -368,9 +265,7 @@ export function CartClient({ className }: CartProps) {
               phonenumber={user?.contact ?? "0000000000"}
               name={user?.name ?? "Customer"}
               onSuccess={async () => {
-                await axios.post(`/api/payment?action=confirm`, {
-                  tx_ref: checkoutData.tx_ref,
-                });
+                await axios.post(`/api/payment?action=confirm`, { tx_ref: checkoutData.tx_ref });
                 clearCart();
                 clearCheckoutData();
               }}
@@ -394,9 +289,7 @@ export function CartClient({ className }: CartProps) {
           <SheetTrigger asChild>{CartTrigger}</SheetTrigger>
           <SheetContent className="p-0 w-[400px]">
             <SheetHeader>
-              <SheetTitle className="px-6 pt-4">
-                Shopping Cart
-              </SheetTitle>
+              <SheetTitle className="px-6 pt-4">Shopping Cart</SheetTitle>
             </SheetHeader>
             {CartContent}
           </SheetContent>
