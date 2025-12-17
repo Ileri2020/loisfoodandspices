@@ -2,6 +2,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from '@auth/prisma-adapter';

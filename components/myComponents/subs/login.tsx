@@ -30,8 +30,10 @@ import axios from 'axios'
 // import { getSession } from '@/server/action/getSession'
 import { useAppContext } from '@/hooks/useAppContext'
 import { FcGoogle } from 'react-icons/fc'
+import { FaFacebook } from "react-icons/fa";
 import { facebookSignIn, googleSignIn } from './googlesignin'
 import Signup from './signup'
+import { Facebook } from 'lucide-react';
 
 
 
@@ -112,13 +114,14 @@ const Login = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction>Continue</AlertDialogAction>
           </AlertDialogFooter> */}
-          <div className="w-full my-2 flex flex-col">
+          <div className="w-full my-2 flex flex-col gap-2">
             <form
               action={googleSignIn}
             >
               <Button
-                className=" relative w-full max-w-[300px] mx-auto flex /space-x-2 items-center justify-center text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                className="border-2 border-primary relative w-full max-w-[300px] mx-auto flex /space-x-2 items-center justify-center text-black rounded-md h-10 font-medium shadow-input hover:bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
                 type="submit"
+                variant='outline'
               >
                 <FcGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
                 <span className="text-neutral-700 dark:text-neutral-300 text-sm">
@@ -130,19 +133,21 @@ const Login = () => {
               action={facebookSignIn}
             >
               <Button
-                className=" relative w-full max-w-[300px] mx-auto flex /space-x-2 items-center justify-center text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                className="border-2 border-primary relative w-full max-w-[300px] mx-auto flex /space-x-2 items-center justify-center text-black rounded-md h-10 font-medium shadow-input hover:bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
                 type="submit"
+                variant='outline'
               >
-                <FcGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+                <FaFacebook className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
                 <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                  Google
+                  Facebook
                 </span>
               </Button>
             </form>
+            <div className="border-2 border-primary max-w-[300px] mx-auto w-full my-2 rounded-md font-medium shadow-input flex justify-center items-center">
+              <Signup />
+            </div>
           </div>
-          <div className="w-full my-2">
-            <Signup />
-          </div>
+          
         </DrawerContent>
       </Drawer>
     </div>
