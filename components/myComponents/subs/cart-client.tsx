@@ -172,11 +172,10 @@ export function CartClient({ className }: CartProps) {
             <div className="space-y-4 py-4">
               {items.map((item) => {
                 // Safely extract image URL
-                const imageUrl = Array.isArray(item.images) && item.images.length > 0
-                  ? typeof item.images[0] === "string"
+                const imageUrl =
+                  Array.isArray(item.images) && item.images.length > 0
                     ? item.images[0]
-                    : item.images[0]
-                  : "/placeholder.jpg";
+                    : "/placeholder.jpg";
 
                 return (
                   <motion.div key={item.id} layout className="flex rounded-lg border bg-card p-2">
