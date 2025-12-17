@@ -12,6 +12,7 @@ import { useAppContext } from "@/hooks/useAppContext"
 import { CiCamera } from "react-icons/ci"
 import {ProfileImg} from "@/components/myComponents/subs/fileupload"
 import { signOut } from "next-auth/react";
+import UserShippingAddressForm from "@/prisma/forms/userShippingAddressForm"
 
 const Account = () => {
   const { selectedVideo, setSelectedVideo, useMock, user, setUser } = useAppContext();
@@ -90,6 +91,21 @@ const Account = () => {
               </div>
             </div>
           </div>
+          {user.addresses && user.addresses.length > 0 && user.addresses.map((addr, index) => (
+            <div key={addr.id || index} className="w-full px-3">
+              <div className="flex flex-row gap-3">
+                <div className="w-14 h-14">icon</div>
+                <div className="flex-1">
+                  <div className="text-sm text-foreground/70">Address</div>
+                  <div className="text-lg font-semibold">
+                    {`${addr.address || ''} ${addr.city || ''}, ${addr.state || ''}`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+
         </div>
         <div className="flex flex-row max-w-sm gap-2" >
           <Button

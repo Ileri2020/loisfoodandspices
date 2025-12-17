@@ -95,7 +95,7 @@ const FeaturedProducts = () => {
               {products.map((product, index) => (
                 <CarouselItem
                   key={index}
-                  className="basis-1/3 md:basis-1/5 lg:basis-1/7 flex flex-col overflow-clip justify-center items-center w-full ml-2"
+                  className="max-w-sm px-3 basis-1/1 md:basis-1/3 lg:basis-1/5 flex flex-col overflow-clip justify-center items-center w-full ml-2"
                 >
                   <ProductCard key={product.id} product={product} />
                 </CarouselItem>

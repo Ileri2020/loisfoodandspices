@@ -1,160 +1,175 @@
-"use client"
-import React, { FormEvent, useEffect, useRef, useState } from 'react'
-import dynamic from 'next/dynamic'
-// const AlertDialog = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialog),{ssr: false,})
-// const AlertDialogAction = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogAction),{ssr: false,})
-// const AlertDialogCancel = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogCancel),{ssr: false,})
-// const AlertDialogContent = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogContent),{ssr: false,})
-// const AlertDialogDescription = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogDescription),{ssr: false,})
-// const AlertDialogFooter = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogFooter),{ssr: false,})
-// const AlertDialogHeader = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogHeader),{ssr: false,})
-// const AlertDialogTitle = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogTitle),{ssr: false,})
-// const AlertDialogTrigger = dynamic(() => import('@/components/ui/alert-dialog').then((e) => e.AlertDialogTrigger),{ssr: false,})
+"use client";
+import React, { useEffect, useState } from "react";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { Button } from "@/components/ui/button"
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { register } from '@/server/action/signup'
-import axios from 'axios'
-import { useAppContext } from '@/hooks/useAppContext'
-import { CldUploadWidget } from 'next-cloudinary'
-// import {cloudUpload, uploadCloudinary} from '@/server/config/cloudinary'
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAppContext } from "@/hooks/useAppContext";
+import axios from "axios";
+import UserShippingAddressForm from "@/prisma/forms/userShippingAddressForm";
+
+type ShippingAddress = {
+  id?: string;
+  country: string;
+  state: string;
+  city: string;
+  address: string;
+  zip?: string;
+  phone?: string;
+};
 
 const EditUser = () => {
   const { user, setUser } = useAppContext();
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    username: '',
-    contact: '',
-    department: 'member',
-    ministry: "684f74ca135dd6d0efeab37d",
-    role: 'user',
+    email: "",
+    name: "",
+    contact: "",
+    role: "user",
+    image: "",
   });
-  const [editId, setEditId] = useState(true);
+
+  const [addressData, setAddressData] = useState<ShippingAddress>({
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+    phone: "",
+  });
+
+  const [editId, setEditId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    handleEdit(user)
-  }, []);
+    if (user) {
+      setFormData({
+        email: user.email || "",
+        name: user.name || "",
+        contact: user.contact || "",
+        role: user.role || "user",
+        image: user.image || "",
+      });
 
-  const fetchUser = async () => {
-    const res = await axios.get(`/api/dbhandler?model=users&id=${user.id}`);
-    setUser(res.data);
-  };
+      if (user.addresses?.[0]) {
+        setAddressData(user.addresses[0]);
+      }
 
+      setEditId(user.id);
+    }
+  }, [user]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("about to update edit data")
-    const response = await axios.put(`/api/dbhandler?model=users&id=${editId}`, formData);
-    if(response.status = 200){
-      fetchUser();
-      resetForm();
+
+    try {
+      // Update user
+      const userRes = await axios.put(`/api/dbhandler?model=user&id=${editId}`, {
+        ...formData,
+        id: editId,
+      });
+
+      // Update or create shipping address
+      let addressRes;
+      if (addressData.id) {
+        addressRes = await axios.put(
+          `/api/dbhandler?model=shippingAddress&id=${addressData.id}`,
+          { ...addressData, userId: user.id }
+        );
+      } else {
+        addressRes = await axios.post(
+          `/api/dbhandler?model=shippingAddress`,
+          { ...addressData, userId: user.id }
+        );
+      }
+
+      // Update local context
+      setUser({
+        ...userRes.data,
+        addresses: [addressRes.data],
+      });
+
+      // Reset form and show success message
+      setFormData({
+        email: userRes.data.email || "",
+        name: userRes.data.name || "",
+        contact: userRes.data.contact || "",
+        role: userRes.data.role || "user",
+        image: userRes.data.image || "",
+      });
+
+      setAddressData(addressRes.data);
+
+      setSuccessMessage("Profile updated successfully!");
+
+      // Hide message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+
+    } catch (err: any) {
+      console.error("Update failed:", err.response?.data || err);
     }
   };
 
-  const handleEdit = (item) => {
-    setFormData(item);
-    setEditId(item.id);
-  };
-
-  // const handleDelete = async (id) => {
-  //   await axios.delete(`/api/dbhandler?model=users&id=${id}`);
-  //   fetchUsers();
-  // };
-
-  const resetForm = () => {
-    setFormData({
-      email: '',
-      password: '',
-      name: '',
-      username: '',
-      contact: '',
-      department: 'member',
-      ministry: "684f74ca135dd6d0efeab37d",
-      role: 'user',
-    });
-    setEditId(null);
-  };
-
-  
-
   return (
-    <div className='inline'>
-      <Drawer>
-        <DrawerTrigger className='w-full flex-1' asChild>
-          <Button className='flex-1 w-full bg-green-500 text-background hover:bg-green-500/30'>edit</Button>
-        </DrawerTrigger>
-        <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button className="bg-green-500 text-background w-full flex-1 hover:bg-green-500/30">Edit</Button>
+      </DrawerTrigger>
 
-          <DrawerHeader>
-            <DrawerTitle className='w-full text-center'>Edit your profile <span className='text-accent'>Succo</span></DrawerTitle>
-            <DrawerDescription></DrawerDescription>
-          </DrawerHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl"> 
-            <Input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-            <Input
-              type="text"
-              placeholder="Name"
-              value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <Input
-              type="text"
-              placeholder="Username"
-              value={formData.username || ''}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            />
-            <Input
-              type="text"
-              placeholder="Contact"
-              value={formData.contact || ''}
-              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-            />
-            <select
-              value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-            >
-              <option value="member">Member</option>
-              <option value="choir">Choir</option>
-              <option value="side men">Side Men</option>
-              <option value="prophet">Prophet and Prophetess</option>
-              <option value="minister">Minister</option>
-            </select>
-            
-            <DrawerFooter className="flex flex-row w-full gap-2 mt-2">
-              {/* <Button>Submit</Button> */}
-              <DrawerClose className='flex-1' asChild>
-                <Button className='flex-1' variant="outline">Cancel</Button>
-              </DrawerClose>
-              <Button type="submit" className="flex-1 before:ani-shadow w-full">Update &rarr;</Button>
-            </DrawerFooter>
-          </form>
-          {/* <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Continue</AlertDialogAction>
-          </AlertDialogFooter> */}
-        </DrawerContent>
-      </Drawer>
-    </div>
-  )
-}
+      <DrawerContent className="max-w-3xl mx-auto py-10">
+        <DrawerHeader>
+          <DrawerTitle className="text-center">Edit Profile</DrawerTitle>
+        </DrawerHeader>
 
-export default EditUser
+        {successMessage && (
+          <div className="p-3 mb-4 text-green-800 bg-green-100 rounded">{successMessage}</div>
+        )}
 
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6 bg-secondary rounded-xl">
+          {/* User fields */}
+          <Input
+            type="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          />
+          <Input
+            type="text"
+            placeholder="Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <Input
+            type="text"
+            placeholder="Contact"
+            value={formData.contact}
+            onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+          />
 
+          {/* Shipping Address */}
+          <UserShippingAddressForm
+            userId={user.id}
+            existing={addressData}
+            onSaved={(addr) => setAddressData(addr)}
+          />
+
+          <DrawerFooter className="flex gap-2 mt-4">
+            <DrawerClose asChild>
+              <Button variant="outline" className="flex-1">Cancel</Button>
+            </DrawerClose>
+            <Button type="submit" className="flex-1">Update &rarr;</Button>
+          </DrawerFooter>
+        </form>
+      </DrawerContent>
+    </Drawer>
+  );
+};
+
+export default EditUser;

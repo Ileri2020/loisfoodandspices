@@ -4,15 +4,20 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Clock, Truck } from 'lucide-react'
 import Image from "next/image";
+import { SearchInput } from './searchcomponent'
 
 const Hero = () => {
   //hero
   return (
-    <div className={`relative overflow-hidden py-12 md:py-16`}>
+    <div className={`relative overflow-hidden py-5 /py-12 md:py-16`}>
     <div className={`bg-grid-black/[0.02] absolute inset-0 bg-[length:20px_20px]`}/>
     <div className={`relative z-10 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8`}>
       <div className={`grid items-center gap-10 grid-cols-1 lg:grid-cols-2 lg:gap-12`}>
         <div className="flex flex-col justify-center space-y-6">
+          <div className="flex z-50 md:hidden w-full justify-center items-center">
+            {/* Search Input */}
+            <SearchInput />
+          </div>
           <div className="space-y-4">
             {/* <HeroBadge /> */}
             <h1 className={`
@@ -37,7 +42,7 @@ const Hero = () => {
                 Shop Now <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/showcase">
+            <Link href="features">
               <Button className="h-12 px-8 transition-colors duration-200" size="lg" variant="outline">
                 View Showcase
               </Button>

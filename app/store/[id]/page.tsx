@@ -16,7 +16,7 @@ import Similar from "@/components/myComponents/subs/similar";
 /* -------------------------------------------------------------------------- */
 
 interface Product {
-  category: string;
+  category: any;
   description: string;
   features: string[];
   id: string;
@@ -260,7 +260,7 @@ export default function ProductDetailPage() {
               {/* Category & prices */}
               <div className="mb-6">
                 <p className="text-lg font-medium text-muted-foreground">
-                  {product.category}
+                  {product.category.name}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-3xl font-bold">

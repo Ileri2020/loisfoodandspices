@@ -8,29 +8,29 @@ import { Heart, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 
-
-
 type ProductCardProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "onError"
 > & {
-  onAddToCart?: (product: any) => void;//(productId: string) => void;
+  orientation?: "vertical" | "horizontal"; // ✅ added (no implementation)
+  onAddToCart?: (product: any) => void;
   onAddToWishlist?: (productId: string) => void;
-  product: {
-    category: string;
-    id: string;
-    images: any//string;
-    inStock?: boolean;
-    name: string;
-    originalPrice?: number;
-    price: number;
-    rating?: number;
-  };
+  // product: {
+  //   category: any;
+  //   id: string;
+  //   images: any;
+  //   inStock?: boolean;
+  //   name: string;
+  //   price: number; // treated as discounted price
+  //   rating?: number;
+  // };
+  product: any;
   variant?: "compact" | "default";
 };
 
 export function ProductCard({
   className,
+  orientation = "vertical",
   onAddToCart,
   onAddToWishlist,
   product,
@@ -45,9 +45,7 @@ export function ProductCard({
     e.preventDefault();
     if (onAddToCart) {
       setIsAddingToCart(true);
-      // Simulate API call
       setTimeout(() => {
-        //onAddToCart(product.id);
         onAddToCart(product);
         setIsAddingToCart(false);
       }, 600);
@@ -62,11 +60,16 @@ export function ProductCard({
     }
   };
 
-  const discount = product.originalPrice
-    ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100
-      )
-    : 0;
+  /**
+   * Pricing logic
+   * product.price = discounted price
+   * originalPrice = +30%
+   */
+  const DISCOUNT_PERCENT = 30;
+  const discountedPrice = product.price;
+  const originalPrice = Math.round(
+    discountedPrice / (1 - DISCOUNT_PERCENT / 100)
+  );
 
   const renderStars = () => {
     const rating = product.rating ?? 0;
@@ -77,6 +80,7 @@ export function ProductCard({
       <div className="flex items-center">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
+            key={`star-${product.id}-${i}`}
             className={cn(
               "h-4 w-4",
               i < fullStars
@@ -85,7 +89,6 @@ export function ProductCard({
                 ? "fill-yellow-400/50 text-yellow-400"
                 : "stroke-muted/40 text-muted"
             )}
-            key={`star-${product.id}-position-${i + 1}`}
           />
         ))}
         {rating > 0 && (
@@ -97,30 +100,28 @@ export function ProductCard({
     );
   };
 
-
-
-
-
-
-
-
-
   return (
     <div className={cn("group", className)} {...props}>
       <Link href={`/store/${product.id}`}>
         <Card
-          className={cn(
-            `
-              relative w-full overflow-clip rounded-lg py-0 transition-all
-              duration-200 ease-in-out
-              shadow-md hover:shadow-accent/40 flex flex-row md:flex-col m-1
-            `,
-            isHovered && "ring-1 ring-primary/20"
-          )}
+           className={cn(
+              `
+                relative w-full overflow-clip rounded-lg py-0 transition-all
+                duration-200 ease-in-out
+                shadow-md m-1 flex md:flex-col
+              `,
+              orientation === "horizontal" ? "flex-row" : "flex-col",
+              isHovered && "ring-1 ring-primary/20"
+            )}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="relative aspect-square overflow-hidden rounded-t-lg w-[40%] md:w-full flex justify-center items-center bg-muted">
+          <div 
+            className={cn(
+              "relative aspect-square overflow-hidden rounded-t-lg flex justify-center items-center bg-muted md:w-full",
+              orientation === "horizontal" ? "w-[40%]" : "w-full"
+            )}
+          >
             {product.images && (
               <img
                 alt={product.name}
@@ -128,34 +129,26 @@ export function ProductCard({
                   "object-cover w-full transition-transform duration-300 ease-in-out",
                   isHovered && "scale-105"
                 )}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 src={product.images[0]}
               />
             )}
 
             {/* Category badge */}
             <Badge
-              className={`
-                absolute top-2 left-2 bg-background/80 backdrop-blur-sm
-              `}
+              className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm"
               variant="outline"
             >
-              {product.category}
+              {product.category.name}
             </Badge>
 
             {/* Discount badge */}
-            {discount > 0 && (
-              <Badge
-                className={`
-                absolute top-2 right-2 bg-destructive
-                text-destructive-foreground
-              `}
-              >
-                {discount}% OFF
-              </Badge>
-            )}
+            <Badge
+              className="absolute top-2 right-2 bg-destructive text-destructive-foreground"
+            >
+              {DISCOUNT_PERCENT}% OFF
+            </Badge>
 
-            {/* Wishlist button */}
+            {/* Wishlist */}
             <Button
               className={cn(
                 `
@@ -177,34 +170,26 @@ export function ProductCard({
                     : "text-muted-foreground"
                 )}
               />
-              <span className="sr-only">Add to wishlist</span>
             </Button>
           </div>
 
           <div className="w-full flex-1">
             <CardContent className="p-4 pt-4">
-              {/* Product name with line clamp */}
-              <h3
-                className={`
-                  line-clamp-2 text-base font-semibold transition-colors
-                  group-hover:text-primary
-                `}
-              >
+              <h3 className="line-clamp-2 text-base font-semibold group-hover:text-primary">
                 {product.name}
               </h3>
 
               {variant === "default" && (
                 <>
                   <div className="mt-1.5">{renderStars()}</div>
+
                   <div className="mt-2 flex items-center gap-1.5">
                     <span className="font-medium text-foreground">
-                    ₦{product.price.toFixed(2)}
+                      ₦{discountedPrice.toFixed(2)}
                     </span>
-                    {product.originalPrice ? (
-                      <span className="text-sm text-muted-foreground line-through">
-                        ₦{product.originalPrice.toFixed(2)}
-                      </span>
-                    ) : null}
+                    <span className="text-sm text-muted-foreground line-through">
+                      ₦{originalPrice.toFixed(2)}
+                    </span>
                   </div>
                 </>
               )}
@@ -221,12 +206,7 @@ export function ProductCard({
                   onClick={handleAddToCart}
                 >
                   {isAddingToCart ? (
-                    <div
-                      className={`
-                        h-4 w-4 animate-spin rounded-full border-2
-                        border-background border-t-transparent
-                      `}
-                    />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
                   ) : (
                     <ShoppingCart className="h-4 w-4" />
                   )}
@@ -240,13 +220,11 @@ export function ProductCard({
                 <div className="flex w-full items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="font-medium text-foreground">
-                      ${product.price.toFixed(2)}
+                      ₦{discountedPrice.toFixed(2)}
                     </span>
-                    {product.originalPrice ? (
-                      <span className="text-sm text-muted-foreground line-through">
-                        ${product.originalPrice.toFixed(2)}
-                      </span>
-                    ) : null}
+                    <span className="text-sm text-muted-foreground line-through">
+                      ₦{originalPrice.toFixed(2)}
+                    </span>
                   </div>
                   <Button
                     className="h-8 w-8 rounded-full"
@@ -255,29 +233,14 @@ export function ProductCard({
                     size="icon"
                     variant="ghost"
                   >
-                    {isAddingToCart ? (
-                      <div
-                        className={`
-                          h-4 w-4 animate-spin rounded-full border-2
-                          border-primary border-t-transparent
-                        `}
-                      />
-                    ) : (
-                      <ShoppingCart className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Add to cart</span>
+                    <ShoppingCart className="h-4 w-4" />
                   </Button>
                 </div>
               </CardFooter>
             )}
 
             {!product.inStock && (
-              <div
-                className={`
-                  absolute inset-0 flex items-center justify-center
-                  bg-background/80 backdrop-blur-sm
-                `}
-              >
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
                 <Badge className="px-3 py-1 text-sm" variant="destructive">
                   Out of Stock
                 </Badge>

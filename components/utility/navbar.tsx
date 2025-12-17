@@ -36,8 +36,8 @@ const Navbar = () : JSX.Element => {
   
   return (
     <TooltipProvider>
-      <div className="sticky top-0 z-30 w-[100vw] overflow-clip flex flex-col m-0 p-0 shadow-md shadow-accent/40">
-        <header className="w-[100%] justify-center items-center py-1 bg-background sticky top-0 z-10">
+      <div className="sticky top-0 z-30 w-[100vw] overflow-clip flex flex-col m-0 p-0">
+        <header className="w-[100%] justify-center items-center py-1 bg-background sticky top-0 z-10 shadow-md shadow-accent/40">
           <div className="container mx-auto flex justify-between items-center gap-2 h-[60px] /md:h-[50px] overflow-clip">
 
             {/* Sidenav Mobile */}
@@ -81,12 +81,12 @@ const Navbar = () : JSX.Element => {
                 <div
                   className="lg:hidden relative flex justify-center items-center text-accent text-xl gap-1"
                 >
-                  <Button 
+                  {/* <Button 
                     variant='outline'
                     className="justify-center items-center rounded-full w-[35px] h-[35px] overflow-clip text-accent text-xl"
                   >
                     <AiOutlineSearch />
-                  </Button>
+                  </Button> */}
                   
                   <Cart />
                   
@@ -97,8 +97,10 @@ const Navbar = () : JSX.Element => {
               </TooltipContent>
             </Tooltip>
 
-            {/* Search Input */}
-            <SearchInput />
+            <div className="md:flex hidden">
+              {/* Search Input */}
+              <SearchInput />
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-8">
@@ -128,9 +130,7 @@ const Navbar = () : JSX.Element => {
             </div>
           </div>
         </header>
-
         <Advert />
-
       </div>
     </TooltipProvider>
   )

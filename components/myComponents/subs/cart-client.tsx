@@ -340,6 +340,7 @@ export function CartClient({ className, cart }: CartProps) {
           </AnimatePresence>
         </div>
 
+        {/* Conditional checkout */}
         {items.length > 0 && (
           <div className="border-t px-6 py-4">
             <div className="space-y-3">
@@ -355,17 +356,17 @@ export function CartClient({ className, cart }: CartProps) {
               <div className="flex items-center justify-between">
                 <span className="text-base font-semibold">Total</span>
                 <span className="text-base font-semibold">
-                ₦{subtotal.toFixed(2)}
+                  ₦{subtotal.toFixed(2)}
                 </span>
               </div>
-              {/* <Button className="w-full" size="lg" onClick={handleCheckout}>
-                Checkout
-              </Button> */}
-              {(!user.email || user.email === 'nil') && (
+
+              {/* Show warning if required user info is missing */}
+              {(!user?.email || !user?.contact || !user?.addresses?.[0]?.address) && (
                 <p className="text-sm text-red-600">
-                  Please login to proceed to checkout.
+                  Please complete your profile (email, contact, address) before checkout.
                 </p>
               )}
+
               {checkoutData ? (
                 <div className="flex flex-col gap-2">
                   <FlutterWaveButtonHook
@@ -377,14 +378,13 @@ export function CartClient({ className, cart }: CartProps) {
                     name={user.name}
                     onSuccess={async () => {
                       try {
-                        // Confirm payment on server
                         const res = await axios.post(`/api/payment?action=confirm`, {
                           tx_ref: checkoutData.tx_ref,
                         });
                         if (res.data.success) {
                           alert("Payment confirmed!");
-                          clearCart();            // Clear local cart
-                          clearCheckoutData();    // Clear checkout info
+                          clearCart();
+                          clearCheckoutData();
                           setCheckoutData(null);
                         } else {
                           alert(res.data.message || "Payment not found. Please try again.");
@@ -395,7 +395,6 @@ export function CartClient({ className, cart }: CartProps) {
                       }
                     }}
                   />
-
                   <Button
                     variant="outline"
                     onClick={async () => {
@@ -422,14 +421,18 @@ export function CartClient({ className, cart }: CartProps) {
                 </div>
               ) : (
                 <Button
-                  disabled={!user.email || user.email === "nil"}
+                  disabled={
+                    !user?.email ||
+                    !user?.contact ||
+                    !user?.addresses?.[0]?.address
+                  }
                   onClick={prepareCheckout}
                 >
                   Checkout
                 </Button>
               )}
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mt-2">
                 {isDesktop ? (
                   <SheetClose asChild>
                     <Button variant="outline">Continue Shopping</Button>
@@ -450,6 +453,7 @@ export function CartClient({ className, cart }: CartProps) {
             </div>
           </div>
         )}
+
       </div>
     </>
   );
