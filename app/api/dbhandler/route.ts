@@ -218,9 +218,51 @@ export async function POST(req: NextRequest) {
   }
 
   const prismaModel = modelMap[model];
-  const body = await parseJson(req);
+  const contentType = req.headers.get("content-type") || "";
+  let body: Record<string, any> = {};
 
   try {
+    /**
+     * =========================
+     * BODY PARSING (JSON + FORM)
+     * =========================
+     */
+    if (
+      contentType.includes("multipart/form-data") ||
+      contentType.includes("application/x-www-form-urlencoded")
+    ) {
+      const formData = await req.formData();
+      const file = formData.get("file") as File | null;
+
+      // Handle file upload
+      if (file) {
+        const uploadRes = await handleUpload(file);
+
+        if (model === "category" || model === "user") {
+          body.image = uploadRes.url;
+        }
+
+        if (model === "product") {
+          body.images = [uploadRes.url];
+        }
+      }
+
+      // Copy remaining fields
+      formData.forEach((value, key) => {
+        if (key === "file") return;
+        body[key] = value;
+      });
+    } 
+    else if (contentType.includes("application/json")) {
+      body = await parseJson(req);
+    } 
+    else {
+      return NextResponse.json(
+        { error: "Unsupported Content-Type" },
+        { status: 415 }
+      );
+    }
+
     /**
      * =========================
      * CART / PAYMENT CREATION
@@ -230,17 +272,18 @@ export async function POST(req: NextRequest) {
       const { userId, items, deliveryAddressId } = body;
 
       if (!userId || !items?.length || !deliveryAddressId) {
-        return NextResponse.json({ error: "Missing checkout data" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Missing checkout data" },
+          { status: 400 }
+        );
       }
 
-      /** 1️⃣ Fetch products from DB */
       const productIds = items.map((i: any) => i.productId);
       const dbProducts = await prisma.product.findMany({
         where: { id: { in: productIds } },
         select: { id: true, price: true },
       });
 
-      /** 2️⃣ Calculate subtotal */
       let subtotal = 0;
       for (const item of items) {
         const product = dbProducts.find(p => p.id === item.productId);
@@ -248,7 +291,6 @@ export async function POST(req: NextRequest) {
         subtotal += product.price * item.quantity;
       }
 
-      /** 3️⃣ Get delivery address */
       const address = await prisma.shippingAddress.findUnique({
         where: { id: deliveryAddressId },
         select: { state: true },
@@ -258,14 +300,12 @@ export async function POST(req: NextRequest) {
       const deliveryFee =
         (normalizedState && DELIVERY_FEES_BY_STATE[normalizedState]) ?? 6500;
 
-      /** 4️⃣ Final total */
       const total = subtotal + deliveryFee;
 
-      /** 5️⃣ Create cart */
       const cart = await prisma.cart.create({
         data: {
           userId,
-          total, // only total is stored
+          total,
           status: "pending",
           products: {
             create: items.map((i: any) => ({
@@ -280,7 +320,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(cart);
     }
 
-
     /**
      * =========================
      * USER PASSWORD HASHING
@@ -293,6 +332,8 @@ export async function POST(req: NextRequest) {
 
     if (body.price) body.price = parseFloat(body.price);
 
+    console.log("Creating new", model, "with data:", body);
+
     const newItem = await prismaModel.create({ data: body });
     return NextResponse.json(newItem);
   } catch (error) {
@@ -303,6 +344,7 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
 
 
 
