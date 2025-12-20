@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, Clock, Truck } from 'lucide-react'
 import Image from "next/image";
 import { SearchInput } from './searchcomponent'
+import { RiseAndFadeText } from './textctrl'
 
 const Hero = () => {
   //hero
@@ -30,6 +31,30 @@ const Hero = () => {
               >
                 Food and Spice Blends
               </div>
+              <RiseAndFadeText
+                texts={[
+                  "Freshly Sourced Ingredients",
+                  "Naturally Processed Spices",
+                  "Quality You Can Trust",
+                  "Trusted by Homes and Businesses",
+                  "Fast & Reliable Delivery",
+                  "Carefully Packed for Freshness",
+                  "Customer Satisfaction Guaranteed",
+                  "Premium Products, Fair Prices",
+                  "Authentic Nigerian Spice Blends",
+                  "Locally Sourced, Globally Delivered",
+                  "Traditional Taste, Modern Quality",
+                  "Export-Standard Food Products",
+                  "Crafted for Every Kitchen",
+                  "Pure. Natural. Flavorful.",
+                  "Freshness in Every Pack",
+                  "Spices That Elevate Your Meals",
+                  "Taste You Can Trust",
+                  "Quality Without Compromise",
+                ]}
+                className="text-2xl mt-2 font-semibold text-muted-foreground overflow-hidden"
+              />
+
             </h1>
             <p className={`max-w-[700px] text-lg text-muted-foreground md:text-xl`}>
               Discover premium products at competitive prices, with fast
@@ -37,21 +62,21 @@ const Hero = () => {
             </p>
           </div>
           <div className={`flex flex-col gap-3 sm:flex-row`}>
-            <Link href="/store">
+            <Link href="/">
               <Button className={`h-12 gap-1.5 px-8 transition-colors duration-200 bg-accent/70`} size="lg">
                 Shop Now <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="features">
+            <Link href="/account">
               <Button className="h-12 px-8 transition-colors duration-200" size="lg" variant="outline">
-                View Showcase
+                Login
               </Button>
             </Link>
           </div>
           <div className={`flex flex-wrap gap-5 text-sm text-muted-foreground `}>
             <div className="flex items-center gap-1.5">
               <Truck className="h-5 w-5 text-primary/70" />
-              <span>Free shipping over $50</span>
+              <span>Free shipping over ₦150,000</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="h-5 w-5 text-primary/70" />

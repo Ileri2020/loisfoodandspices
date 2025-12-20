@@ -61,7 +61,8 @@ const Features = () => {
             md:text-lg
           `}
         >
-          We offer the best shopping experience with premium features
+          We offer the best shopping experience with premium features.
+          We are dedicated to providing a seamless and reliable shopping experience by offering high-quality food products and spice blends that meet strict standards of freshness, hygiene, and authenticity. Our commitment goes beyond just selling products—we carefully source our ingredients, maintain consistent quality control, ensure secure packaging, and deliver promptly to meet the needs of homes and businesses alike. With customer satisfaction at the core of everything we do, we combine competitive pricing, dependable service, and responsive support to build lasting trust and deliver value with every order.
         </p>
       </div>
       <div

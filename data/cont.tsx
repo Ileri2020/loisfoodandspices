@@ -6,33 +6,33 @@ import { MdOutlineMessage, MdOutlinePhone } from "react-icons/md";
  
 export default {
     title : "contact",
-    description : "If you have any questions, inquiries, or would like to hire me, I would love to hear from you. Please feel free to reach out using the contact information provided below:",
+    description : "Contact us today for product inquiries, order support, or business collaborations. Use the contact information below and our support team will get back to you promptly.",
     contact : [
         {
             icon: <FaEnvelope/>, // className="w-[40px] h-[40px] text-accent hover:bg-accent hover:text-slate-100 rounded-md bg-transparent border-accent border-2 p-1"
             text: "Email",
-            value: "adepojuololade2020@gmail.com"
+            value: "loyzspices@gmail.com"
         },
         {
             icon : <MdOutlineMessage />, //className="w-[40px] h-[40px] text-accent hover:bg-accent hover:text-slate-100 rounded-md bg-transparent border-accent border-2 p-1"
             text : "Chat to us",
-            value : "ileri2020.github.io"
+            value : "https://www.loyzfoodsandspices.com/contact"
         },
         {
             icon : <MdOutlinePhone/>,
             text: "Phone",
-            value: "(+234) 816 968 4400"
+            value: "(+234) 816 132 9136"
         },
         {
             icon : <CiLocationOn/>,
             text: "address",
-            value: "22 Akinagbe, Alapere, Ketu, Lagos State"
+            value: "26, Stadium Road, Adjacent to Olalomi Hospital, Taiwo, Ilorin, Kwara State, Nigeria."
         },
     ],
     team : [
         {
-            position : "President",
-            name : "Deolu Adediran"
+            position : "CEO",
+            name : "Adepoju Aleburu Lois "
         },
         {
             position : "Director of STEM",

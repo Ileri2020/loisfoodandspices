@@ -1,390 +1,239 @@
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-
-export const TextAnimations = () => {
-  const texts = ['TextAnimations', 'Text 2', 'TextAnimations', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: 1,
-          transition: {
-            duration: 2.0,
-            delay: 0.5,
-            /*repeat: Infinity,*/
-          },
-        }}
-        className="text-lg font-bold text-gray-800"
-      >
-        {texts[currentIndex]}
-      </motion.div>
-    )
-  }
-  
-
-  return (
-    <div className="container mx-auto p-4">
-        <Temp />
-    </div>
-  );
-};
-
-
-
-export const SlideInText = () => {
-  const texts = ['SlideInText', 'Text 2', 'SlideInText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{
-            x: '0%',
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-  
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-
-export const ScaleInText = () => {
-  const texts = ['ScaleInText', 'Text 2', 'ScaleInText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{
-            scale: 1,
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-
-export const RotateInText = () => {
-  const texts = ['RotateInText', 'Text 2', 'RotateInText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ rotate: '0deg' }}
-          animate={{
-            rotate: '360deg',
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-
-export const FlyInText = () => {
-  const texts = ['FlyInText', 'Text 2', 'FlyInText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{
-            x: '0%',
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-export const TypewriterText = () => {
-  const texts = ['TypewriterText', 'Text 2', 'TypewriterText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ width: '0%' }}
-          animate={{
-            width: '100%',
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-
-export const SlideUpText = () => {
-  const texts = ['SlideUpText', 'Text 2', 'SlideUpText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ y: '100%' }}
-          animate={{
-            y: '0%',
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-
-export const BounceInText = () => {
-  const texts = ['BounceInText', 'Text 2', 'BounceInText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
-
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{
-            scale: 1,
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
-  );
-};
-
-
-
-
-
-
-export const ZoomInText = () => {
-  // const texts = jsontext;
-  const texts = [
-    {verse: "In the beginning God created the heaven and the earth.", page: "Genesis 1:1"},
-    {verse: "For God so loved the world, that he gave his only begotten Son.", page: "John 3:16"},
-  ];
-  const [currentIndex, setCurrentIndex] = useState(Math.floor(Math.random() * texts.length));
+/* ===============================
+   Shared Hook
+================================ */
+const useTextRotation = (texts: any[], interval = 6000) => {
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex(Math.floor(Math.random() * texts.length));
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [texts]);
+    if (!texts?.length) return;
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % texts.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [texts, interval]);
 
+  return texts[index];
+};
+
+/* ===============================
+   Base Animated Wrapper
+================================ */
+const AnimatedTextBase = ({
+  children,
+  variants,
+  className = "",
+}: {
+  children: React.ReactNode;
+  variants: any;
+  className?: string;
+}) => {
   return (
-    <div className="container mx-auto p-4 h-36">
+    <AnimatePresence mode="wait">
       <motion.div
-        key={currentIndex}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1, transition: { duration: 1.0, delay: 0.5 } }}
-        className="text-lg font-bold text-gray-800 text-center text-foreground/80 dark:text-slate-200"
+        key={String(children)}
+        variants={variants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={{ duration: 0.9, ease: "easeInOut" }}
+        className={className}
       >
-        <div className="p-2">{texts[currentIndex].verse}</div>
-        <div className="text-sm">{texts[currentIndex].page}</div>
+        {children}
       </motion.div>
-    </div>
+    </AnimatePresence>
   );
 };
 
+/* ===============================
+   Variants
+================================ */
+const fade = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 },
+};
 
+const slideIn = {
+  hidden: { x: "-100%", opacity: 0 },
+  visible: { x: 0, opacity: 1 },
+  exit: { x: "100%", opacity: 0 },
+};
 
+const slideUp = {
+  hidden: { y: "100%", opacity: 0 },
+  visible: { y: 0, opacity: 1 },
+  exit: { y: "-100%", opacity: 0 },
+};
 
+const scaleIn = {
+  hidden: { scale: 0.85, opacity: 0 },
+  visible: { scale: 1, opacity: 1 },
+  exit: { scale: 0.85, opacity: 0 },
+};
 
+const rotateIn = {
+  hidden: { rotate: -90, opacity: 0 },
+  visible: { rotate: 0, opacity: 1 },
+  exit: { rotate: 90, opacity: 0 },
+};
 
+const flipIn = {
+  hidden: { rotateY: 90, opacity: 0 },
+  visible: { rotateY: 0, opacity: 1 },
+  exit: { rotateY: -90, opacity: 0 },
+};
 
-export const FlipInText = () => {
-  const texts = ['FlipInText', 'Text 2', 'FlipInText', 'Text 4'];
-  const [currentIndex, setCurrentIndex] = useState(0);
+const bounceIn = {
+  hidden: { scale: 0.5, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 280, damping: 16 },
+  },
+  exit: { scale: 0.5, opacity: 0 },
+};
 
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-        setCurrentIndex((prevIndex)=>(prevIndex+1)%texts.length)
-    },6000)
-    return()=>clearInterval(interval)
-  },[currentIndex])
+/* 🆕 Rise from below + fade into background */
+const riseAndFade = {
+  hidden: {
+    y: "120%",
+    opacity: 0,
+  },
+  visible: {
+    y: "0%",
+    opacity: 1,
+    transition: {
+      duration: 0.9,
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.8,
+      ease: "easeIn",
+    },
+  },
+};
 
-  const Temp = () => {
-    return (
-        <motion.div
-          initial={{ rotateY: '180deg' }}
-          animate={{
-            rotateY: '0deg',
-            transition: {
-              duration: 4.0,
-              delay: 0.5,
-            },
-          }}
-          className="text-lg font-bold text-gray-800"
-        >
-          {texts[currentIndex]}
-        </motion.div>
-    )
-  }
+/* ===============================
+   Animation Components
+================================ */
+export const TextFade = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={fade} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+export const SlideInText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={slideIn} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+export const SlideUpText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={slideUp} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+export const ScaleInText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={scaleIn} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+export const RotateInText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={rotateIn} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+export const FlipInText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={flipIn} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+export const BounceInText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={bounceIn} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+/* 🆕 Rise & Fade Loop Text */
+export const RiseAndFadeText = ({ texts, className, interval }: any) => {
+  const text = useTextRotation(texts, interval);
+  return (
+    <AnimatedTextBase variants={riseAndFade} className={className}>
+      {text}
+    </AnimatedTextBase>
+  );
+};
+
+/* ===============================
+   Zoom Verse Text (Special)
+================================ */
+export const ZoomInText = ({
+  texts,
+  className = "",
+  interval = 6000,
+}: {
+  texts: { verse: string; page: string }[];
+  className?: string;
+  interval?: number;
+}) => {
+  const item = useTextRotation(texts, interval);
 
   return (
-    <div className="container mx-auto p-4">
-      <Temp />
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={item.verse}
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.85, opacity: 0 }}
+        transition={{ duration: 0.9, ease: "easeInOut" }}
+        className={className}
+      >
+        <div>{item.verse}</div>
+        <div className="text-sm opacity-70">{item.page}</div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
 
 
 
-
+// <RiseAndFadeText
+//   texts={[
+//     "Freshly Sourced Ingredients",
+//     "Naturally Processed Spices",
+//     "Quality You Can Trust",
+//   ]}
+//   className="text-2xl font-semibold text-muted-foreground overflow-hidden"
+// />

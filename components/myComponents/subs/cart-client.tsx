@@ -32,12 +32,12 @@ import FlutterWaveButtonHook from "../../payment/flutterwavehook";
 
 /* DELIVERY FEES */
 export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
-  Kwara: 1000, Kogi: 2500, Niger: 3000, Oyo: 3000, Osun: 3000,
-  Ogun: 3500, Ondo: 3500, Ekiti: 3500, Benue: 3500, Nasarawa: 3500,
+  Kwara: 500, Kogi: 5000, Niger: 5000, Oyo: 4000, Osun: 4000,
+  Ogun: 4000, Ondo: 4000, Ekiti: 4000, Benue: 5000, Nasarawa: 3500,
   Lagos: 4000, FCT: 4000, Edo: 4000,
-  Anambra: 4500, Enugu: 4500, Imo: 4500, Abia: 4500, Ebonyi: 4500,
-  Delta: 4500, Rivers: 5000, Akwa_Ibom: 5500, Cross_River: 5500, Bayelsa: 5500,
-  Kaduna: 4500, Kano: 5000, Katsina: 5000, Jigawa: 5000, Zamfara: 5000,
+  Anambra: 6000, Enugu: 5000, Imo: 6000, Abia: 6000, Ebonyi: 6000,
+  Delta: 6000, Rivers: 6000, Akwa_Ibom: 6000, Cross_River: 6000, Bayelsa: 6000,
+  Kaduna: 5000, Kano: 5000, Katsina: 5000, Jigawa: 5000, Zamfara: 5000,
   Sokoto: 5500, Kebbi: 5500, Bauchi: 5500, Gombe: 5500, Adamawa: 6000,
   Taraba: 6000, Borno: 6500, Yobe: 6500,
 };

@@ -29,13 +29,20 @@ const About = () => {
         <span className="text-4xl font-semibold">About <span className="text-accent">Loyz Foods and Spices</span></span>
         </div>
         <div className="flex flex-col md:flex-row mx-4 md:m-5">
-          <div className="flex-1 mx-2 md:mx-10 my-5 text-secondary-foreground text-center md:text-start">{Stats.about}</div>
+          <div className="flex-1 mx-2 md:mx-10 my-5 text-secondary-foreground text-center md:text-start">
+            {Stats.about.map((item, index) => (
+              <div key={index} className="mb-2 indent-5">
+                &nbsp;&nbsp;&nbsp;&nbsp;{item}
+              </div>
+            ))}
+          </div>
+
           <div className="flex-1 grid grid-cols-2 gap-5 max-w-[580px] my-5">
             {Stats.stats.map((stat, index)=>{
               return(
                 <div key={index} className="bg-secondary rounded-lg p-5 shadow-md shadow-accent/50">
                   <Countup 
-                    end={stat.num}
+                    end={stat.num as number}
                     duration={5}
                     delay={2}
                     separator=""
@@ -48,7 +55,7 @@ const About = () => {
           </div>
         </div>
       </section>
-      <div className="flex flex-col md:flex-row md:h-[80vh] items-center md:justify-center max-w-6xl mx-auto">
+      {/* <div className="flex flex-col md:flex-row md:h-[80vh] items-center md:justify-center max-w-6xl mx-auto">
         <div className="flex flex-col items-center justify-center md:flex-1 mt-10">
           <div className="text-center text-4xl font-semibold md:mb-10">Meet the <span className="text-accent">Parochial</span></div>
           <Button variant={"outline"} className="border-accent text-accent text-lg  bg-transparent hover:text-slate-100 hidden md:flex">volunteer with us</Button>
@@ -83,7 +90,7 @@ const About = () => {
           })}
         </div>
         <Button variant={"outline"} className="border-accent text-accent text-lg bg-transparent hover:text-slate-100 self-center my-5 flex md:hidden">I will become a sponsor</Button>
-      </div>
+      </div> */}
     </motion.section>
   )
 }
