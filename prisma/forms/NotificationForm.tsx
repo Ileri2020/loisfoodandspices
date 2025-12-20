@@ -82,8 +82,8 @@ export default function NotificationForm() {
                 <p>Message: {item.message}</p>
                 <p>User: {users.find((user) => user.id === item.userId)?.name}</p>
                 <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
+                  <Button type='button' onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
                 </div>
               </li>
             ))

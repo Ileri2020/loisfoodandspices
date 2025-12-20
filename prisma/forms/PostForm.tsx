@@ -89,8 +89,8 @@ export default function PostForm() {
                 <p>Description : {item.description || <em>No description</em>}</p>
                 <p>Content URL : {item.contentUrl || <em>No content URL</em>}</p>
                 <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
+                  <Button type='button' onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
                 </div>
               </li>
             ))

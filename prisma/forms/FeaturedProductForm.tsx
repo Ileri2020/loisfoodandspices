@@ -160,8 +160,8 @@ export default function FeaturedProductForm() {
                 <span>Price: {item.product?.price ?? <em>No price</em>}</span>
               </div>
               <div className="flex gap-2 mt-1">
-                <Button onClick={() => handleEdit(item)}>Edit</Button>
-                <Button onClick={() => handleDelete(item.id)} variant="ghost" className="border-2 border-accent">
+                <Button type='button' onClick={() => handleEdit(item)}>Edit</Button>
+                <Button type='button' onClick={() => handleDelete(item.id)} variant="ghost" className="border-2 border-accent">
                   Delete
                 </Button>
               </div>

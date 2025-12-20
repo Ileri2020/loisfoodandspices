@@ -101,8 +101,8 @@ export default function ShippingAddressForm() {
                 <p>Country : {item.country || <em>No country</em>}</p>
                 <p>Phone : {item.phone || <em>No phone</em>}</p>
                 <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
+                  <Button type='button' onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
                 </div>
               </li>
             ))

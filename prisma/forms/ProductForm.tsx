@@ -44,8 +44,9 @@ export default function ProductForm() {
 
   useEffect(() => {
     fetchProducts();
-    fetchCategories()
-  }, [preview,]);
+    fetchCategories();
+  }, []);
+
 
   const fetchProducts = async () => {
     try {
@@ -83,43 +84,43 @@ export default function ProductForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log('product',formData, 'file', file);
-    const pformData = new FormData();
-    pformData.append("file", file);
-    pformData.append("description", formData.description)
-    pformData.append("name", formData.name)
-    // pformData.append("category", formData.category)
-    pformData.append("categoryId", formData.categoryId)
-    pformData.append("price", formData.price)
-    pformData.append("productImage", "true")
+    console.log('product', formData, 'file', file);
 
-    console.log("Submitting product data:", pformData, "Edit ID:", editId);
-    for (const [key, value] of pformData.entries() as Iterable<[string, any]>) {
-      console.log(key + ": ", value);
+    const pformData = new FormData();
+
+    // ✅ only append file if user selected one
+    if (file) {
+      pformData.append("file", file);
     }
 
+    pformData.append("name", formData.name);
+    pformData.append("description", formData.description);
+    pformData.append("categoryId", formData.categoryId);
+    pformData.append("price", String(formData.price));
+
+    console.log("Submitting product data:", "Edit ID:", editId);
+    for (const [key, value] of pformData.entries()) {
+      console.log(key + ":", value);
+    }
 
     try {
       if (editId) {
-        await axios.put(`/api/product?id=${editId}`, pformData);
+        await axios.put(
+          `/api/dbhandler?model=product&id=${editId}`,
+          pformData
+        );
       } else {
-        const response = await axios.post(`/api/product`, pformData);
-        if (response.status === 200) {
-          const data = response.data;
-          // do something with the data
-          console.log(data)
-        } else {
-          alert("wrong input or connection error")
-        }
+        await axios.post(`/api/product`, pformData);
       }
     } catch (error) {
-      // handle error
-      alert('Failed to save product.');
+      console.error(error);
+      alert("Failed to save product.");
     }
+
     resetForm();
     fetchProducts();
-    // fetchUsers();
   };
+
 
   const handleImageChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -145,13 +146,15 @@ export default function ProductForm() {
 
   const handleEdit = (product: any) => {
     setEditId(product.id);
+    setFile(null);        // 🔑 important
+    setPreview(null);     // 🔑 important
+
     setFormData({
-      name: product.name,
-      description: product.description,
-      categoryId: product.categoryId,
-      category: product.category,
-      price: product.price,
-      images: product.images,
+      name: product.name ?? '',
+      description: product.description ?? '',
+      categoryId: product.categoryId ?? '',
+      price: product.price ?? 0,
+      images: product.images ?? [],
     });
   };
 
@@ -208,6 +211,13 @@ export default function ProductForm() {
         />
 
         <div>Product Image </div>
+        {!preview && formData?.images?.length > 0 && (
+          <img
+            src={formData.images[0]}
+            alt="Current product"
+            style={{ maxHeight: '300px', marginTop: '1rem' }}
+          />
+        )}
         {(preview) && (        //{(preview || formData?.images[0]!=null) && (
               <div style={{ marginTop: '1rem' }}>
                 <img src={preview} alt="Selected preview" style={{ maxHeight: '300px' }} />
@@ -236,8 +246,8 @@ export default function ProductForm() {
                 </div>
                 <p>Price : {item.price || <em>No price tag</em>}</p>
                 <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
+                  <Button type='button' onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
                 </div>
               </li>
             ))

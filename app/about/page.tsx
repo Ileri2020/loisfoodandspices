@@ -26,7 +26,7 @@ const About = () => {
     >
       <section className="md:max-w-[1200px] md:mx-auto md:h-[80vh]">
         <div className="flex flex-col md:flex-row md:justify-between mx-5 md:mx-10 mt-5">
-        <span className="text-4xl font-semibold">About <span className="text-accent">us</span></span>
+        <span className="text-4xl font-semibold">About <span className="text-accent">Loyz Foods and Spices</span></span>
         </div>
         <div className="flex flex-col md:flex-row mx-4 md:m-5">
           <div className="flex-1 mx-2 md:mx-10 my-5 text-secondary-foreground text-center md:text-start">{Stats.about}</div>

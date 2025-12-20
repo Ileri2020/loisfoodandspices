@@ -352,55 +352,113 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const model = searchParams.get("model");
-  if (!model || !modelMap[model]) return NextResponse.json({ error: "Invalid model" }, { status: 400 });
+
+  if (!model || !modelMap[model]) {
+    return NextResponse.json({ error: "Invalid model" }, { status: 400 });
+  }
 
   const prismaModel = modelMap[model];
   const contentType = req.headers.get("content-type") || "";
-  const body: any = {};
-
-  let data: Record<string, any> = {};
-
-  if (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded")) {
-    const formData = await req.formData();
-    data = Object.fromEntries(formData.entries());
-    const file = formData.get("file") as File | null;
-
-    if (file) {
-      const uploadRes = await handleUpload(file);
-      if (model === "category" || model === "user") body.image = uploadRes.url;
-      if (model === "product") body.images = [uploadRes.url];
-    } else if (formData.get("image")) body.image = formData.get("image") as string;
-
-    formData.forEach((value, key) => {
-      if (key === "file" || key === "image") return;
-      body[key] = value;
-    });
-  } else if (contentType.includes("application/json")) {
-    data = await req.json();
-    Object.assign(body, data);
-    if (data.image && (model === "user" || model === "category")) body.image = data.image;
-    if (data.images && model === "product") body.images = data.images;
-  } else {
-    return NextResponse.json({ error: "Unsupported Content-Type" }, { status: 415 });
-  }
-
-  const id = parseId(body.id || searchParams.get("id"), model);
-if (!id) return NextResponse.json({ error: "Missing or invalid id" }, { status: 400 });
-  if (!id) return NextResponse.json({ error: "Missing or invalid id" }, { status: 400 });
-
-  const { id: _ignore, ...updatedData } = body;
-  if (!updatedData || Object.keys(updatedData).length === 0) {
-    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
-  }
+  const body: Record<string, any> = {};
 
   try {
-    const updatedItem = await prismaModel.update({ where: { id }, data: updatedData });
+    // =========================
+    // FORM DATA
+    // =========================
+    if (
+      contentType.includes("multipart/form-data") ||
+      contentType.includes("application/x-www-form-urlencoded")
+    ) {
+      const formData = await req.formData();
+      const file = formData.get("file") as File | null;
+
+      // handle file upload only if present
+      if (file instanceof File && file.size > 0) {
+        const uploadRes = await handleUpload(file);
+
+        if (model === "category" || model === "user") {
+          body.image = uploadRes.url;
+        }
+
+        if (model === "product") {
+          body.images = [uploadRes.url];
+        }
+      }
+
+      // copy remaining fields
+      formData.forEach((value, key) => {
+        if (key === "file") return;
+        body[key] = value;
+      });
+    }
+
+    // =========================
+    // JSON BODY
+    // =========================
+    else if (contentType.includes("application/json")) {
+      const json = await req.json();
+      Object.assign(body, json);
+
+      if (json.image && (model === "user" || model === "category")) {
+        body.image = json.image;
+      }
+
+      if (json.images && model === "product") {
+        body.images = json.images;
+      }
+    } else {
+      return NextResponse.json(
+        { error: "Unsupported Content-Type" },
+        { status: 415 }
+      );
+    }
+
+    // =========================
+    // ID RESOLUTION
+    // =========================
+    const id = parseId(body.id || searchParams.get("id"), model);
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing or invalid id" },
+        { status: 400 }
+      );
+    }
+
+    // remove id from update payload
+    const { id: _ignore, ...updatedData } = body;
+
+    if (!updatedData || Object.keys(updatedData).length === 0) {
+      return NextResponse.json(
+        { error: "Nothing to update" },
+        { status: 400 }
+      );
+    }
+
+    // =========================
+    // TYPE FIXES (CRITICAL)
+    // =========================
+    if (updatedData.price) {
+      updatedData.price = parseFloat(updatedData.price);
+    }
+
+    // =========================
+    // UPDATE
+    // =========================
+    const updatedItem = await prismaModel.update({
+      where: { id },
+      data: updatedData,
+    });
+
     return NextResponse.json(updatedItem);
   } catch (error) {
     console.error("Database PUT error:", error);
-    return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update item" },
+      { status: 500 }
+    );
   }
 }
+
 
 // ==================== DELETE ====================
 export async function DELETE(req: NextRequest) {
