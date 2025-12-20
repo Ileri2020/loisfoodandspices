@@ -58,7 +58,7 @@ export default function StockForm() {
           addedQuantity: formData.addedQuantity,
         });
         // Reload the page after successful stock creation
-        window.location.reload();
+        // window.location.reload();
       }
       resetForm();
       fetchStocks();
@@ -105,7 +105,7 @@ export default function StockForm() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/stock?stockId=${id}`);
+      await axios.delete(`/api/stock?id=${id}`);
       fetchStocks();
     } catch (err) {
       console.error('Failed to delete stock:', err);

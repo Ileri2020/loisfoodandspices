@@ -58,7 +58,8 @@ async function handleUpload(file: File | string) {
 
 function parseId(id: string | null, model: string) {
   if (!id) return null;
-  return ["user", "category", "product"].includes(model) ? id : Number(id);
+  // return ["user", "category", "product"].includes(model) ? id : Number(id);
+  return id;
 }
 
 
@@ -465,6 +466,7 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const model = searchParams.get("model");
   const id = `${parseId(searchParams.get("id"), model || "")}`;
+  console.log("DELETE request for model:", model, "id:", id,'search params id', searchParams.get("id") );
 
   if (!model || !modelMap[model]) return NextResponse.json({ error: "Invalid model" }, { status: 400 });
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

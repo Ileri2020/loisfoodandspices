@@ -6,9 +6,11 @@ import { ArrowRight, Clock, Truck } from 'lucide-react'
 import Image from "next/image";
 import { SearchInput } from './searchcomponent'
 import { RiseAndFadeText } from './textctrl'
+import { useAppContext } from '@/hooks/useAppContext'
 
 const Hero = () => {
   //hero
+  const {user, setUser } = useAppContext();
   return (
     <div className={`relative overflow-hidden py-5 /py-12 md:py-16`}>
     <div className={`bg-grid-black/[0.02] absolute inset-0 bg-[length:20px_20px]`}/>
@@ -33,6 +35,7 @@ const Hero = () => {
               </div>
               <RiseAndFadeText
                 texts={[
+                  "From Loyz Foods and Spices",
                   "Freshly Sourced Ingredients",
                   "Naturally Processed Spices",
                   "Quality You Can Trust",
@@ -62,21 +65,28 @@ const Hero = () => {
             </p>
           </div>
           <div className={`flex flex-col gap-3 sm:flex-row`}>
-            <Link href="/">
-              <Button className={`h-12 gap-1.5 px-8 transition-colors duration-200 bg-accent/70`} size="lg">
+            <Link href="/"  className='w-full max-w-52'>
+              <Button className={`h-12 gap-1.5 px-8 transition-colors duration-200 bg-accent/70 w-full`} size="lg">
                 Shop Now <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/account">
-              <Button className="h-12 px-8 transition-colors duration-200" size="lg" variant="outline">
-                Login
-              </Button>
-            </Link>
+            {user?.id && (
+              <Link href="/account" className="w-full max-w-52">
+                <Button
+                  className="h-12 px-8 transition-colors duration-200 w-full border-2 border-accent text-accent"
+                  size="lg"
+                  variant="outline"
+                >
+                  Login
+                </Button>
+              </Link>
+            )}
+
           </div>
           <div className={`flex flex-wrap gap-5 text-sm text-muted-foreground `}>
             <div className="flex items-center gap-1.5">
               <Truck className="h-5 w-5 text-primary/70" />
-              <span>Free shipping over ₦150,000</span>
+              <span>Free shipping over ₦200,000</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="h-5 w-5 text-primary/70" />

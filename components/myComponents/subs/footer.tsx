@@ -19,7 +19,7 @@ export function Footer({ className }: { className?: string }) {
     { href: "/home", label: "Home" },
     { href: "/about", label: "About Us" },
     { href: "/store", label: "Store" },
-    { href: "/help", label: "Help Center" },
+    { href: "/contact", label: "Help Center" },
     { href: "/account", label: "User Account" },
   ];
   
@@ -27,7 +27,7 @@ export function Footer({ className }: { className?: string }) {
     { href: "/", label: "Spices" },
     { href: "/", label: "Food Item" },
     { href: "/", label: "Cloth" },
-    { href: "/", label: "Poultry Food" },
+    { href: "/", label: "Kitchen Utensils" },
     { href: "/", label: "Content Tools" },
   ];
   
@@ -59,51 +59,49 @@ export function Footer({ className }: { className?: string }) {
       links : supportLinks,
     },
   ]
-  
+  //flex-1 grid grid-cols-2 gap-5 max-w-[580px] my-5
   
   return (
     <footer className={cn("border-t bg-background", className)}>
       <div
         className={`container mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 `}
       >
-        <div
-          className={`grid grid-cols-1 gap-8 md:grid-cols-4`}
-        >
-          <div className="space-y-4">
-            <Link className="flex items-center gap-2" href="/">
-              <span
-                className={`
-                  bg-gradient-to-r from-primary to-primary/70 bg-clip-text
-                  text-xl font-bold tracking-tight text-transparent
-                `}
-              >
-                {SEO_CONFIG.name}
-              </span>
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              {SEO_CONFIG.description}
-            </p>
+            <div className="space-y-4 mb-3">
+              <Link className="flex items-center gap-2" href="/">
+                <span
+                  className={`
+                    bg-gradient-to-r from-primary to-primary/70 bg-clip-text
+                    text-xl font-bold tracking-tight text-transparent
+                  `}
+                >
+                  {SEO_CONFIG.name}
+                </span>
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                {SEO_CONFIG.description}
+              </p>
 
-
-
-            {/* socials */}
-            <div className="flex space-x-4">
-              {
-                socialMediaLinks.map((social, index)=>(
-                  <Button
-                    className="h-8 w-8 rounded-full"
-                    size="icon"
-                    variant="ghost"
-                    key={index}
-                  >
-                    {social.icon}
-                    <span className="sr-only">{social.label}</span>
-                  </Button>
-                ))
-              }
+              {/* socials */}
+              <div className="flex space-x-4">
+                {
+                  socialMediaLinks.map((social, index)=>(
+                    <Button
+                      className="h-8 w-8 rounded-full"
+                      size="icon"
+                      variant="ghost"
+                      key={index}
+                    >
+                      {social.icon}
+                      <span className="sr-only">{social.label}</span>
+                    </Button>
+                  ))
+                }
+              </div>
             </div>
-          </div>
 
+        <div
+          className={`grid grid-cols-3 gap-8 md:grid-cols-4`}
+        >
           {/* Collumns */}
           {columns.map((column, index)=>(
             <div key={index}>

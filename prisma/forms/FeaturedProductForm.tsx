@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface Product {
   id: string;
@@ -16,160 +16,239 @@ interface FeaturedProduct {
   product: Product;
 }
 
+const MAX_FEATURED_PRODUCTS = 10;
+
 export default function FeaturedProductForm() {
   const [featuredProduct, setFeaturedProduct] = useState<FeaturedProduct[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState("");
+
   const [formData, setFormData] = useState({
-    productId: '',
-    productName: '',
+    productId: "",
+    productName: "",
   });
+
   const [editId, setEditId] = useState<string | null>(null);
 
+  /* ===============================
+     Fetching
+  ================================ */
   useEffect(() => {
-    fetchFeaturedProduct();
-    fetchProducts();
+    refreshAll();
   }, []);
+
+  const refreshAll = async () => {
+    await Promise.all([fetchFeaturedProduct(), fetchProducts()]);
+  };
 
   const fetchFeaturedProduct = async () => {
     try {
-      const res = await axios.get('/api/dbhandler?model=featuredProduct');
+      const res = await axios.get("/api/dbhandler?model=featuredProduct");
       setFeaturedProduct(res.data);
     } catch (err) {
-      console.error('Failed to fetch featured products', err);
+      console.error("Failed to fetch featured products", err);
     }
   };
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('/api/dbhandler?model=product');
+      const res = await axios.get("/api/dbhandler?model=product");
       setProducts(res.data);
     } catch (err) {
-      console.error('Failed to fetch products', err);
+      console.error("Failed to fetch products", err);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.productId) {
-      alert("Please select a product to feature.");
+  /* ===============================
+     Derived State
+  ================================ */
+  const featuredIds = useMemo(
+    () => new Set(featuredProduct.map((f) => f.productId)),
+    [featuredProduct]
+  );
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [products, search]);
+
+  const isLimitReached =
+    featuredProduct.length >= MAX_FEATURED_PRODUCTS && !editId;
+
+  /* ===============================
+     Actions
+  ================================ */
+
+  // 🔥 OPTION 1: Direct POST when "Feature" is clicked
+  const handleFeatureClick = async (item: Product) => {
+    if (featuredIds.has(item.id)) return;
+
+    if (featuredProduct.length >= MAX_FEATURED_PRODUCTS) {
+      alert(`You can only feature up to ${MAX_FEATURED_PRODUCTS} products.`);
       return;
     }
 
     try {
-      if (editId) {
-        await axios.put(`/api/dbhandler?model=featuredProduct&id=${editId}`, {
-          productId: formData.productId,
-        });
-      } else {
-        await axios.post('/api/dbhandler?model=featuredProduct', {
-          productId: formData.productId,
-        });
-      }
-      resetForm();
-      fetchFeaturedProduct();
+      await axios.post("/api/dbhandler?model=featuredProduct", {
+        productId: item.id,
+      });
+
+      await refreshAll();
     } catch (err) {
-      console.error("Failed to submit form:", err);
+      console.error("Failed to feature product:", err);
+    }
+  };
+
+  // Used only for EDIT
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editId || !formData.productId) return;
+
+    try {
+      await axios.put(
+        `/api/dbhandler?model=featuredProduct&id=${editId}`,
+        { productId: formData.productId }
+      );
+
+      resetForm();
+      refreshAll();
+    } catch (err) {
+      console.error("Failed to update featured product:", err);
     }
   };
 
   const handleEdit = (item: FeaturedProduct) => {
     setFormData({
       productId: item.productId,
-      productName: item.product?.name || '',
+      productName: item.product?.name || "",
     });
     setEditId(item.id);
-  };
-
-  const handleProductSelect = (item: Product) => {
-    setFormData({
-      productId: item.id,
-      productName: item.name,
-    });
   };
 
   const handleDelete = async (id: string) => {
     try {
       await axios.delete(`/api/dbhandler?model=featuredProduct&id=${id}`);
-      fetchFeaturedProduct();
+      refreshAll();
     } catch (err) {
-      console.error('Failed to delete featured product', err);
+      console.error("Failed to delete featured product", err);
     }
   };
 
   const resetForm = () => {
-    setFormData({ productId: '', productName: '' });
+    setFormData({ productId: "", productName: "" });
     setEditId(null);
   };
 
+  /* ===============================
+     Render
+  ================================ */
   return (
     <div className="p-4">
-      <h2 className="text-lg font-semibold mb-2">Manage Home Page Featured Products</h2>
+      <h2 className="text-lg font-semibold mb-2">
+        Manage Home Page Featured Products
+      </h2>
 
+      {/* ===============================
+          FORM (EDIT ONLY)
+      ================================ */}
       <form
         onSubmit={handleSubmit}
         className="flex flex-col w-full max-w-md gap-2 p-3 border-2 border-secondary-foreground rounded-md"
       >
-        <h3 className="font-semibold">Select Product to Feature</h3>
-        <ul className="mb-2">
-          {products.length > 0 ? (
-            products.map((item, index) => (
+        <h3 className="font-semibold">
+          Select Product to Feature ({featuredProduct.length}/{MAX_FEATURED_PRODUCTS})
+        </h3>
+
+        <Input
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {/* Product List */}
+        <ul className="mb-2 max-h-64 overflow-y-auto">
+          {filteredProducts.map((item, index) => {
+            const isFeatured = featuredIds.has(item.id);
+
+            return (
               <li
                 key={item.id}
-                className="flex flex-col justify-center items-start gap-1 my-2 bg-secondary rounded-md p-2 w-full"
+                className="flex flex-col gap-1 my-2 bg-secondary rounded-md p-2"
               >
                 <div className="flex justify-between w-full">
-                  <span>{index + 1}. {item.name}</span>
+                  <span>
+                    {index + 1}. {item.name}
+                  </span>
                   <span>Price: {item.price ?? <em>No price</em>}</span>
                 </div>
-                <Button onClick={() => handleProductSelect(item)} className="mt-1">
-                  Feature
+
+                <Button
+                  type="button"
+                  onClick={() => handleFeatureClick(item)}
+                  disabled={isFeatured || isLimitReached}
+                  variant={isFeatured ? "ghost" : "default"}
+                >
+                  {isFeatured
+                    ? "Already Featured"
+                    : isLimitReached
+                    ? "Limit Reached"
+                    : "Feature"}
                 </Button>
               </li>
-            ))
-          ) : (
-            <p>No available products.</p>
-          )}
+            );
+          })}
         </ul>
 
-        <Input
-          type="text"
-          placeholder="Product Name"
-          value={formData.productName}
-          disabled
-        />
-        <Input
-          type="text"
-          placeholder="Product ID"
-          value={formData.productId}
-          disabled
-        />
-        <Button type="submit">{editId ? 'Update' : 'Create'}</Button>
-        {editId && <Button onClick={resetForm} variant="ghost">Cancel</Button>}
+        {editId && (
+          <>
+            <Input value={formData.productName} disabled />
+            <Input value={formData.productId} disabled />
+
+            <Button type="submit">Update</Button>
+            <Button type="button" onClick={resetForm} variant="ghost">
+              Cancel
+            </Button>
+          </>
+        )}
       </form>
 
+      {/* ===============================
+          FEATURED LIST
+      ================================ */}
       <h3 className="mt-4 font-semibold">Added Featured Products</h3>
+
       <ul>
-        {featuredProduct.length > 0 ? (
-          featuredProduct.map((item, index) => (
-            <li
-              key={item.id}
-              className="flex flex-col justify-start items-start gap-1 my-2 bg-secondary rounded-md p-2 w-full"
-            >
-              <div className="flex justify-between w-full">
-                <span>{index + 1}. {item.product?.name ?? 'Unnamed Product'}</span>
-                <span>Price: {item.product?.price ?? <em>No price</em>}</span>
-              </div>
-              <div className="flex gap-2 mt-1">
-                <Button type='button' onClick={() => handleEdit(item)}>Edit</Button>
-                <Button type='button' onClick={() => handleDelete(item.id)} variant="ghost" className="border-2 border-accent">
-                  Delete
-                </Button>
-              </div>
-            </li>
-          ))
-        ) : (
-          <p>No featured products added yet.</p>
-        )}
+        {featuredProduct.map((item, index) => (
+          <li
+            key={item.id}
+            className="flex flex-col gap-1 my-2 bg-secondary rounded-md p-2"
+          >
+            <div className="flex justify-between w-full">
+              <span>
+                {index + 1}. {item.product?.name ?? "Unnamed Product"}
+              </span>
+              <span>
+                Price: {item.product?.price ?? <em>No price</em>}
+              </span>
+            </div>
+
+            <div className="flex gap-2 mt-1">
+              <Button type="button" onClick={() => handleEdit(item)}>
+                Edit
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleDelete(item.id)}
+                variant="ghost"
+                className="border-2 border-accent"
+              >
+                Delete
+              </Button>
+            </div>
+          </li>
+        ))}
       </ul>
     </div>
   );

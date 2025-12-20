@@ -41,7 +41,7 @@ export function SearchInput() {
   }, [query, isFocused]);
 
   return (
-    <div className="relative w-[230px] md:w-[300px] flex flex-row bg-background">
+    <div className="relative w-full /w-[230px] md:w-[300px] mx-5 flex flex-row bg-background">
       <Input
         placeholder="Search products..."
         value={query}

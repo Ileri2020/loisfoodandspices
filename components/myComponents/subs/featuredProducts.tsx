@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ProductCard } from "./productCard";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -11,53 +11,80 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
-import { featuredProductsHomepage } from '@/data/mock'
 
-
+/* ===============================
+   Types
+================================ */
 export interface FeaturedProductType {
   id: string;
   name: string;
-  category: string;
+  category: {
+    name: string;
+  };
   price: number;
-  originalPrice?: number;
-  inStock?: boolean;
-  rating?: number;
   images: string[];
+  inStock: boolean;
+  rating?: number;
 }
 
+/* ===============================
+   Component
+================================ */
 const FeaturedProducts = () => {
   const [products, setProducts] = useState<FeaturedProductType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const plugin = React.useRef(
-      Autoplay({ delay: 2000, stopOnInteraction: true })
+  /* Autoplay plugins */
+  const autoplayLTR = useRef(
+    Autoplay({ delay: 2500, stopOnInteraction: false })
   );
 
+  const autoplayRTL = useRef(
+    Autoplay({ delay: 2800, stopOnInteraction: false })
+  );
+
+  /* ===============================
+     Fetch + Normalize Data
+  ================================ */
   useEffect(() => {
     async function fetchFeaturedProducts() {
       try {
         const res = await fetch("/api/dbhandler?model=featuredProduct");
         const data = await res.json();
 
-        // Map the database data to match mock datatype
-        const mappedProducts: FeaturedProductType[] = data.map((item: any) => ({
-          id: item.product.id,
-          name: item.product.name,
-          category: item.product.category.name,
-          price: item.product.price,
-          originalPrice: item.product.price * 1.2, // Optional: if you want to show a higher original price
-          inStock: item.product.stock?.length > 0,
-          rating: item.product.reviews?.length
-            ? item.product.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) /
-              item.product.reviews.length
-            : undefined,
-          images: item.product.images || [item.product.image || ""],
-        }));
+        const mapped: FeaturedProductType[] = data.map((item: any) => {
+          const totalStock =
+            item.product.stock?.reduce(
+              (sum: number, s: any) => sum + (s.addedQuantity ?? 0),
+              0
+            ) ?? 0;
 
-        setProducts(mappedProducts);
+          const rating =
+            item.product.reviews?.length > 0
+              ? item.product.reviews.reduce(
+                  (acc: number, r: any) => acc + r.rating,
+                  0
+                ) / item.product.reviews.length
+              : undefined;
+
+          return {
+            id: item.product.id,
+            name: item.product.name,
+            category: {
+              name: item.product.category.name,
+            },
+            price: item.product.price,
+            images:
+              item.product.images?.length > 0
+                ? item.product.images
+                : ["/placeholder.png"],
+            inStock: totalStock > 0,
+            rating,
+          };
+        });
+
+        setProducts(mapped);
       } catch (err) {
         console.error("Failed to fetch featured products", err);
       } finally {
@@ -68,50 +95,88 @@ const FeaturedProducts = () => {
     fetchFeaturedProducts();
   }, []);
 
+  /* ===============================
+     Split products for dual carousel
+     – Distribute alternately for balance
+  ================================ */
+  const [topRow, bottomRow] = useMemo(() => {
+    const top: FeaturedProductType[] = [];
+    const bottom: FeaturedProductType[] = [];
+    products.forEach((p, i) => {
+      if (i % 2 === 0) top.push(p);
+      else bottom.push(p);
+    });
+    return [top, bottom];
+  }, [products]);
+
   return (
-    <section className="bg-muted/50 py-12 md:py-16">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <h2 className="font-display text-3xl leading-tight font-bold tracking-tight md:text-4xl">
+    <section className="bg-muted/50 py-12 md:py-16 overflow-hidden">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="mb-10 flex flex-col items-center text-center">
+          <h2 className="text-3xl font-bold md:text-4xl">
             Featured Products
           </h2>
           <div className="mt-2 h-1 w-12 rounded-full bg-primary" />
-          <p className="mt-4 max-w-2xl text-center text-muted-foreground">
-            Check out our latest and most popular tech items
+          <p className="mt-4 max-w-2xl text-muted-foreground">
+            Hand-picked products customers love most
           </p>
         </div>
 
         {loading ? (
-          <p className="text-center text-muted-foreground">Loading...</p>
+          <p className="text-center text-muted-foreground">Loading…</p>
         ) : (
-          <Carousel 
-            plugins={[plugin.current]}
-            className="w-screen overflow-clip lg:max-w-[850px] xl:max-w-[1000px] mx-auto mt-10"
-            opts={{ loop: true }}
-            orientation="horizontal"
-            // className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
-            <CarouselContent>
-              {products.map((product, index) => (
-                <CarouselItem
-                  key={index}
-                  className="max-w-sm px-3 basis-1/1 md:basis-1/3 lg:basis-1/5 flex flex-col overflow-clip justify-center items-center w-full ml-2"
-                >
-                  <ProductCard key={product.id} product={product} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
+          <div className="space-y-8">
+            {/* ===============================
+                TOP CAROUSEL (LTR)
+            ================================ */}
+            <Carousel
+              opts={{ loop: true }}
+              plugins={[autoplayLTR.current]}
+              className="w-screen max-w-screen-md mx-auto"
+            >
+              <CarouselContent>
+                {topRow.map((product) => (
+                  <CarouselItem
+                    key={product.id}
+                    className="basis-1/2 md:basis-1/4 /lg:basis-1/7  px-3"
+                  >
+                    <ProductCard product={product} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
 
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+            {/* ===============================
+                BOTTOM CAROUSEL (RTL)
+            ================================ */}
+            <Carousel
+              opts={{ loop: true, direction: "rtl" }}
+              plugins={[autoplayRTL.current]}
+              className="w-screen  max-w-screen-md mx-auto"
+            >
+              <CarouselContent>
+                {bottomRow.map((product) => (
+                  <CarouselItem
+                    key={product.id}
+                    className="basis-1/2 md:basis-1/4 px-3"
+                  >
+                    <ProductCard product={product} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
         )}
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-12 flex justify-center">
           <Link href="/store">
-            <Button className="group h-12 px-8" size="lg" variant="outline">
+            <Button
+              variant="outline"
+              size="lg"
+              className="group h-12 px-8 border-2"
+            >
               View All Products
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
         </div>
@@ -121,22 +186,3 @@ const FeaturedProducts = () => {
 };
 
 export default FeaturedProducts;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
