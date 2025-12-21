@@ -12,20 +12,12 @@ type ProductCardProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "onError"
 > & {
-  orientation?: "vertical" | "horizontal"; // ✅ added (no implementation)
+  orientation?: "vertical" | "horizontal";
   onAddToCart?: (product: any) => void;
   onAddToWishlist?: (productId: string) => void;
-  // product: {
-  //   category: any;
-  //   id: string;
-  //   images: any;
-  //   inStock?: boolean;
-  //   name: string;
-  //   price: number; // treated as discounted price
-  //   rating?: number;
-  // };
   product: any;
   variant?: "compact" | "default";
+  showDiscount?: boolean; // ✅ NEW PROP
 };
 
 export function ProductCard({
@@ -35,6 +27,7 @@ export function ProductCard({
   onAddToWishlist,
   product,
   variant = "default",
+  showDiscount = false, // ✅ default false
   ...props
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
@@ -61,15 +54,19 @@ export function ProductCard({
   };
 
   /**
-   * Pricing logic
-   * product.price = discounted price
-   * originalPrice = +30%
+   * ✅ Proper discount calculation
    */
-  const DISCOUNT_PERCENT = 30;
-  const discountedPrice = product.price;
-  const originalPrice = Math.round(
-    discountedPrice / (1 - DISCOUNT_PERCENT / 100)
-  );
+  const hasDiscount =
+    showDiscount &&
+    typeof product.discount === "number" &&
+    product.discount > 0;
+
+  const DISCOUNT_PERCENT = hasDiscount ? product.discount : 0;
+
+  const originalPrice = product.price;
+  const discountedPrice = hasDiscount
+    ? product.price * (1 - DISCOUNT_PERCENT / 100)
+    : product.price;
 
   const renderStars = () => {
     const rating = product.rating ?? 0;
@@ -104,19 +101,19 @@ export function ProductCard({
     <div className={cn("group", className)} {...props}>
       <Link href={`/store/${product.id}`}>
         <Card
-           className={cn(
-              `
-                relative w-full overflow-clip rounded-lg py-0 transition-all
-                duration-200 ease-in-out
-                shadow-md m-1 flex md:flex-col
-              `,
-              orientation === "horizontal" ? "flex-row" : "flex-col",
-              isHovered && "ring-1 ring-primary/20"
-            )}
+          className={cn(
+            `
+              relative w-full overflow-clip rounded-lg py-0 transition-all
+              duration-200 ease-in-out
+              shadow-md m-1 flex md:flex-col
+            `,
+            orientation === "horizontal" ? "flex-row" : "flex-col",
+            isHovered && "ring-1 ring-primary/20"
+          )}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div 
+          <div
             className={cn(
               "relative aspect-square overflow-hidden rounded-t-lg flex justify-center items-center bg-muted md:w-full",
               orientation === "horizontal" ? "w-[40%]" : "w-full"
@@ -141,12 +138,14 @@ export function ProductCard({
               {product.category.name}
             </Badge>
 
-            {/* Discount badge */}
-            <Badge
-              className="absolute top-2 right-2 bg-destructive text-destructive-foreground"
-            >
-              {DISCOUNT_PERCENT}% OFF
-            </Badge>
+            {/* ✅ Discount badge (CONDITIONALLY RENDERED, UI UNCHANGED) */}
+            {hasDiscount && (
+              <Badge
+                className="absolute top-2 right-2 bg-destructive text-destructive-foreground"
+              >
+                {DISCOUNT_PERCENT}% OFF
+              </Badge>
+            )}
 
             {/* Wishlist */}
             <Button

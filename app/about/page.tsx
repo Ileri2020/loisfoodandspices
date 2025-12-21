@@ -26,14 +26,20 @@ const About = () => {
     >
       <section className="md:max-w-[1200px] md:mx-auto md:h-[80vh]">
         <div className="flex flex-col md:flex-row md:justify-between mx-5 md:mx-10 mt-5">
-        <span className="text-4xl font-semibold">About <span className="text-accent">Loyz Foods and Spices</span></span>
+         <span className="text-4xl font-semibold">About <span className="text-accent">Us</span></span>
         </div>
         <div className="flex flex-col md:flex-row mx-4 md:m-5">
-          <div className="flex-1 mx-2 md:mx-10 my-5 text-secondary-foreground text-center md:text-start">
-            {Stats.about.map((item, index) => (
+          <div className="flex-1 mx-2 md:mx-10 my-5 text-secondary-foreground text-start">
+            {/* {Stats.about.map((item, index) => (
               <div key={index} className="mb-2 indent-5">
                 &nbsp;&nbsp;&nbsp;&nbsp;{item}
               </div>
+            ))}
+          </div> */}
+          {Stats.about.map((item, index) => (
+              <span key={index} className="mb-2 indent-5">
+                &nbsp;&nbsp;&nbsp;&nbsp;{item}
+              </span>
             ))}
           </div>
 

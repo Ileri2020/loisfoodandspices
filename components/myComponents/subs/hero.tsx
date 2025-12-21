@@ -36,6 +36,7 @@ const Hero = () => {
               <RiseAndFadeText
                 texts={[
                   "From Loyz Foods and Spices",
+                  "Easy Payment Options With Card, Bank Transfer, ...",
                   "Freshly Sourced Ingredients",
                   "Naturally Processed Spices",
                   "Quality You Can Trust",
@@ -70,17 +71,17 @@ const Hero = () => {
                 Shop Now <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            {user?.id && (
-              <Link href="/account" className="w-full max-w-52">
-                <Button
-                  className="h-12 px-8 transition-colors duration-200 w-full border-2 border-accent text-accent"
-                  size="lg"
-                  variant="outline"
-                >
-                  Login
-                </Button>
-              </Link>
-            )}
+           {user?.id === "nil" && (
+            <Link href="/account" className="w-full max-w-52">
+              <Button
+                className="h-12 px-8 w-full border-2 border-accent text-accent transition-colors duration-200"
+                size="lg"
+                variant="outline"
+              >
+                Login
+              </Button>
+            </Link>
+          )}
 
           </div>
           <div className={`flex flex-wrap gap-5 text-sm text-muted-foreground `}>
