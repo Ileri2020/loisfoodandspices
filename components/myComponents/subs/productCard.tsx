@@ -173,7 +173,7 @@ export function ProductCard({
           </div>
 
           <div className="w-full flex-1">
-            <CardContent className="p-4 pt-4">
+            <CardContent className="p-4 pt-2">
               <h3 className="line-clamp-2 text-base font-semibold group-hover:text-primary">
                 {product.name}
               </h3>
@@ -186,9 +186,11 @@ export function ProductCard({
                     <span className="font-medium text-foreground">
                       ₦{discountedPrice.toFixed(2)}
                     </span>
-                    <span className="text-sm text-muted-foreground line-through">
-                      ₦{originalPrice.toFixed(2)}
-                    </span>
+                    {hasDiscount && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        ₦{originalPrice.toFixed(2)} has
+                      </span>
+                    )}
                   </div>
                 </>
               )}
@@ -221,9 +223,11 @@ export function ProductCard({
                     <span className="font-medium text-foreground">
                       ₦{discountedPrice.toFixed(2)}
                     </span>
-                    <span className="text-sm text-muted-foreground line-through">
-                      ₦{originalPrice.toFixed(2)}
-                    </span>
+                    {hasDiscount && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        ₦{originalPrice.toFixed(2)} has
+                      </span>
+                    )}
                   </div>
                   <Button
                     className="h-8 w-8 rounded-full"
