@@ -32,7 +32,7 @@ const Sidenav = () => {
             </nav>
             {user?.id !== "nil" ? (
                 <Button
-                    className="bg-red border-2 border-red-500 text-red-600 w-full flex-1"
+                    className="bg-red border-2 h-12 border-red-500 text-red-600 w-full flex-1"
                     variant="outline"
                     onClick={() => {
                     signOut({ callbackUrl: "/" });
