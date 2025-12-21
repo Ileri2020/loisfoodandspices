@@ -257,7 +257,30 @@ export function CartClient({ className }: CartProps) {
             <span>₦{totalAmount.toFixed(2)}</span>
           </div>
 
-          {checkoutData ? (
+          {/* Reason why button is disabled */}
+          {user?.id == 'nil' && (
+            <div>
+              <p className="font-medium text-red-500">
+                Please log in to proceed with checkout.
+              </p>
+              <Link href="/account" className="w-full max-w-52">
+                    <Button
+                    className="h-12 px-8 w-24 mx-auto border-2 border-green-400 text-green-400 transition-colors duration-200"
+                    size="lg"
+                    variant="outline"
+                    >
+                    Login
+                    </Button>
+                </Link>
+            </div>
+          )}
+          {user?.id == 'nil' && !selectedAddressId && (
+            <p className="font-medium text-red-500">
+              Please log in and select a delivery address before checking out.
+            </p>
+          )}
+
+          {checkoutData && user.id !== 'nil' ? (
             <FlutterWaveButtonHook
               tx_ref={checkoutData.tx_ref}
               amount={totalAmount}
