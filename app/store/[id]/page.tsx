@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Similar from "@/components/myComponents/subs/similar";
+import { cn } from "@/lib/utils";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -156,6 +157,36 @@ export default function ProductDetailPage() {
 
   /* ----------------------------- Render ---------------------------------- */
 
+  const renderStars = () => {
+      const rating = product.rating ?? 0;
+      // const fullStars = Math.floor(rating);
+      const fullStars = 5;
+      const hasHalfStar = rating % 1 >= 0.5;
+  
+      return (
+        <div className="flex items-center /bg-red-500">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={`star-${product.id}-${i}`}
+              className={cn(
+                "h-4 w-4",
+                i < fullStars
+                  ? "fill-yellow-400 text-yellow-400"
+                  : i === fullStars && hasHalfStar
+                  ? "fill-yellow-400/50 text-yellow-400"
+                  : "stroke-muted/40 text-muted"
+              )}
+            />
+          ))}
+          {rating > 0 && (
+            <span className="ml-1 text-xs text-muted-foreground">
+              {rating.toFixed(1)}
+            </span>
+          )}
+        </div>
+      );
+    };
+
   return (
     <div className="min-h-screen py-10">
       <div className="container grid gap-8 md:grid-cols-2">
@@ -172,8 +203,8 @@ export default function ProductDetailPage() {
         <div>
           <h1 className="text-3xl font-bold">{product.name}</h1>
 
-          <div className="mt-2 flex items-center gap-2">
-            {range(5).map((i) => (
+          <div className="mt-2 flex items-center gap-2 min-w-20">
+            {/* {range(5).map((i) => (
               <Star
                 key={i}
                 className={`h-5 w-5 ${
@@ -182,7 +213,9 @@ export default function ProductDetailPage() {
                     : "text-muted-foreground"
                 }`}
               />
-            ))}
+            ))} */}
+            {renderStars()}
+
             <span className="text-sm text-muted-foreground">
               ({product.rating.toFixed(1)})
             </span>
