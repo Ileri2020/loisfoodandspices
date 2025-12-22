@@ -29,6 +29,9 @@ import Link from "next/link";
 import * as React from "react";
 import { useAppContext } from "@/hooks/useAppContext";
 import FlutterWaveButtonHook from "../../payment/flutterwavehook";
+import dynamic from 'next/dynamic'
+const Login = dynamic(() => import('@/components/myComponents/subs').then((e) => e.Login),{ssr: false,})
+import {Signup} from "@/components/myComponents/subs"
 
 /* DELIVERY FEES */
 export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
@@ -225,21 +228,23 @@ export function CartClient({ className }: CartProps) {
       {/* SUMMARY */}
       {items.length > 0 && (
         <div className="border-t px-6 py-4 space-y-3">
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Delivery Address</label>
-            <select
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              value={selectedAddressId ?? ""}
-              onChange={(e) => setSelectedAddressId(e.target.value)}
-            >
-              {user?.addresses?.map((address: Address) => (
-                <option key={address.id} value={address.id}>
-                  {[address.address, address.city, address.state].filter(Boolean).join(", ")}
-                </option>
-              ))}
-            </select>
-          </div>
-
+          {user?.id !== 'nil' && selectedAddressId && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Delivery Address</label>
+              <select
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                value={selectedAddressId ?? ""}
+                onChange={(e) => setSelectedAddressId(e.target.value)}
+              >
+                {user?.addresses?.map((address: Address) => (
+                  <option key={address.id} value={address.id}>
+                    {[address.address, address.city, address.state].filter(Boolean).join(", ")}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
             <span>₦{Number(subtotal || 0).toFixed(2)}</span>
@@ -259,19 +264,17 @@ export function CartClient({ className }: CartProps) {
 
           {/* Reason why button is disabled */}
           {user?.id == 'nil' && (
-            <div>
+            <div className="w-full">
               <p className="font-medium text-red-500">
                 Please log in to proceed with checkout.
               </p>
-              <Link href="/account" className="w-full max-w-52">
-                    <Button
-                    className="h-12 px-8 w-24 mx-auto border-2 border-green-400 text-green-400 transition-colors duration-200"
-                    size="lg"
-                    variant="outline"
-                    >
-                    Login
-                    </Button>
-                </Link>
+              <div className="w-full h-[50vh] flex flex-col justify-center items-center">
+                <div className="font-semibold text-lg text-destructive">You are not logged in</div>
+                <div className="flex flex-row gap-5">
+                  <Login />
+                  <Signup />
+                </div>
+              </div>
             </div>
           )}
           {user?.id == 'nil' && !selectedAddressId && (
