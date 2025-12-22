@@ -100,7 +100,7 @@ const Signup = () => {
     <div className='inline'>
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant="outline">Sign up</Button>
+          <Button variant="outline" className='bg-green-500'>Sign up</Button>
         </DrawerTrigger>
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 

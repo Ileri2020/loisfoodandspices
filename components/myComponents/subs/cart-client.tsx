@@ -29,9 +29,10 @@ import * as React from "react";
 import { useAppContext } from "@/hooks/useAppContext";
 import FlutterWaveButtonHook from "../../payment/flutterwavehook";
 import dynamic from 'next/dynamic'
-const Login = dynamic(() => import('@/components/myComponents/subs').then((e) => e.Login),{ssr: false,})
+import {Login} from "@/components/myComponents/subs"
 import {Signup} from "@/components/myComponents/subs"
 import EditUser from "./useredit";
+import { address } from '../../../server/db/mongodb/forms/address';
 
 /* DELIVERY FEES */
 export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
@@ -234,17 +235,23 @@ export function CartClient({ className }: CartProps) {
             <div className="space-y-1">
               <label className="text-sm font-medium">Delivery Address</label>
               {user.addresses && user.addresses.length > 0 ? (
-                <select
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  value={selectedAddressId ?? ""}
-                  onChange={(e) => setSelectedAddressId(e.target.value)}
-                >
-                  {user.addresses.map((address: Address) => (
-                    <option key={address.id} value={address.id}>
-                      {[address.address, address.city, address.state].filter(Boolean).join(", ")}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <select
+                    className="w-full rounded-md border px-3 py-2 text-sm"
+                    value={selectedAddressId ?? ""}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                  >
+                    {user.addresses.map((address: Address) => (
+                      <option key={address.id} value={address.id}>
+                        {[address.address, address.city, address.state].filter(Boolean).join(", ")}
+                      </option>
+                    ))}
+                  </select>
+                  <div>
+                    <div className="mb-2 font-semibold">New Delivery Address ? click here</div>
+                    <div><EditUser /></div>
+                  </div>
+                </div>
               ) : (
                 <div>
                   <p className="text-sm text-red-500">No addresses found. Please add an address in your account below.</p>
