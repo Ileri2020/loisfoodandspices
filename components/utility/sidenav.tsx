@@ -34,24 +34,26 @@ const Sidenav = () => {
                 })}
             </nav>
             {user?.id !== "nil" ? (
-            <Button 
-                className="bg-red border-2 h-12 border-red-500 text-red-600 w-full flex-1" 
-                variant="outline" 
-                onClick={() => {
-                signOut({ callbackUrl: "/" });
-                setUser({
-                    username: "visitor",
-                    id: "nil",
-                    email: "nil",
-                    avatarUrl: "",
-                    role: "user",
-                    department: "nil",
-                    contact: "xxxx",
-                });
-                }}
-            >
-                Logout
-            </Button>
+            <div className="h-12 w-full mx-4">
+                <Button 
+                    className="bg-red border-2 border-red-500 text-red-600 w-full flex-1" 
+                    variant="outline" 
+                    onClick={() => {
+                    signOut({ callbackUrl: "/" });
+                    setUser({
+                        username: "visitor",
+                        id: "nil",
+                        email: "nil",
+                        avatarUrl: "",
+                        role: "user",
+                        department: "nil",
+                        contact: "xxxx",
+                    });
+                    }}
+                >
+                    Logout
+                </Button>
+            </div>
             ) : (
             <div className="w-full">
                 <p className="font-medium text-red-500">Please log in to proceed with checkout.</p>
