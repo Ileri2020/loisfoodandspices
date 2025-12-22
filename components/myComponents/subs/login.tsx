@@ -76,7 +76,7 @@ const Login = () => {
   };
 
   return (
-    <div className='inline'>
+    <div className='inline w-full'>
       <Drawer>
         <DrawerTrigger asChild>
           <Button variant="outline" className='w-full border-2 border-green-500 hover:bg-green-500'>Login</Button>
@@ -143,7 +143,7 @@ const Login = () => {
                 </span>
               </Button>
             </form>
-            <div className="border-2 border-primary max-w-[300px] mx-auto w-full my-2 rounded-md font-medium shadow-input flex justify-center items-center">
+            <div className="border-2 border-primary max-w-[300px] mx-auto w-full my-2 rounded-md font-medium shadow-input flex justify-center items-center bg-green-500">
               <Signup />
             </div>
           </div>

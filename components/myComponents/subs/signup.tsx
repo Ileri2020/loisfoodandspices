@@ -25,6 +25,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { register } from '@/server/action/signup'
 import axios from 'axios'
+import Login from './login'
+import { FcGoogle } from 'react-icons/fc'
+import { FaFacebook } from "react-icons/fa";
+import { facebookSignIn, googleSignIn } from './googlesignin'
 
 const Signup = () => {
   // const [details, setDetails] = useState({
@@ -97,10 +101,10 @@ const Signup = () => {
   };
 
   return (
-    <div className='inline'>
+    <div className='inline w-full'>
       <Drawer>
-        <DrawerTrigger asChild>
-          <Button variant="outline" className='bg-green-500'>Sign up</Button>
+        <DrawerTrigger asChild className='bg-green-500 w-full'>
+          <Button variant="outline" className='bg-green-500 w-full'>Sign up</Button>
         </DrawerTrigger>
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 
@@ -158,6 +162,40 @@ const Signup = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction>Continue</AlertDialogAction>
           </AlertDialogFooter> */}
+
+          <div className="w-full my-2 flex flex-col gap-2">
+            <form
+              action={googleSignIn}
+            >
+              <Button
+                className="border-2 border-primary relative w-full max-w-[300px] mx-auto flex /space-x-2 items-center justify-center text-black rounded-md h-10 font-medium shadow-input hover:bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                type="submit"
+                variant='outline'
+              >
+                <FcGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+                <span className="text-neutral-700 dark:text-neutral-300 text-sm">
+                  Google
+                </span>
+              </Button>
+            </form>
+            <form
+              action={facebookSignIn}
+            >
+              <Button
+                className="border-2 border-primary relative w-full max-w-[300px] mx-auto flex /space-x-2 items-center justify-center text-black rounded-md h-10 font-medium shadow-input hover:bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                type="submit"
+                variant='outline'
+              >
+                <FaFacebook className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+                <span className="text-neutral-700 dark:text-neutral-300 text-sm">
+                  Facebook
+                </span>
+              </Button>
+            </form>
+            <div className="border-2 border-primary max-w-[300px] mx-auto w-full my-2 rounded-md font-medium shadow-input flex justify-center items-center bg-green-500">
+              <Login />
+            </div>
+          </div>
         </DrawerContent>
       </Drawer>
     </div>
