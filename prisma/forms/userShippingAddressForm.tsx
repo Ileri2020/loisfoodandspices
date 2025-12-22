@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 type ShippingAddress = {
   id?: string;
@@ -52,7 +55,7 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
     <div className="flex flex-col gap-3 p-3 border rounded shadow max-w-md">
       {/* Country */}
       <div>
-        <label className="block text-sm font-medium mb-1">Country</label>
+        <Label className="block text-sm font-medium mb-1">Country</Label>
         <select
           value={address.country}
           onChange={(e) => {
@@ -61,7 +64,7 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
             setShowCityInput(false);
             setShowAddressInput(false);
           }}
-          className="input"
+          className="input w-full border-2 border-input h-7 rounded-sm"
         >
           <option value="Nigeria">Nigeria</option>
           <option value="Other">Other</option>
@@ -71,7 +74,7 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
       {/* State */}
       {showStateSelect && (
         <div>
-          <label className="block text-sm font-medium mb-1">State</label>
+          <Label className="block text-sm font-medium mb-1">State</Label>
           <select
             value={address.state}
             onChange={(e) => {
@@ -79,7 +82,7 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
               setShowCityInput(true);
               setShowAddressInput(false);
             }}
-            className="input"
+            className="input w-full border-2 border-input h-7 rounded-sm"
           >
             {NIGERIA_STATES.map((s) => (
               <option key={s} value={s}>
@@ -93,8 +96,8 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
       {/* City */}
       {showCityInput && (
         <div>
-          <label className="block text-sm font-medium mb-1">City</label>
-          <input
+          <Label className="block text-sm font-medium mb-1">City</Label>
+          <Input
             type="text"
             value={address.city}
             onChange={(e) => {
@@ -111,8 +114,8 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
       {showAddressInput && (
         <>
           <div>
-            <label className="block text-sm font-medium mb-1">Address</label>
-            <input
+            <Label className="block text-sm font-medium mb-1">Address</Label>
+            <Input
               type="text"
               value={address.address}
               onChange={(e) => handleChange("address", e.target.value)}
@@ -123,8 +126,8 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Phone</label>
-            <input
+            <Label className="block text-sm font-medium mb-1">Phone</Label>
+            <Input
               type="text"
               value={address.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
@@ -136,8 +139,8 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
 
           {address.country === "Nigeria" && (
             <div>
-              <label className="block text-sm font-medium mb-1">ZIP / Postal Code (optional)</label>
-              <input
+              <Label className="block text-sm font-medium mb-1">ZIP / Postal Code (optional)</Label>
+              <Input
                 type="text"
                 value={address.zip}
                 onChange={(e) => handleChange("zip", e.target.value)}

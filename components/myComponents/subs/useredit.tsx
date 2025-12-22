@@ -120,7 +120,7 @@ const EditUser = () => {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button className="bg-green-500 text-background w-full flex-1 hover:bg-green-500/30">Edit</Button>
+        <Button className="bg-green-500 text-background w-full flex-1 hover:bg-green-500/30">Edit Profile</Button>
       </DrawerTrigger>
 
       <DrawerContent className="max-w-3xl mx-auto py-10">
