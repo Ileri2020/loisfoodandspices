@@ -118,7 +118,8 @@ const EditUser = () => {
   };
 
   return (
-    <Drawer>
+    <div className="overflow-scroll">
+      <Drawer>
       <DrawerTrigger asChild>
         <Button className="bg-green-500 text-background w-full flex-1 hover:bg-green-500/30">Edit Profile</Button>
       </DrawerTrigger>
@@ -134,6 +135,7 @@ const EditUser = () => {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6 bg-secondary rounded-xl">
           {/* User fields */}
+          <Button type="submit" className="flex-1">Update &rarr;</Button>
           <Input
             type="email"
             placeholder="Email"
@@ -169,6 +171,7 @@ const EditUser = () => {
         </form>
       </DrawerContent>
     </Drawer>
+    </div>
   );
 };
 
