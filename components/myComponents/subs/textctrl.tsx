@@ -38,7 +38,7 @@ const AnimatedTextBase = ({
         initial="hidden"
         animate="visible"
         exit="exit"
-        transition={{ duration: 0.9, ease: "easeInOut" }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
         className={className}
       >
         {children}

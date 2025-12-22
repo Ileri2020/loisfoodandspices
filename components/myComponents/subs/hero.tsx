@@ -36,8 +36,8 @@ const Hero = () => {
               <RiseAndFadeText
                 texts={[
                   "From Loyz Foods and Spices",
-                  "Easy Payment Options With Card, Bank Transfer, ...",
-                  "Freshly Sourced Ingredients",
+                  "Card & Bank Transfer Payments",
+                  "Easy Login With Google or Facebook",
                   "Naturally Processed Spices",
                   "Quality You Can Trust",
                   "Trusted by Homes and Businesses",

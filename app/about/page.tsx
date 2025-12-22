@@ -49,7 +49,7 @@ const About = () => {
                 <div key={index} className="bg-secondary rounded-lg p-5 shadow-md shadow-accent/50">
                   <Countup 
                     end={stat.num as number}
-                    duration={5}
+                    duration={10}
                     delay={2}
                     separator=""
                     className="text-3xl md:text-5xl text-outline font-extrabold text-background hover:text-accent py-5"

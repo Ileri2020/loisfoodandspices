@@ -79,7 +79,7 @@ export default function FlutterWaveButtonHook({
   };
 
   return (
-    <Button className='animate-pulse' disabled={disabled || loading} onClick={handlePayment}>
+    <Button className='animate-pulse align-self-end bg-green-500' disabled={disabled || loading} onClick={handlePayment}>
       {loading ? 'Processing…' : 'Pay now'}
     </Button>
   );

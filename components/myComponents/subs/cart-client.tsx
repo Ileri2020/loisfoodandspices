@@ -227,7 +227,7 @@ export function CartClient({ className }: CartProps) {
 
       {/* SUMMARY */}
       {items.length > 0 && (
-        <div className="border-t px-6 py-4 space-y-3">
+        <div className="border-t px-6 py-4 space-y-3 w-full flex flex-col">
           {user?.id !== 'nil' && selectedAddressId && (
             <div className="space-y-1">
               <label className="text-sm font-medium">Delivery Address</label>
@@ -268,7 +268,7 @@ export function CartClient({ className }: CartProps) {
               <p className="font-medium text-red-500">
                 Please log in to proceed with checkout.
               </p>
-              <div className="w-full h-[50vh] flex flex-col justify-center items-center">
+              <div className="w-full /h-[50vh] flex flex-col justify-center items-center">
                 <div className="font-semibold text-lg text-destructive">You are not logged in</div>
                 <div className="flex flex-row gap-5">
                   <Login />
