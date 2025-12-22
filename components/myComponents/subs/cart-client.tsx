@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 "use client";
 
@@ -32,6 +31,7 @@ import FlutterWaveButtonHook from "../../payment/flutterwavehook";
 import dynamic from 'next/dynamic'
 const Login = dynamic(() => import('@/components/myComponents/subs').then((e) => e.Login),{ssr: false,})
 import {Signup} from "@/components/myComponents/subs"
+import EditUser from "./useredit";
 
 /* DELIVERY FEES */
 export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
@@ -228,23 +228,47 @@ export function CartClient({ className }: CartProps) {
       {/* SUMMARY */}
       {items.length > 0 && (
         <div className="border-t px-6 py-4 space-y-3 w-full flex flex-col">
-          {user?.id !== 'nil' && selectedAddressId && (
+
+          {/* DELIVERY ADDRESS OR EDIT USER */}
+          {user?.id !== 'nil' ? (
             <div className="space-y-1">
               <label className="text-sm font-medium">Delivery Address</label>
-              <select
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={selectedAddressId ?? ""}
-                onChange={(e) => setSelectedAddressId(e.target.value)}
-              >
-                {user?.addresses?.map((address: Address) => (
-                  <option key={address.id} value={address.id}>
-                    {[address.address, address.city, address.state].filter(Boolean).join(", ")}
-                  </option>
-                ))}
-              </select>
+              {user.addresses && user.addresses.length > 0 ? (
+                <select
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  value={selectedAddressId ?? ""}
+                  onChange={(e) => setSelectedAddressId(e.target.value)}
+                >
+                  {user.addresses.map((address: Address) => (
+                    <option key={address.id} value={address.id}>
+                      {[address.address, address.city, address.state].filter(Boolean).join(", ")}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div>
+                  <p className="text-sm text-red-500">No addresses found. Please add an address in your account below.</p>
+                  <EditUser />
+                </div>
+              )}
+            </div>
+          ) : (
+            // LOGIN / SIGNUP BLOCK
+            <div className="w-full flex flex-col justify-center items-center space-y-4">
+              <p className="font-medium text-red-500">
+                Please log in to proceed with checkout.
+              </p>
+              <div className="font-semibold text-lg text-destructive">
+                You are not logged in
+              </div>
+              <div className="flex flex-row gap-5">
+                <Login />
+                <Signup />
+              </div>
             </div>
           )}
-          
+
+          {/* SUBTOTAL & DELIVERY FEE */}
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
             <span>₦{Number(subtotal || 0).toFixed(2)}</span>
@@ -262,27 +286,7 @@ export function CartClient({ className }: CartProps) {
             <span>₦{totalAmount.toFixed(2)}</span>
           </div>
 
-          {/* Reason why button is disabled */}
-          {user?.id == 'nil' && (
-            <div className="w-full">
-              <p className="font-medium text-red-500">
-                Please log in to proceed with checkout.
-              </p>
-              <div className="w-full /h-[50vh] flex flex-col justify-center items-center">
-                <div className="font-semibold text-lg text-destructive">You are not logged in</div>
-                <div className="flex flex-row gap-5">
-                  <Login />
-                  <Signup />
-                </div>
-              </div>
-            </div>
-          )}
-          {user?.id == 'nil' && !selectedAddressId && (
-            <p className="font-medium text-red-500">
-              Please log in and select a delivery address before checking out.
-            </p>
-          )}
-
+          {/* CHECKOUT BUTTON */}
           {checkoutData && user.id !== 'nil' ? (
             <FlutterWaveButtonHook
               tx_ref={checkoutData.tx_ref}
@@ -298,12 +302,18 @@ export function CartClient({ className }: CartProps) {
               }}
             />
           ) : (
-            <Button disabled={!selectedAddressId} onClick={prepareCheckout}>
+            <Button
+              disabled={
+                user?.id === 'nil' || !selectedAddressId || (user?.addresses?.length === 0)
+              }
+              onClick={prepareCheckout}
+            >
               Checkout
             </Button>
           )}
         </div>
       )}
+
     </div>
   );
 
