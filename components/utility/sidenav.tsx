@@ -9,10 +9,13 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAppContext } from "@/hooks/useAppContext";
 import { signOut } from "next-auth/react";
+import dynamic from 'next/dynamic'
+const Login = dynamic(() => import('@/components/myComponents/subs').then((e) => e.Login),{ssr: false,})
+import {Signup} from "@/components/myComponents/subs"
 
 const Sidenav = () => {
     const pathname = usePathname();    
-    const {user, setUser } = useAppContext();             
+    const {user, setUser } = useAppContext();           
   return (
     <Sheet>
         <SheetTrigger className="flex justify-center items-center text-[32px] text-accent">
@@ -31,37 +34,36 @@ const Sidenav = () => {
                 })}
             </nav>
             {user?.id !== "nil" ? (
-                <Button
-                    className="bg-red border-2 h-12 border-red-500 text-red-600 w-full flex-1"
-                    variant="outline"
-                    onClick={() => {
-                    signOut({ callbackUrl: "/" });
-                    setUser({
-                        username: "visitor",
-                        id: "nil",
-                        email: "nil",
-                        avatarUrl:
-                        "https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png",
-                        role: "user",
-                        department: "nil",
-                        contact: "xxxx",
-                    });
-                    }}
-                >
-                    Logout
-                </Button>
-                ) : (
-                <Link href="/account" className="w-full max-w-52">
-                    <Button
-                    className="h-12 px-8 w-full border-2 border-accent text-accent transition-colors duration-200"
-                    size="lg"
-                    variant="outline"
-                    >
-                    Login
-                    </Button>
-                </Link>
-                )}
-
+            <Button 
+                className="bg-red border-2 h-12 border-red-500 text-red-600 w-full flex-1" 
+                variant="outline" 
+                onClick={() => {
+                signOut({ callbackUrl: "/" });
+                setUser({
+                    username: "visitor",
+                    id: "nil",
+                    email: "nil",
+                    avatarUrl: "",
+                    role: "user",
+                    department: "nil",
+                    contact: "xxxx",
+                });
+                }}
+            >
+                Logout
+            </Button>
+            ) : (
+            <div className="w-full">
+                <p className="font-medium text-red-500">Please log in to proceed with checkout.</p>
+                <div className="w-full h-[50vh] flex flex-col justify-center items-center">
+                <div className="font-semibold text-lg text-destructive">You are not logged in</div>
+                <div className="flex flex-row gap-5">
+                    <Login />
+                    <Signup />
+                </div>
+                </div>
+            </div>
+            )}
             <div className="my-5 w-full flex flex-row">
                 <div className="flex w-full flex-1"></div>
                 <ModeToggle />
