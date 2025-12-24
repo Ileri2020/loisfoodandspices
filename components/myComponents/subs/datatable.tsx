@@ -175,7 +175,7 @@ import {
 
 
 
-export function DataTableDemo(props : {data : any, columns: any}) {
+export function DataTableDemo(props: { data: any, columns: any, onRowClick?: (row: any) => void }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -185,8 +185,8 @@ export function DataTableDemo(props : {data : any, columns: any}) {
   const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
-    data : props.data,
-    columns : props.columns,
+    data: props.data,
+    columns: props.columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -252,9 +252,9 @@ export function DataTableDemo(props : {data : any, columns: any}) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   )
                 })}
@@ -263,21 +263,32 @@ export function DataTableDemo(props : {data : any, columns: any}) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const status = (row.original as any).status;
+                let rowClass = "cursor-pointer transition-colors hover:bg-muted/50 ";
+
+                if (status === "pending") rowClass += "bg-yellow-100/50 dark:bg-yellow-900/20 hover:bg-yellow-200/50 dark:hover:bg-yellow-900/30";
+                else if (status === "paid" || status === "completed") rowClass += "bg-green-100/50 dark:bg-green-900/20 hover:bg-green-200/50 dark:hover:bg-green-900/30";
+                else if (status === "unconfirmed") rowClass += "bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-200/50 dark:hover:bg-orange-900/30";
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={rowClass}
+                    onClick={() => props.onRowClick && props.onRowClick(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell

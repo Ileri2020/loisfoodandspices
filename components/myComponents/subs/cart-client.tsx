@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +28,10 @@ import * as React from "react";
 import { useAppContext } from "@/hooks/useAppContext";
 import FlutterWaveButtonHook from "../../payment/flutterwavehook";
 import dynamic from 'next/dynamic'
-import {Login} from "@/components/myComponents/subs"
-import {Signup} from "@/components/myComponents/subs"
+import { Login } from "@/components/myComponents/subs"
+import { Signup } from "@/components/myComponents/subs"
 import EditUser from "./useredit";
-import { address } from '../../../server/db/mongodb/forms/address';
+import { BankTransferForm } from "@/components/payment/BankTransferForm";
 
 /* DELIVERY FEES */
 export const DELIVERY_FEES_BY_STATE: Record<string, number> = {
@@ -128,10 +127,30 @@ export function CartClient({ className }: CartProps) {
 
       const res = await axios.post("/api/payment", payload);
       setCheckoutData(res.data);
+      return res.data; // Return for reuse
     } catch (err) {
       console.error("Checkout initiation failed:", err);
-      alert("Checkout failed, please try again.");
+      // alert("Checkout failed, please try again.");
+      return null;
     }
+  };
+
+  // Wrapper for manual transfer that ensures cart exists first
+  const handleBankTransferClick = async () => {
+    // Logic: we need a cart ID to link the transfer to. 
+    // Reuse prepareCheckout to generate the cart in DB.
+    // If checkoutData already exists, use it.
+
+    let cartId = checkoutData?.cartId;
+
+    if (!cartId) {
+      const data = await prepareCheckout();
+      if (data && data.cartId) {
+        cartId = data.cartId;
+      }
+    }
+
+    return cartId; // Return to BankTransferForm if we could render it conditionally or pass it
   };
 
   /* CART TRIGGER */
@@ -148,7 +167,7 @@ export function CartClient({ className }: CartProps) {
 
   /* CART CONTENT */
   const CartContent = (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {/* HEADER */}
       <div className="flex items-center justify-between border-b px-6 py-4">
         <div>
@@ -157,13 +176,20 @@ export function CartClient({ className }: CartProps) {
             {itemCount === 0 ? "Your cart is empty" : `You have ${itemCount} item${itemCount !== 1 ? "s" : ""}`}
           </div>
         </div>
-        {isDesktop && (
-          <SheetClose asChild>
-            <Button size="icon" variant="ghost">
-              <X className="h-5 w-5" />
+        <div className="flex items-center gap-2">
+          <Link href="/cart">
+            <Button variant="outline" size="sm">
+              All Carts
             </Button>
-          </SheetClose>
-        )}
+          </Link>
+          {isDesktop && (
+            <SheetClose asChild>
+              <Button size="icon" variant="ghost">
+                <X className="h-5 w-5" />
+              </Button>
+            </SheetClose>
+          )}
+        </div>
       </div>
 
       {/* ITEMS */}
@@ -177,7 +203,6 @@ export function CartClient({ className }: CartProps) {
           ) : (
             <div className="space-y-4 py-4">
               {items.map((item) => {
-                // Safely extract image URL
                 const imageUrl =
                   Array.isArray(item.images) && item.images.length > 0
                     ? item.images[0]
@@ -228,7 +253,7 @@ export function CartClient({ className }: CartProps) {
 
       {/* SUMMARY */}
       {items.length > 0 && (
-        <div className="border-t px-6 py-4 space-y-3 w-full flex flex-col">
+        <div className="border-t px-6 py-4 space-y-3 w-full flex flex-col bg-background">
 
           {/* DELIVERY ADDRESS OR EDIT USER */}
           {user?.id !== 'nil' ? (
@@ -248,26 +273,23 @@ export function CartClient({ className }: CartProps) {
                     ))}
                   </select>
                   <div>
-                    <div className="mb-2 font-semibold">New Delivery Address ? click here</div>
-                    <div><EditUser /></div>
+                    <div className="mb-2 font-semibold text-xs mt-1">
+                      <EditUser />
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm text-red-500">No addresses found. Please add an address in your account below.</p>
+                  <p className="text-sm text-red-500">No addresses found.</p>
                   <EditUser />
                 </div>
               )}
             </div>
           ) : (
-            // LOGIN / SIGNUP BLOCK
             <div className="w-full flex flex-col justify-center items-center space-y-4">
-              <p className="font-medium text-red-500">
+              <p className="font-medium text-red-500 text-center">
                 Please log in to proceed with checkout.
               </p>
-              <div className="font-semibold text-lg text-destructive">
-                You are not logged in
-              </div>
               <div className="flex flex-row gap-5">
                 <Login />
                 <Signup />
@@ -293,31 +315,57 @@ export function CartClient({ className }: CartProps) {
             <span>₦{totalAmount.toFixed(2)}</span>
           </div>
 
-          {/* CHECKOUT BUTTON */}
-          {checkoutData && user.id !== 'nil' ? (
-            <FlutterWaveButtonHook
-              tx_ref={checkoutData.tx_ref}
-              amount={totalAmount}
-              currency="NGN"
-              email={user?.email ?? "noemail@loyzfoods.com"}
-              phonenumber={user?.contact ?? "0000000000"}
-              name={user?.name ?? "Customer"}
-              onSuccess={async () => {
-                await axios.post(`/api/payment?action=confirm`, { tx_ref: checkoutData.tx_ref });
-                clearCart();
-                clearCheckoutData();
-              }}
-            />
-          ) : (
-            <Button
-              disabled={
-                user?.id === 'nil' || !selectedAddressId || (user?.addresses?.length === 0)
-              }
-              onClick={prepareCheckout}
-            >
-              Checkout
-            </Button>
-          )}
+          {/* CHECKOUT BUTTONS */}
+          {user.id !== 'nil' ? (
+            <div className="space-y-3">
+              {/* 
+                   Logic: 
+                   1. User clicks "Checkout" -> creates cart in DB -> shows Payment Options.
+                   OR
+                   2. We show payment options directly if 'checkoutData' exists.
+                 */}
+
+              {!checkoutData ? (
+                <Button
+                  disabled={
+                    user?.id === 'nil' || !selectedAddressId || (user?.addresses?.length === 0)
+                  }
+                  onClick={prepareCheckout}
+                  className="w-full"
+                >
+                  Proceed to Checkout
+                </Button>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <FlutterWaveButtonHook
+                    tx_ref={checkoutData.tx_ref}
+                    amount={totalAmount}
+                    currency="NGN"
+                    email={user?.email ?? "noemail@loyzfoods.com"}
+                    phonenumber={user?.contact ?? "0000000000"}
+                    name={user?.name ?? "Customer"}
+                    onSuccess={async () => {
+                      await axios.post(`/api/payment?action=confirm`, { tx_ref: checkoutData.tx_ref });
+                      clearCart();
+                      clearCheckoutData();
+                      setIsOpen(false);
+                    }}
+                  />
+
+                  {/* Manual Transfer - Need to pass cartID */}
+                  <BankTransferForm
+                    amount={totalAmount}
+                    cartId={checkoutData.cartId}
+                    onSuccess={() => {
+                      clearCart();
+                      clearCheckoutData();
+                      setIsOpen(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -332,8 +380,8 @@ export function CartClient({ className }: CartProps) {
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>{CartTrigger}</SheetTrigger>
           <SheetContent className="p-0 w-[400px]">
-            <SheetHeader>
-              <SheetTitle className="px-6 pt-4">Shopping Cart</SheetTitle>
+            <SheetHeader className="sr-only">
+              <SheetTitle>Shopping Cart</SheetTitle>
             </SheetHeader>
             {CartContent}
           </SheetContent>
@@ -341,7 +389,9 @@ export function CartClient({ className }: CartProps) {
       ) : (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerTrigger asChild>{CartTrigger}</DrawerTrigger>
-          <DrawerContent>{CartContent}</DrawerContent>
+          <DrawerContent className="h-[85vh]">
+            {CartContent}
+          </DrawerContent>
         </Drawer>
       )}
     </div>

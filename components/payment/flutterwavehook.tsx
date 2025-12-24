@@ -1,6 +1,7 @@
 // ts-nocheck
 'use client';
 
+import { useAppContext } from '@/hooks/useAppContext';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -28,6 +29,7 @@ export default function FlutterWaveButtonHook({
   onSuccess,
 }: FlutterwaveButtonHookProps) {
   const [loading, setLoading] = useState(false);
+  const { openDialog } = useAppContext();
 
   const handlePayment = async () => {
     if (disabled || loading) return;
@@ -63,15 +65,17 @@ export default function FlutterWaveButtonHook({
           if (response?.status === 'successful') {
             onSuccess(response);
           } else {
-            alert('Payment was not successful. Please try again.');
+            // alert('Payment was not successful. Please try again.');
+            openDialog('Payment was not successful. Please try again.', 'Payment Failed');
           }
 
           closePaymentModal();
         },
-        onClose: () => {},
+        onClose: () => { },
       });
     } catch (error) {
-      alert('An error occurred while processing payment. Please try again.');
+      // alert('An error occurred while processing payment. Please try again.');
+      openDialog('An error occurred while processing payment. Please try again.', 'Error');
       console.error('Flutterwave Payment Error:', error);
     } finally {
       setLoading(false);

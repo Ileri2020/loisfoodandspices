@@ -38,7 +38,7 @@ import { BiPlus } from 'react-icons/bi'
 
 
 export const ProfileImg = () => {
-  const { selectedVideo, setSelectedVideo, useMock, user, setUser } = useAppContext();
+  const { selectedVideo, setSelectedVideo, useMock, user, setUser, openDialog } = useAppContext();
   const [formData, setFormData] = useState({
     description: '',
     type: 'image',
@@ -48,17 +48,17 @@ export const ProfileImg = () => {
   });
 
   const [preview, setPreview] = useState(null);
-  const [uploadStatus , setUploadStatus] = useState("");
+  const [uploadStatus, setUploadStatus] = useState("");
 
   const [file, setFile] = useState(null);
 
 
   const form = useRef<HTMLFormElement>(null);
 
-//   const fetchUsers = async () => {
-//     const res = await axios('/api/dbhandler?model=users');
-//     setUsers(res.data);
-//   };
+  //   const fetchUsers = async () => {
+  //     const res = await axios('/api/dbhandler?model=users');
+  //     setUsers(res.data);
+  //   };
 
 
   const handleSubmit = async (e) => {
@@ -71,16 +71,16 @@ export const ProfileImg = () => {
     pformData.append("title", formData.title)
     pformData.append("profileImage", "true")
     pformData.append('for', formData.for)
-    
+
     try {
       const response = await axios.post(`/api/file/image`, pformData);
       if (response.status === 200) {
         const data = response.data;
         // do something with the data
         console.log(data)
-        setUser({...user, image : data.url});
+        setUser({ ...user, image: data.url });
       } else {
-        alert("wrong input or connection error")
+        openDialog("wrong input or connection error", "Upload Error")
       }
     } catch (error) {
       // handle error
@@ -98,23 +98,23 @@ export const ProfileImg = () => {
   const resetForm = () => {
     setPreview(null)
     setFormData({
-    description: '',
-    type: 'image',
-    userId: user.id,
-    title: 'profile image',
-    for: 'post',
-  });
+      description: '',
+      type: 'image',
+      userId: user.id,
+      title: 'profile image',
+      for: 'post',
+    });
   };
 
   const handleImageChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile.size > 3 * 1024){
-      alert("file size greater than 300kb file may not upload")
+    if (selectedFile.size > 3 * 1024) {
+      openDialog("file size greater than 300kb file may not upload", "File too large")
     }
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
   }
-  
+
 
   useEffect(() => {
     // if (file) {
@@ -122,13 +122,13 @@ export const ProfileImg = () => {
     // }
   }, [preview,]);
 
-  
+
 
   return (
     <div className='absolute inline z-10 translate-x-[140px] translate-y-[140px]'>
       <Drawer>
         <DrawerTrigger asChild className='w-12 h-12 flex items-center rounded-full font-bold text-accent text-2xl border-2 border-accent p-2 hover:text-primary hover:bg-accent/40 place-self-end self-end z-10'>
-            <CiCamera />
+          <CiCamera />
         </DrawerTrigger>
         <DrawerContent className='flex flex-col justify-center items-center py-10 /bg-red-500 max-w-5xl mx-auto'>
 
@@ -136,8 +136,8 @@ export const ProfileImg = () => {
             <DrawerTitle className='w-full text-center'>Edit your profile image (300kb max)</DrawerTitle>
             <DrawerDescription></DrawerDescription>
           </DrawerHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl"> 
-            
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-10 bg-secondary rounded-xl max-w-xl">
+
             {preview && (
               <div style={{ marginTop: '1rem' }}>
                 <img src={preview} alt="Selected preview" style={{ maxHeight: '300px' }} />
@@ -153,7 +153,7 @@ export const ProfileImg = () => {
               // onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               onChange={handleImageChange}
             />
-            
+
             <DrawerFooter className="flex flex-row w-full gap-2 mt-2">
               {/* <Button>Submit</Button> */}
               <DrawerClose className='flex-1' asChild>
@@ -186,7 +186,7 @@ export const PostButton = () => {
   const { user, setUser } = useAppContext();
   const isAdminOrModerator = user.role === "admin" || user.role === "moderator";
 
-  
+
   const [formData, setFormData] = useState({
     description: '',
     type: 'image',
@@ -203,14 +203,14 @@ export const PostButton = () => {
 
   const form = useRef<HTMLFormElement>(null);
 
-//   const fetchUsers = async () => {
-//     const res = await axios('/api/dbhandler?model=users');
-//     setUsers(res.data);
-//   };
+  //   const fetchUsers = async () => {
+  //     const res = await axios('/api/dbhandler?model=users');
+  //     setUsers(res.data);
+  //   };
 
 
   const handleSubmit = async (e) => {
-    if (user.name === "visitor" && user.email === "nil"){
+    if (user.name === "visitor" && user.email === "nil") {
       alert("login or create an account to make a post")
       return
     }
@@ -223,7 +223,7 @@ export const PostButton = () => {
     pformData.append("title", formData.title)
     pformData.append("for", formData.for)
     pformData.append("profileImage", "false")
-    
+
     try {
       const response = await axios.post(`/api/file/image`, pformData);
       if (response.status === 200) {
@@ -250,12 +250,12 @@ export const PostButton = () => {
   const resetForm = () => {
     setPreview(null)
     setFormData({
-    description: '',
-    type: 'image',
-    userId: user.id,
-    title: isAdminOrModerator ? 'Title, event, etc' : 'post',
-    for: 'post',
-  });
+      description: '',
+      type: 'image',
+      userId: user.id,
+      title: isAdminOrModerator ? 'Title, event, etc' : 'post',
+      for: 'post',
+    });
   };
 
   // const handleImageChange = (e) => {
@@ -268,7 +268,7 @@ export const PostButton = () => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
-  
+
     const fileType = selectedFile.type.split('/')[0];
     switch (fileType) {
       case 'image':
@@ -285,8 +285,8 @@ export const PostButton = () => {
         break;
     }
   }
-  
-  
+
+
 
   useEffect(() => {
     // if (file) {
@@ -294,7 +294,7 @@ export const PostButton = () => {
     // }
   }, [preview,]);
 
-  
+
 
   return (
     <div className='z-10 w-full'>

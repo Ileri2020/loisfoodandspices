@@ -4,13 +4,13 @@ import { useAppContext } from "@/hooks/useAppContext";
 import { Button } from '@/components/ui/button'
 
 const CommentCard = (prop: { name: string, createdAt: string, comment: string, id: string }) => {
-  const { user } = useAppContext();
+  const { user, openDialog } = useAppContext();
 
   const handleDelete = async () => {
     try {
       const response = await axios.delete(`/api/dbhandler?model=comments&id=${prop.id}`);
       if (response.status === 200) {
-        alert("Comment deleted");
+        openDialog("Comment deleted", "Success");
         // You may want to reload the comments list here
       }
     } catch (error) {

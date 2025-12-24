@@ -1,7 +1,7 @@
 "use client";
 import { UserProps } from "@/types/user";
 import { VideoType } from "@/types/videoType";
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, ReactNode } from "react";
 
 
 interface Comment {
@@ -13,6 +13,13 @@ interface Comment {
   createdAt: string | Date;
 }
 
+// Dialog Configuration Interface
+export interface DialogConfig {
+  isOpen: boolean;
+  title: string;
+  description: string;
+  variant?: "default" | "destructive" | "success"; // Optional for styling
+}
 
 interface AppContextProps {
   // isDark: boolean;
@@ -33,8 +40,14 @@ interface AppContextProps {
   setIsModal: (isModal: boolean) => void;
   useMock: boolean;
   setUseMock: (useMock: boolean) => void;
-  comments : any ;
-  setComments : (comments : any) => void;
+  comments: any;
+  setComments: (comments: any) => void;
+
+  // Global Dialog Props
+  dialogConfig: DialogConfig;
+  setDialogConfig: (config: DialogConfig) => void;
+  openDialog: (description: string, title?: string) => void;
+  closeDialog: () => void;
 }
 
 export const AppContext = createContext<AppContextProps | null>(null);
@@ -49,6 +62,25 @@ export const AppContextProvider: React.FC<any> = ({ children }) => {
   const [isModal, setIsModal] = useState(false);
   const [useMock, setUseMock] = useState(true);
   const [comments, setComments] = useState([])
+
+  // Global Dialog State
+  const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
+  const openDialog = (description: string, title: string = "Notification") => {
+    setDialogConfig({
+      isOpen: true,
+      title,
+      description,
+    });
+  };
+
+  const closeDialog = () => {
+    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   const appContextValues: AppContextProps = {
     // isDark,
@@ -69,6 +101,12 @@ export const AppContextProvider: React.FC<any> = ({ children }) => {
     setIsModal,
     useMock,
     setUseMock,
+
+    // Global Dialog Values
+    dialogConfig,
+    setDialogConfig,
+    openDialog,
+    closeDialog,
   };
 
   return (

@@ -22,8 +22,11 @@ type Product = {
   rating?: number;
 };
 
+import { useAppContext } from "@/hooks/useAppContext";
+
 const Stocks = ({ categoryFilter, search, selectedId }: StocksProps) => {
   const { addItem } = useCart();
+  const { openDialog } = useAppContext();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +49,7 @@ const Stocks = ({ categoryFilter, search, selectedId }: StocksProps) => {
       if (search) {
         const searchMatches = fetchedProducts.filter(
           p => p.name.toLowerCase().includes(search.toLowerCase()) &&
-               p.id !== selectedId
+            p.id !== selectedId
         );
         prioritized.push(...searchMatches);
       }
@@ -109,7 +112,7 @@ const Stocks = ({ categoryFilter, search, selectedId }: StocksProps) => {
           }}
           orientation="horizontal"
           onAddToCart={addItem}
-          onAddToWishlist={(id) => alert(`Add ${id} to wishlist`)}
+          onAddToWishlist={(id) => openDialog(`Add ${id} to wishlist`, "Wishlist")}
           className="w-[100vw] md:w-[200px] mb-5 flex flex-row md:flex-col"
         />
       ))}

@@ -8,10 +8,12 @@ import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { motion, useInView, useAnimation } from "framer-motion"
 
-const Gallery = () => {
+import { useAppContext } from "@/hooks/useAppContext"
 
+const Gallery = () => {
+  const { openDialog } = useAppContext();
   const ref = useRef(null)
-  const isInView = useInView(ref, {once: true})
+  const isInView = useInView(ref, { once: true })
 
   useEffect(() => {
     console.log(isInView)
@@ -27,14 +29,14 @@ const Gallery = () => {
     qty: number;
     __v: number;
   };
-  
+
   const [data, setData] = useState<stockCategory[]>([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   // const cartItems = useSelector((state : RootState)=>state.cart.itemsList)
   const dispatch = useDispatch();
-  const cart = (name : string, id : string, price : number, img : string) => {
+  const cart = (name: string, id: string, price: number, img: string) => {
     dispatch(
       cartActions.addToCart({
         name,
@@ -43,13 +45,13 @@ const Gallery = () => {
         img,
       })
     )
-   // console.log(cartItems)
+    // console.log(cartItems)
   }
 
   useEffect(() => {
     fetch(`/api/data/stock?limit=10`)
       .then(response => response.json())
-      .then(data => data.slice().sort(()=>Math.random()-0.5))
+      .then(data => data.slice().sort(() => Math.random() - 0.5))
       .then(data => {
         setData(data);
         // data.forEach((obj : any) => {
@@ -59,23 +61,23 @@ const Gallery = () => {
       })
       .catch(error => {
         setError(error);
-        alert("unable to connect to server please check your network connection");
+        openDialog("unable to connect to server please check your network connection", "Connection Error");
         setLoading(true);
       });
   }, []);
 
-if (loading) {
-  return <p>Loading...</p>;
-}
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
-// if (error) {
-//   return <p>Error: {error}</p>;
-// }
+  // if (error) {
+  //   return <p>Error: {error}</p>;
+  // }
 
   return (
     <section className="w-full max-w-[1000px] overflow-clip">
       <div ref={ref} className="flex flex-col w-full gap-5">
-        {data.map((stock, index)=>{
+        {data.map((stock, index) => {
           return (
             <div className="flex flex-col md:flex-row /bg-accent-secondary/5 w-full items-center md:items-start md:justify-between" key={index}>
               <div className={`${(index % 2) ? "md:order-2" : ""} w-[350px] h-[350px] contain-content flex justify-center items-center`}>

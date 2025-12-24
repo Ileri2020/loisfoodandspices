@@ -21,9 +21,10 @@ import {
   TooltipTrigger,
   TooltipContent
 } from "@/components/ui/tooltip";
+import { GlobalDialog } from '../ui/GlobalDialog';
 
-const Navbar = () : JSX.Element => {
-  const {setUser, user } = useAppContext();
+const Navbar = (): JSX.Element => {
+  const { setUser, user } = useAppContext();
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const Navbar = () : JSX.Element => {
       });
     }
   }, [status, session, user.email, setUser]);
-  
+
   return (
     <TooltipProvider>
       <div className="sticky top-0 z-30 w-[100vw] overflow-clip flex flex-col m-0 p-0">
@@ -87,9 +88,9 @@ const Navbar = () : JSX.Element => {
                   >
                     <AiOutlineSearch />
                   </Button> */}
-                  
+
                   <Cart />
-                  
+
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -131,6 +132,7 @@ const Navbar = () : JSX.Element => {
           </div>
         </header>
         <Advert />
+        <GlobalDialog />
       </div>
     </TooltipProvider>
   )

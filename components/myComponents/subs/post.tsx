@@ -22,10 +22,11 @@ type post = {
 }
 
 const Post = (props: post = {
-  ownerurl : 'https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png', 
-  owner : "Visitor",
-  url : "", post : "", time : "", event : "", type : "", title : "", for : "", id : ""}) => {
-  const { user, isModal, setIsModal } = useAppContext();
+  ownerurl: 'https://res.cloudinary.com/dc5khnuiu/image/upload/v1752627019/uxokaq0djttd7gsslwj9.png',
+  owner: "Visitor",
+  url: "", post: "", time: "", event: "", type: "", title: "", for: "", id: ""
+}) => {
+  const { user, isModal, setIsModal, openDialog } = useAppContext();
   const [liked, setLiked] = useState(false);
   const [likeId, setLikeId] = useState(null);
   const [likeCount, setLikeCount] = useState(0);
@@ -54,7 +55,7 @@ const Post = (props: post = {
       console.error(error);
     }
   };
-  
+
 
 
   useEffect(() => {
@@ -64,8 +65,8 @@ const Post = (props: post = {
 
 
   const handleLike = async () => {
-    if(user.name === "visitor" && user.email === "nil"){
-      alert("Login to react")
+    if (user.name === "visitor" && user.email === "nil") {
+      openDialog("Login to react", "Authentication Required")
       return
     }
     try {
@@ -92,9 +93,9 @@ const Post = (props: post = {
 
 
 
-  const postComment = async (id : any) => {
-    if(user.name === "visitor" && user.email === "nil") {
-      alert("Login to comment")
+  const postComment = async (id: any) => {
+    if (user.name === "visitor" && user.email === "nil") {
+      openDialog("Login to comment", "Authentication Required")
       return
     }
     try {
@@ -145,19 +146,19 @@ const Post = (props: post = {
 
 
 
-const handleDelete = async () => {
-  try {
-    const response = await axios.delete(`/api/dbhandler?model=posts&id=${props.id}`);
-    if (response.status === 200) {
-      setDeleted(true);
-      alert("Post deleted");
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(`/api/dbhandler?model=posts&id=${props.id}`);
+      if (response.status === 200) {
+        setDeleted(true);
+        openDialog("Post deleted", "Success");
+      }
+    } catch (error) {
+      console.error(error);
     }
-  } catch (error) {
-    console.error(error);
-  }
-};
+  };
 
-  
+
 
   return (
     <div className='mt-10 flex flex-col rounded-sm w-[100vw] overflow-clip max-w-sm /max-h-[512px]'>
@@ -168,15 +169,15 @@ const handleDelete = async () => {
       )}
       {/* {<div> <img src={props.owner} alt="" /> </div>} */}
       <div className='w-full flex flex-col justify-center items-center'>
-      <div className='w-full flex flex-row'>
-          <img src={props.ownerurl} alt="" className='w-10 h-10 rounded-full m-1'/>
+        <div className='w-full flex flex-row'>
+          <img src={props.ownerurl} alt="" className='w-10 h-10 rounded-full m-1' />
           <div className='flex flex-row w-full'>
             <div className=' flex-1 text-xl font-semibold px-3'>{props.owner}</div>
             <div className='text-sm w-14'>{formatDate(props.time)}</div>
           </div>
         </div>
         <div className='w-full flex flex-col justify-center items-center'>
-          {props.type === 'image' && <img src={props.url} alt="" className='w-full m-1'/>}
+          {props.type === 'image' && <img src={props.url} alt="" className='w-full m-1' />}
           {props.type === 'video' && (
             <video controls src={props.url} className="w-full max-w-[360px] my-2" />
           )}
@@ -199,34 +200,34 @@ const handleDelete = async () => {
             <Button className={`flex-1 text-2xl ${liked ? 'bg-blue-500 text-white' : ''}`} onClick={handleLike}>
               {liked ? <BiSolidLike /> : <BiLike />}
             </Button>
-            <Button onClick={()=>setIsModal(true)} variant={"outline"} className='bg-transparent flex-1 text-2xl text-accent border-2 border-accent'>
+            <Button onClick={() => setIsModal(true)} variant={"outline"} className='bg-transparent flex-1 text-2xl text-accent border-2 border-accent'>
               <BiComment />
             </Button>
             {/* <Button variant={"outline"} className='bg-transparent flex-1 text-2xl text-accent'>
               <BiDownload />
             </Button> */}
           </div>
-          <Comments videoId={props.id}  />
+          <Comments videoId={props.id} />
           {isModal && (
-          <Modal
-            close={() => setIsModal(false)}
-            save={()=>postComment(props.id)}
-            isSaveAllowed={comment.length > 0}
-            className="bg-secondary overflow-clip"
-          >
-            <h3 className="text-base my-2">
-              <span className="font-semibold">@{user.name}</span>
-              {/* {", "}
+            <Modal
+              close={() => setIsModal(false)}
+              save={() => postComment(props.id)}
+              isSaveAllowed={comment.length > 0}
+              className="bg-secondary overflow-clip"
+            >
+              <h3 className="text-base my-2">
+                <span className="font-semibold">@{user.name}</span>
+                {/* {", "}
               <span>
                 a comment will be created
                  for the video &quot;
                 {selectedVideo.title}
                 &quot;
               </span> */}
-            </h3>
-            <TextArea onChange={(e) => setComment(e.target.value)} className="h-[15%]" />
-          </Modal>
-        )}
+              </h3>
+              <TextArea onChange={(e) => setComment(e.target.value)} className="h-[15%]" />
+            </Modal>
+          )}
         </div>
       </div>
     </div>
