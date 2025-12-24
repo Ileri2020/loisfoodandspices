@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppContext } from "@/hooks/useAppContext";
+import { sendOrderNotification } from "@/lib/nodemailer";
 import axios from "axios";
 import { Loader2, Upload } from "lucide-react";
 import { useState } from "react";
@@ -108,6 +109,14 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
                         tx_ref: `manual-${Date.now()}`, // Dummy ref
                         // Additional fields like receiptUrl would need schema support or be lost/stored elsewhere
                         // For now, this at least records the attempt.
+                    });
+                    await sendOrderNotification(process.env.ORDER_RECEIVER_EMAIL, {
+                        tx_ref: `manual-${Date.now()}`,
+                        amount,
+                    });
+                    await sendOrderNotification('adepojuololade2020@gmail.com', {
+                        tx_ref: `manual-${Date.now()}`,
+                        amount,
                     });
                 } catch (err) {
                     console.warn("Could not create payment record, but cart updated.", err);
