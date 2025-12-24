@@ -22,6 +22,8 @@ import ShippingAddressForm from "@/prisma/forms/ShippingAddressForm";
 import PostForm from "@/prisma/forms/PostForm";
 import AddressPriceForm from "@/prisma/forms/AddressPriceForm";
 
+/* ================= FORMS ================= */
+
 const allForms = [
   { name: "User", component: UserForm },
   { name: "Product", component: ProductForm },
@@ -41,8 +43,11 @@ const allForms = [
 
 const staffForms = ["Cart", "Stock", "Notification", "AddressPrice"];
 
+/* ================= COMPONENT ================= */
+
 const Admin = () => {
   const { user } = useAppContext();
+
   const isAdmin = user?.role === "admin";
   const isStaff = user?.role === "staff";
 
@@ -51,8 +56,15 @@ const Admin = () => {
   const [cartData, setCartData] = useState<any[]>([]);
   const [notificationData, setNotificationData] = useState<any[]>([]);
 
-  // Determine which forms the user can see
-  const forms = isAdmin ? allForms : isStaff ? allForms.filter(f => staffForms.includes(f.name)) : [];
+  /* ================= PERMISSIONS ================= */
+
+  const forms = isAdmin
+    ? allForms
+    : isStaff
+      ? allForms.filter(f => staffForms.includes(f.name))
+      : [];
+
+  /* ================= FORM SELECTION ================= */
 
   const toggleForm = (name: string) => {
     setSelectedForms(prev =>
@@ -73,17 +85,26 @@ const Admin = () => {
     }
   };
 
-  const allSelected = selectedForms.length === filteredForms.length && filteredForms.length > 0;
-  const partiallySelected = selectedForms.length > 0 && selectedForms.length < filteredForms.length;
+  const allSelected =
+    selectedForms.length === filteredForms.length && filteredForms.length > 0;
+
+  const partiallySelected =
+    selectedForms.length > 0 && selectedForms.length < filteredForms.length;
+
+  /* ================= TABLE COLUMNS ================= */
 
   const formColumns = useMemo(
     () => [
       {
         accessorKey: "name",
-        header: ({ table }: any) => (
+        header: () => (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <Checkbox checked={allSelected} onCheckedChange={toggleAll} className={partiallySelected ? "bg-gray-400" : ""} />
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={toggleAll}
+                className={partiallySelected ? "bg-gray-400" : ""}
+              />
               <span>Form Name</span>
             </div>
             <Input
@@ -131,17 +152,21 @@ const Admin = () => {
     []
   );
 
-  // Fetch carts and notifications
+  /* ================= DATA FETCH ================= */
+
   useEffect(() => {
     if (!isAdmin && !isStaff) return;
 
     const fetchData = async () => {
       try {
-        // Carts
-        const cartsRes = await fetch("/api/dbhandler?model=cart");
+        /* ===== CARTS (PAID + UNCONFIRMED) ===== */
+        const cartsRes = await fetch(
+          "/api/dbhandler?model=cart&status=paid,unconfirmed"
+        );
+
         let carts = await cartsRes.json();
         if (!Array.isArray(carts)) carts = [];
-        carts = carts.filter((c: any) => c.status?.toLowerCase() === "paid");
+
         setCartData(
           carts.map((c: any) => ({
             id: c.id,
@@ -152,13 +177,15 @@ const Admin = () => {
           }))
         );
 
-        // Notifications
+        /* ===== NOTIFICATIONS ===== */
         const notifRes = await fetch("/api/dbhandler?model=notification");
         let notifications = await notifRes.json();
         if (!Array.isArray(notifications)) notifications = [];
+
         notifications = notifications.filter(
           (n: any) => isAdmin || (isStaff && n.to?.toLowerCase() === "staff")
         );
+
         setNotificationData(
           notifications.map((n: any) => ({
             id: n.id,
@@ -176,7 +203,8 @@ const Admin = () => {
     fetchData();
   }, [isAdmin, isStaff]);
 
-  // If user is not admin or staff, show error
+  /* ================= GUARD ================= */
+
   if (!isAdmin && !isStaff) {
     return (
       <div className="w-full p-4 text-center text-red-600 font-bold">
@@ -185,16 +213,23 @@ const Admin = () => {
     );
   }
 
+  /* ================= UI ================= */
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { delay: 0.5, duration: 0.6, ease: "easeIn" } }}
+      animate={{
+        opacity: 1,
+        transition: { delay: 0.5, duration: 0.6, ease: "easeIn" },
+      }}
       className="w-[100vw] p-4"
     >
-      <div className="text-4xl font-semibold w-full text-center mb-6">Admin Dashboard</div>
+      <div className="text-4xl font-semibold w-full text-center mb-6">
+        Admin Dashboard
+      </div>
 
       <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-5">
-        {/* DataTable for form selection */}
+        {/* FORM SELECTOR */}
         <div className="mb-6 max-w-md">
           <DataTableDemo columns={formColumns} data={filteredForms} />
         </div>
@@ -205,16 +240,21 @@ const Admin = () => {
         })}
       </div>
 
-      {/* Carts Table */}
+      {/* CARTS */}
       <div className="mt-8">
-        <h3 className="text-xl font-semibold mb-2">Paid Carts</h3>
+        <h3 className="text-xl font-semibold mb-2">
+          Paid & Unconfirmed Carts
+        </h3>
         <DataTableDemo columns={cartColumns} data={cartData} />
       </div>
 
-      {/* Notifications Table */}
+      {/* NOTIFICATIONS */}
       <div className="mt-8">
         <h3 className="text-xl font-semibold mb-2">Notifications</h3>
-        <DataTableDemo columns={notificationColumns} data={notificationData} />
+        <DataTableDemo
+          columns={notificationColumns}
+          data={notificationData}
+        />
       </div>
     </motion.section>
   );

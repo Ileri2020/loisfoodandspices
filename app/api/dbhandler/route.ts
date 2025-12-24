@@ -119,10 +119,12 @@ const normalizeState = (state?: string | null): string | null => {
 // ==================== GET ====================
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const model = searchParams.get("model") || null;
+
+  const model = searchParams.get("model");
   const id = parseId(searchParams.get("id"), model || "");
   const searchQuery = searchParams.get("search")?.toLowerCase() || "";
   const categoryFilter = searchParams.get("category")?.toLowerCase() || "";
+  const statusParam = searchParams.get("status"); // ← NEW
 
   if (!model || !modelMap[model]) {
     return NextResponse.json({ error: "Invalid model" }, { status: 400 });
@@ -130,14 +132,34 @@ export async function GET(req: NextRequest) {
 
   const prismaModel = modelMap[model];
 
-  // Define valid includes per model
+  // =====================
+  // INCLUDE MAP
+  // =====================
   const includeMap: Record<string, any> = {
     product: { category: true, stock: true, reviews: true },
-    featuredProduct: { product: { include: { category: true, stock: true, reviews: true } } },
-    review: { user: { select: { id: true, name: true, email: true, image: true } }, product: true },
+    featuredProduct: {
+      product: { include: { category: true, stock: true, reviews: true } },
+    },
+    review: {
+      user: { select: { id: true, name: true, email: true, image: true } },
+      product: true,
+    },
     post: { author: true },
-    cart: { products: { include: { product: true } }, user: true },
-    user: { cart: true, reviews: true, addresses: true, post: true, notification: true },
+    cart: {
+      products: {
+        include: { product: true },
+      },
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    user: {
+      cart: true,
+      reviews: true,
+      addresses: true,
+      post: true,
+      notification: true,
+    },
     category: { products: true },
     stock: { product: true },
     payment: { cart: true },
@@ -145,70 +167,107 @@ export async function GET(req: NextRequest) {
   };
 
   try {
-    // Single item fetch
+    // =====================
+    // SINGLE ITEM
+    // =====================
     if (id) {
       if (model === "review") {
-        const items = await prismaModel.findMany({ where: { productId: id } });
-        return NextResponse.json(items);
-      } else {
-        const item = await prismaModel.findUnique({
-          where: { id },
-          include: includeMap[model] || undefined,
+        const items = await prisma.review.findMany({
+          where: { productId: id },
+          include: includeMap.review,
         });
-        if (!item) return NextResponse.json({ error: "Document not found" }, { status: 404 });
-        return NextResponse.json(item);
+        return NextResponse.json(items);
       }
+
+      const item = await prismaModel.findUnique({
+        where: { id },
+        include: includeMap[model],
+      });
+
+      if (!item) {
+        return NextResponse.json(
+          { error: "Document not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(item);
     }
 
-    // Prioritized product search
+    // =====================
+    // CART FILTERING (🔥 FIX)
+    // =====================
+    if (model === "cart") {
+      const where: any = {};
+
+      if (statusParam) {
+        const statuses = statusParam
+          .split(",")
+          .map(s => s.trim().toLowerCase());
+
+        where.status = { in: statuses };
+      }
+
+      const carts = await prisma.cart.findMany({
+        where,
+        include: includeMap.cart,
+        orderBy: { createdAt: "desc" },
+      });
+
+      return NextResponse.json(carts);
+    }
+
+    // =====================
+    // PRODUCT SEARCH
+    // =====================
     if (model === "product") {
       const where: any = {};
 
-      if (id) {
-        where.id = id; // only works if id is string (your schema should match)
-      } else if (searchQuery || categoryFilter) {
+      if (searchQuery || categoryFilter) {
         where.OR = [];
 
         if (searchQuery) {
-          where.OR.push({ name: { contains: searchQuery, mode: "insensitive" } });
+          where.OR.push({
+            name: { contains: searchQuery, mode: "insensitive" },
+          });
         }
 
         if (categoryFilter) {
-          where.OR.push({ category: { name: { contains: categoryFilter, mode: "insensitive" } } });
+          where.OR.push({
+            category: {
+              name: { contains: categoryFilter, mode: "insensitive" },
+            },
+          });
         }
       }
 
       const products = await prisma.product.findMany({
         where,
-        include: includeMap[model],
+        include: includeMap.product,
         take: 50,
       });
 
       return NextResponse.json(products);
     }
 
-    // Fallback: search for products by previous syntax
-    if (model === "products" && searchQuery.length >= 3) {
-      const items = await prisma.product.findMany({
-        where: {
-          OR: [
-            { name: { contains: searchQuery, mode: "insensitive" } },
-            { category: { name: { contains: searchQuery, mode: "insensitive" } } },
-          ],
-        },
-        take: 10,
-      });
-      return NextResponse.json(items);
-    }
+    // =====================
+    // DEFAULT FETCH ALL
+    // =====================
+    const items = await prismaModel.findMany({
+      include: includeMap[model],
+      orderBy: { createdAt: "desc" },
+    });
 
-    // Default fetch all
-    const items = await prismaModel.findMany({ include: includeMap[model] || undefined });
     return NextResponse.json(items);
   } catch (error) {
     console.error("Database GET error:", error);
-    return NextResponse.json({ error: "Failed to fetch items" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch items" },
+      { status: 500 }
+    );
   }
 }
+
 
 // ==================== POST ====================
 export async function POST(req: NextRequest) {
