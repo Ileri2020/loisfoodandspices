@@ -235,6 +235,18 @@ model ShippingAddress {
   updatedAt DateTime @updatedAt
 }
 
+model DeliveryFee {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  country   String
+  state     String?
+  city      String?
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([country, state, city])
+}
+
 //one to one relation with cart, not d unique to avoid error
 model Refund {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId

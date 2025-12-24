@@ -29,6 +29,7 @@ const modelMap: Record<string, any> = {
   shippingAddress: prisma.shippingAddress,
   stock: prisma.stock,
   user: prisma.user,
+  deliveryFee: prisma.deliveryFee,
 };
 
 // =====================
@@ -160,7 +161,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Prioritized product search
-   if (model === "product") {
+    if (model === "product") {
       const where: any = {};
 
       if (id) {
@@ -253,10 +254,10 @@ export async function POST(req: NextRequest) {
         if (key === "file") return;
         body[key] = value;
       });
-    } 
+    }
     else if (contentType.includes("application/json")) {
       body = await parseJson(req);
-    } 
+    }
     else {
       return NextResponse.json(
         { error: "Unsupported Content-Type" },
@@ -466,7 +467,7 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const model = searchParams.get("model");
   const id = `${parseId(searchParams.get("id"), model || "")}`;
-  console.log("DELETE request for model:", model, "id:", id,'search params id', searchParams.get("id") );
+  console.log("DELETE request for model:", model, "id:", id, 'search params id', searchParams.get("id"));
 
   if (!model || !modelMap[model]) return NextResponse.json({ error: "Invalid model" }, { status: 400 });
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

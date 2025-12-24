@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
+import { sendOrderNotification } from "@/lib/nodemailer";
 
 const prisma = new PrismaClient();
 
@@ -20,39 +21,45 @@ export async function POST(req: NextRequest) {
     // ---------------- CONFIRM PAYMENT ----------------
     // CONFIRM PAYMENT
     if (action === "confirm") {
-    const { tx_ref } = body;
-    if (!tx_ref)
+      const { tx_ref } = body;
+      if (!tx_ref)
         return NextResponse.json({ error: "tx_ref is required" }, { status: 400 });
 
-    const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
+      const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
 
-    // Fetch transaction from FlutterWave
-    const fwRes = await axios.get(
+      // Fetch transaction from FlutterWave
+      const fwRes = await axios.get(
         `https://api.flutterwave.com/v3/transactions?tx_ref=${tx_ref}`,
         { headers: { Authorization: `Bearer ${FLW_SECRET_KEY}` } }
-    );
+      );
 
-    const data = fwRes.data?.data?.[0];
+      const data = fwRes.data?.data?.[0];
 
-    if (!data)
+      if (!data)
         return NextResponse.json({ success: false, message: "Transaction not found" });
 
-    if (data.status === "successful") {
+      if (data.status === "successful") {
         // Find payment by tx_ref
         const payment = await prisma.payment.findUnique({ where: { tx_ref } });
 
         if (payment) {
-        // Mark cart as paid
-        await prisma.cart.update({
+          // Mark cart as paid
+          await prisma.cart.update({
             where: { id: payment.cartId },
             data: { status: "paid" },
-        });
+          });
+          // Send order notification
+          // Sending to a test email as requested
+          await sendOrderNotification(process.env.ORDER_RECEIVER_EMAIL, {
+            tx_ref,
+            amount: data.amount,
+          });
         }
 
         return NextResponse.json({ success: true, message: "Payment confirmed" });
-    }
+      }
 
-    return NextResponse.json({ success: false, message: "Payment not completed yet" });
+      return NextResponse.json({ success: false, message: "Payment not completed yet" });
     }
 
 

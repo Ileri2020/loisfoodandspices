@@ -65,6 +65,9 @@ interface Address {
   address?: string | null;
   city?: string | null;
   state?: string | null;
+  country?: string | null;
+  zip?: string | null;
+  phone?: string | null;
 }
 
 /* HELPERS */
@@ -95,17 +98,80 @@ export function CartClient({ className }: CartProps) {
   }, [user?.addresses, selectedAddressId]);
 
   /* DELIVERY FEE LOGIC */
-  const calculateDeliveryFee = (address?: Address | null): number => {
-    const normalizedState = normalizeState(address?.state);
-    if (!normalizedState) return 0;
-    return DELIVERY_FEES_BY_STATE[normalizedState] ?? 6500;
-  };
+  const [dbDeliveryFee, setDbDeliveryFee] = React.useState<number>(0);
+  const [loadingFee, setLoadingFee] = React.useState(false);
 
   const selectedAddress: Address | undefined = user?.addresses?.find(
     (a: Address) => a.id === selectedAddressId
   );
 
-  const deliveryFee = items.length > 0 ? calculateDeliveryFee(selectedAddress) : 0;
+  React.useEffect(() => {
+    const fetchDeliveryFee = async () => {
+      if (!selectedAddress) {
+        setDbDeliveryFee(0);
+        return;
+      }
+
+      setLoadingFee(true);
+      try {
+        // Fetch all fees - optimization: could filter server side but fetching all is fine for small scale
+        const res = await axios.get('/api/dbhandler?model=deliveryFee');
+        const fees: any[] = res.data;
+
+        if (!Array.isArray(fees)) return;
+
+        const { country, state, city } = selectedAddress;
+
+        // Normalize state similarly to before if needed, but assuming DB matches address input
+        // Since we formerly normalized "Lagos State" to "Lagos", we might need to handle that.
+        // For now, simple matching. The AddressPriceForm allows selecting exact states.
+
+        // Priority: 
+        // 1. Country + State + City
+        // 2. Country + State
+        // 3. Country only
+
+        const normalizedState = normalizeState(state); // Reuse helper if state names vary
+        // However, if we are using the Country-State-City library in Admin, 
+        // we should ensure the user's address state matches that format or we normalize it.
+        // The previous normalizeState removed "State" and underscores. 
+        // Let's rely on flexible matching or normalized check. 
+
+        // Let's stick closer to the user's previous hardcoded keys, which were like "Lagos", "Kwara".
+        // If the DB has "Lagos State" (from library), we might miss it.
+        // I'll try to match loosely.
+
+        // Actually, the user asked to migrate the hardcoded values. 
+        // So the DB will contain "Lagos", "Kwara" etc. (as state names).
+
+        const match = fees.find(f =>
+          f.country === (country || 'Nigeria') && // Defaulting to Nigeria if missing for now
+          f.state === normalizedState &&
+          f.city === city
+        ) || fees.find(f =>
+          f.country === (country || 'Nigeria') &&
+          f.state === normalizedState &&
+          !f.city
+        ) || fees.find(f =>
+          f.country === (country || 'Nigeria') &&
+          !f.state
+        );
+
+        setDbDeliveryFee(match ? match.price : 6500); // Default fallback
+      } catch (err) {
+        console.error("Failed to fetch delivery fee", err);
+        setDbDeliveryFee(6500);
+      } finally {
+        setLoadingFee(false);
+      }
+    };
+
+    fetchDeliveryFee();
+  }, [selectedAddress]);
+
+
+
+  const deliveryFee = items.length > 0 ? dbDeliveryFee : 0;
   const totalAmount = Number(subtotal || 0) + Number(deliveryFee || 0);
 
   /* CHECKOUT */

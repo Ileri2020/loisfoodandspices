@@ -20,6 +20,7 @@ import CartForm from "@/prisma/forms/CartForm";
 import CouponForm from "@/prisma/forms/CouponForm";
 import ShippingAddressForm from "@/prisma/forms/ShippingAddressForm";
 import PostForm from "@/prisma/forms/PostForm";
+import AddressPriceForm from "@/prisma/forms/AddressPriceForm";
 
 const allForms = [
   { name: "User", component: UserForm },
@@ -35,9 +36,10 @@ const allForms = [
   { name: "Coupon", component: CouponForm },
   { name: "ShippingAddress", component: ShippingAddressForm },
   { name: "Post", component: PostForm },
+  { name: "AddressPrice", component: AddressPriceForm },
 ];
 
-const staffForms = ["Cart", "Stock", "Notification"];
+const staffForms = ["Cart", "Stock", "Notification", "AddressPrice"];
 
 const Admin = () => {
   const { user } = useAppContext();
