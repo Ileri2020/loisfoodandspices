@@ -89,36 +89,23 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
             if (cartId) {
                 await axios.put(`/api/dbhandler?model=cart&id=${cartId}`, {
                     status: "unconfirmed",
-                    // We might want to store payment info. 
-                    // Since schema is strict, we might abuse 'status' or just rely on the fact it's unconfirmed.
-                    // But ideally we should Create a Payment record.
-                    // Let's create a payment record via the generic POST if possible or just update cart.
-                    // For now, updating status is the primary requirement.
-                    // We can perhaps store the receipt URL in a note field if it existed, or just log it.
+                    payment: {
+                        method: "bank_transfer",
+                        amount,
+                        receiptUrl,
+                    },
                 });
 
                 // Attempt to create a payment record for tracking
                 try {
-                    // Determine if we can create a payment record. 
-                    // Schema has Payment model.
-                    await axios.post("/api/dbhandler?model=payment", {
-                        cartId: cartId,
-                        method: "bank_transfer",
-                        amount: amount,
-                        tx_ref: `manual-${Date.now()}`, // Dummy ref
-                        // Additional fields like receiptUrl would need schema support or be lost/stored elsewhere
-                        // For now, this at least records the attempt.
-                    });
-                    // Send notifications via API
-                    const txRef = `manual-${Date.now()}`;
                     try {
                         await axios.post("/api/send-notification", {
-                            email: process.env.NEXT_PUBLIC_ORDER_RECEIVER_EMAIL,
-                            orderDetails: { tx_ref: txRef, amount },
+                            // email: process.env.NEXT_PUBLIC_ORDER_RECEIVER_EMAIL,
+                            orderDetails: { tx_ref: 'bank_transfer', amount },
                         });
                         await axios.post("/api/send-notification", {
-                            email: 'adepojuololade2020@gmail.com',
-                            orderDetails: { tx_ref: txRef, amount },
+                            // email: 'adepojuololade2020@gmail.com',
+                            orderDetails: { tx_ref: 'bank_transfer', amount },
                         });
                     } catch (emailError) {
                         console.warn("Failed to send email notifications:", emailError);

@@ -505,6 +505,45 @@ export async function PUT(req: NextRequest) {
     // =========================
     // UPDATE
     // =========================
+    // =========================
+    // CART PAYMENT UPDATE
+    // =========================
+    if (model === "cart" && body.payment) {
+      const cartId = parseId(body.id || searchParams.get("id"), model);
+
+      if (!cartId) {
+        return NextResponse.json({ error: "Missing cart id" }, { status: 400 });
+      }
+
+      const { method, amount, tx_ref } = body.payment;
+
+      const updatedCart = await prisma.cart.update({
+        where: { id: cartId },
+        data: {
+          status: body.status ?? "unconfirmed",
+          payment: {
+            upsert: {
+              create: {
+                method,
+                amount,
+                tx_ref,
+              },
+              update: {
+                method,
+                amount,
+                tx_ref,
+              },
+            },
+          },
+        },
+        include: {
+          payment: true,
+        },
+      });
+
+      return NextResponse.json(updatedCart);
+    }
+
     const updatedItem = await prismaModel.update({
       where: { id },
       data: updatedData,

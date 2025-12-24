@@ -19,6 +19,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendOrderNotification = async (to: string, orderDetails: any) => {
     try {
+        console.log('Sending order notification email to:', to);
         const mailOptions = {
             from: email,
             to,

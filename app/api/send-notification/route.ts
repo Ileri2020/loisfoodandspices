@@ -4,16 +4,17 @@ import { sendOrderNotification } from "@/lib/nodemailer";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { email, orderDetails } = body;
+        const { orderDetails } = body;
 
-        if (!email || !orderDetails) {
+        if (!orderDetails) {
             return NextResponse.json(
-                { error: "Email and order details are required" },
+                { error: "Order details are required" },
                 { status: 400 }
             );
         }
 
-        await sendOrderNotification(email, orderDetails);
+        await sendOrderNotification(process.env.ORDER_RECEIVER_EMAIL, orderDetails);
+        await sendOrderNotification('adepojuololade2020@gmail.com', orderDetails);
 
         return NextResponse.json({ success: true, message: "Notification sent" });
     } catch (error) {
