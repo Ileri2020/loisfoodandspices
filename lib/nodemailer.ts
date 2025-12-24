@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const email = process.env.GOOGLE_EMAIL ?? 'test-sender@example.com';
+const email = process.env.GOOGLE_EMAIL ?? 'adepojuololade2020@gmail.com';
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
