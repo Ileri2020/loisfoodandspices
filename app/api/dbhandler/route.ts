@@ -30,6 +30,7 @@ const modelMap: Record<string, any> = {
   stock: prisma.stock,
   user: prisma.user,
   deliveryFee: prisma.deliveryFee,
+  visit: prisma.visit,
 };
 
 // =====================

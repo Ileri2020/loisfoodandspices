@@ -10,6 +10,7 @@ import { Footer } from "@/components/myComponents/subs/footer";
 import { CartProvider } from "@/hooks/use-cart";
 import { SessionProvider } from "next-auth/react"
 import { usersession } from "@/session";
+import { VisitTracker } from "@/components/utility/VisitTracker";
 // import {Roboto} from "next/font/google"
 
 // const roboto = Roboto({
@@ -42,7 +43,7 @@ const metadata: Metadata = {
 };
 
 export const SEO_CONFIG = {
-  description:'Your one stop store for food items',
+  description: 'Your one stop store for food items',
   fullName: "Lois Food and Spices",
   name: "Lois Food and Spices",
   slogan: "Lois Food and Spices",
@@ -61,27 +62,28 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session : Session | null =  await usersession();
+  const session: Session | null = await usersession();
   return (
     <html lang="en">
-      <SessionProvider  session={session}>
+      <SessionProvider session={session}>
         <AppContextProvider>
           <body
             className={`font-roboto_mono antialiased`}
-            // ${geistSans.variable} ${geistMono.variable}
+          // ${geistSans.variable} ${geistMono.variable}
           >
             <Providers>
               <CartProvider>
                 <ThemeProvider
-                    attribute="class"
-                    defaultTheme="light"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
-                    <Navbar />
-                    {children}
-                    <Footer />
-                  </ThemeProvider>
+                  attribute="class"
+                  defaultTheme="light"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  <VisitTracker />
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </ThemeProvider>
               </CartProvider>
             </Providers>
           </body>

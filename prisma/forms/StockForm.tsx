@@ -14,6 +14,8 @@ export default function StockForm() {
   const [formData, setFormData] = useState({
     productId: '',
     addedQuantity: 0,
+    costPerProduct: 0,
+    pricePerProduct: 0,
     product: '',
   });
   const [editId, setEditId] = useState(null);
@@ -41,8 +43,9 @@ export default function StockForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.productId || formData.addedQuantity <= 0) {
+    if (!formData.productId || formData.addedQuantity <= 0 || formData.costPerProduct <= 0 || formData.pricePerProduct <= 0) {
       console.error('Invalid form data:', formData);
+      alert('Please fill all fields with valid values');
       return;
     }
 
@@ -51,14 +54,16 @@ export default function StockForm() {
         await axios.put('/api/stock', {
           stockId: editId,
           addedQuantity: formData.addedQuantity,
+          costPerProduct: formData.costPerProduct,
+          pricePerProduct: formData.pricePerProduct,
         });
       } else {
         await axios.post('/api/stock', {
           productId: formData.productId,
           addedQuantity: formData.addedQuantity,
+          costPerProduct: formData.costPerProduct,
+          pricePerProduct: formData.pricePerProduct,
         });
-        // Reload the page after successful stock creation
-        // window.location.reload();
       }
       resetForm();
       fetchStocks();
@@ -71,17 +76,19 @@ export default function StockForm() {
 
 
   const handleEdit = (item) => {
-  if (!item?.id || !item?.addedQuantity || !item?.product) {
-    console.error('Invalid stock item for edit:', item);
-    return;
-  }
-  setFormData({
-    productId: item.productId,
-    product: item.product,
-    addedQuantity: item.addedQuantity,
-  });
-  setEditId(item.id);
-};
+    if (!item?.id || !item?.addedQuantity || !item?.product) {
+      console.error('Invalid stock item for edit:', item);
+      return;
+    }
+    setFormData({
+      productId: item.productId,
+      product: item.product,
+      addedQuantity: item.addedQuantity,
+      costPerProduct: item.costPerProduct || 0,
+      pricePerProduct: item.pricePerProduct || 0,
+    });
+    setEditId(item.id);
+  };
 
   const handleProductInput = (item) => {
     if (!item) return;
@@ -117,6 +124,8 @@ export default function StockForm() {
     setFormData({
       productId: '',
       addedQuantity: 0,
+      costPerProduct: 0,
+      pricePerProduct: 0,
       product: '',
     });
     setEditId(null);
@@ -128,34 +137,34 @@ export default function StockForm() {
 
   return (
     <div>
-      
+
       <form onSubmit={handleSubmit} className='flex flex-col w-full max-w-sm gap-2 justify-center items-center p-3 border-2 border-secondary-foreground rounded-sm m-2'>
-      <h2 className='font-semibold text-lg'>Manage Products Stock</h2>
-      
-      <ul className='w-full'>
-        <div>Products To Stock</div>
-        {products.length > 0 ? (
-          products.map((item , index) => (
-            <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
-              <div className="flex flex-row gap-2">
-                <span>{(index + 1)}. Name : </span>
-                <span>{item.name}</span>
-              </div>
-              <p>Price : {item.price || <em>No price tag</em>}</p>
-              <div className='flex flex-row gap-2 p-1 w-full'>
-                <Button type="button" onClick={() => handleProductInput(item)} className='flex-1'>
-                  Stock
-                </Button>
-                {/* <Button onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button> */}
-              </div>
-            </li>
-          ))
-        ) : (
-          <p>No available product.</p>
-        )}
-      </ul>
-      
-      <Input
+        <h2 className='font-semibold text-lg'>Manage Products Stock</h2>
+
+        <ul className='w-full'>
+          <div>Products To Stock</div>
+          {products.length > 0 ? (
+            products.map((item, index) => (
+              <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
+                <div className="flex flex-row gap-2">
+                  <span>{(index + 1)}. Name : </span>
+                  <span>{item.name}</span>
+                </div>
+                <p>Price : {item.price || <em>No price tag</em>}</p>
+                <div className='flex flex-row gap-2 p-1 w-full'>
+                  <Button type="button" onClick={() => handleProductInput(item)} className='flex-1'>
+                    Stock
+                  </Button>
+                  {/* <Button onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button> */}
+                </div>
+              </li>
+            ))
+          ) : (
+            <p>No available product.</p>
+          )}
+        </ul>
+
+        <Input
           type="text"
           placeholder="Product Name"
           value={formData.product}
@@ -174,6 +183,20 @@ export default function StockForm() {
           placeholder="Quantity of Product to Add to Stock"
           value={formData.addedQuantity}
           onChange={(e) => setFormData({ ...formData, addedQuantity: Number(e.target.value) })}
+        />
+        <Input
+          type="number"
+          step="0.01"
+          placeholder="Cost Per Product (₦)"
+          value={formData.costPerProduct}
+          onChange={(e) => setFormData({ ...formData, costPerProduct: Number(e.target.value) })}
+        />
+        <Input
+          type="number"
+          step="0.01"
+          placeholder="Price Per Product (₦)"
+          value={formData.pricePerProduct}
+          onChange={(e) => setFormData({ ...formData, pricePerProduct: Number(e.target.value) })}
         />
         <Button type="submit">{editId ? 'Update' : 'Create'}</Button>
         {editId && <button onClick={resetForm}>Cancel</button>}

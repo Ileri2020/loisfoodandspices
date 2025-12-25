@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getProductPrice, isProductInStock } from "@/lib/stock-pricing";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
@@ -54,6 +55,12 @@ export function ProductCard({
   };
 
   /**
+   * ✅ Get price from stock using FIFO logic
+   */
+  const currentPrice = getProductPrice(product);
+  const inStock = isProductInStock(product);
+
+  /**
    * ✅ Proper discount calculation
    */
   const hasDiscount =
@@ -63,10 +70,10 @@ export function ProductCard({
 
   const DISCOUNT_PERCENT = hasDiscount ? product.discount : 0;
 
-  const originalPrice = product.price;
+  const originalPrice = currentPrice;
   const discountedPrice = hasDiscount
-    ? product.price * (1 - DISCOUNT_PERCENT / 100)
-    : product.price;
+    ? currentPrice * (1 - DISCOUNT_PERCENT / 100)
+    : currentPrice;
 
   const renderStars = () => {
     const rating = product.rating ?? 0;
@@ -83,8 +90,8 @@ export function ProductCard({
               i < fullStars
                 ? "fill-yellow-400 text-yellow-400"
                 : i === fullStars && hasHalfStar
-                ? "fill-yellow-400/50 text-yellow-400"
-                : "stroke-muted/40 text-muted"
+                  ? "fill-yellow-400/50 text-yellow-400"
+                  : "stroke-muted/40 text-muted"
             )}
           />
         ))}
@@ -242,7 +249,7 @@ export function ProductCard({
               </CardFooter>
             )}
 
-            {!product.inStock && (
+            {!inStock && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
                 <Badge className="px-3 py-1 text-sm" variant="destructive">
                   Out of Stock
