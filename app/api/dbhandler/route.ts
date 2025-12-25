@@ -152,6 +152,7 @@ export async function GET(req: NextRequest) {
       user: {
         select: { id: true, name: true, email: true },
       },
+      payment: true,
     },
     user: {
       cart: true,
@@ -367,6 +368,7 @@ export async function POST(req: NextRequest) {
         data: {
           userId,
           total,
+          deliveryFee,
           status: "pending",
           products: {
             create: items.map((i: any) => ({
@@ -508,6 +510,24 @@ export async function PUT(req: NextRequest) {
     // =========================
     // CART PAYMENT UPDATE
     // =========================
+    if (model === "cart" && body.status && !body.payment) {
+      // Fetch existing cart to check status
+      const existingCart = await prisma.cart.findUnique({
+        where: { id },
+        select: { status: true },
+      });
+
+      const updatedCart = await prisma.cart.update({
+        where: { id },
+        data: {
+          status: body.status,
+          // Only allow total update if cart is still pending (not paid/completed)
+          ...(body.total && existingCart?.status === "pending" && { total: body.total }),
+        },
+      });
+      return NextResponse.json(updatedCart);
+    }
+
     if (model === "cart" && body.payment) {
       const cartId = parseId(body.id || searchParams.get("id"), model);
 

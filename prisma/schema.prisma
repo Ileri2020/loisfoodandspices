@@ -169,16 +169,17 @@ model Stock {
 }
 
 model Cart {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String     @db.ObjectId
-  products  CartItem[]
-  total     Float
-  payment   Payment?
-  status    String     @default("pending")
-  refund    Refund?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String     @db.ObjectId
+  products    CartItem[]
+  total       Float
+  deliveryFee Float      @default(0)
+  payment     Payment?
+  status      String     @default("pending")
+  refund      Refund?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model CartItem {
@@ -200,6 +201,7 @@ model Payment {
   tx_ref     String?  @unique
   method     String
   amount     Float
+  payeeName  String?
   receiptUrl String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

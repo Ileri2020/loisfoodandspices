@@ -37,6 +37,7 @@ interface CartItem {
 interface CartData {
     id: string;
     total: number;
+    deliveryFee?: number;
     status: string;
     createdAt: string;
     products: CartItem[];
@@ -105,8 +106,9 @@ export function CartDetails({ cartId, onPaymentSuccess }: CartDetailsProps) {
     // Is paid OR Unconfirmed (awaiting approval)
     const isLocked = cart?.status === "paid" || cart?.status === "completed" || cart?.status === "unconfirmed" || !!cart?.payment;
 
+    // ✅ FIX 4: Use stored delivery fee for locked carts (NO recalculation)
     const deliveryFee = isLocked
-        ? (cart?.total || 0) - subtotal
+        ? (cart?.deliveryFee ?? 0)  // Use stored value from DB
         : (cart?.products?.length ?? 0) > 0 ? calculateDeliveryFee(selectedAddress) : 0;
 
     const totalAmount = isLocked

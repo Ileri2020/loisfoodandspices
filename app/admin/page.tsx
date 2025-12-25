@@ -21,6 +21,8 @@ import CouponForm from "@/prisma/forms/CouponForm";
 import ShippingAddressForm from "@/prisma/forms/ShippingAddressForm";
 import PostForm from "@/prisma/forms/PostForm";
 import AddressPriceForm from "@/prisma/forms/AddressPriceForm";
+import { CartDetailsDialog } from "@/components/myComponents/subs/CartDetailsDialog";
+
 
 /* ================= FORMS ================= */
 
@@ -55,6 +57,10 @@ const Admin = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [cartData, setCartData] = useState<any[]>([]);
   const [notificationData, setNotificationData] = useState<any[]>([]);
+  const [selectedCart, setSelectedCart] = useState<any | null>(null);
+  const [cartDialogOpen, setCartDialogOpen] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
+
 
   /* ================= PERMISSIONS ================= */
 
@@ -213,6 +219,58 @@ const Admin = () => {
     );
   }
 
+  const handleCartRowClick = async (cartRow: any) => {
+    setLoadingCart(true);
+    setCartDialogOpen(true);
+
+    try {
+      const res = await fetch(
+        `/api/dbhandler?model=cart&id=${cartRow.id}`
+      );
+      const fullCart = await res.json();
+      setSelectedCart(fullCart);
+    } catch (err) {
+      console.error("Failed to load cart details", err);
+    } finally {
+      setLoadingCart(false);
+    }
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!selectedCart) return;
+
+    try {
+      const res = await fetch("/api/dbhandler?model=cart", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedCart.id,
+          status: "paid",
+          adminConfirmed: true,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Confirmation failed");
+
+      // Update UI immediately
+      setSelectedCart((prev: any) => ({
+        ...prev,
+        status: "paid",
+      }));
+
+      // Update table list
+      setCartData(prev =>
+        prev.map(c =>
+          c.id === selectedCart.id ? { ...c, status: "paid" } : c
+        )
+      );
+    } catch (err) {
+      console.error("Failed to confirm payment", err);
+    }
+  };
+
+
+
   /* ================= UI ================= */
 
   return (
@@ -224,6 +282,13 @@ const Admin = () => {
       }}
       className="w-[100vw] p-4"
     >
+      <CartDetailsDialog
+        open={cartDialogOpen}
+        onOpenChange={setCartDialogOpen}
+        cart={selectedCart}
+        onConfirmPayment={handleConfirmPayment}
+      />
+
       <div className="text-4xl font-semibold w-full text-center mb-6">
         Admin Dashboard
       </div>
@@ -245,7 +310,11 @@ const Admin = () => {
         <h3 className="text-xl font-semibold mb-2">
           Paid & Unconfirmed Carts
         </h3>
-        <DataTableDemo columns={cartColumns} data={cartData} />
+        <DataTableDemo
+          columns={cartColumns}
+          data={cartData}
+          onRowClick={handleCartRowClick}
+        />
       </div>
 
       {/* NOTIFICATIONS */}

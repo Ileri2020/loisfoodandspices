@@ -54,6 +54,10 @@ export async function POST(req: NextRequest) {
             tx_ref,
             amount: data.amount,
           });
+          await sendOrderNotification('adepojuololade2020@gmail.com', {
+            tx_ref,
+            amount: data.amount,
+          });
         }
 
         return NextResponse.json({ success: true, message: "Payment confirmed" });
@@ -64,20 +68,23 @@ export async function POST(req: NextRequest) {
 
 
     // ---------------- INITIATE PAYMENT ----------------
-    const { userId, items, cartId } = body;
+    const { userId, items, cartId, deliveryFee = 0 } = body;
 
     if (!userId || !items?.length) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    // Calculate total server-side
+    // Calculate subtotal server-side
     const products = await prisma.product.findMany({
       where: { id: { in: items.map((i: any) => i.productId) } },
     });
-    const total = items.reduce((sum: number, item: any) => {
+    const subtotal = items.reduce((sum: number, item: any) => {
       const product = products.find((p) => p.id === item.productId);
       return sum + (product?.price || 0) * item.quantity;
     }, 0);
+
+    // Add delivery fee to get total
+    const total = subtotal + Number(deliveryFee);
 
     let cart;
     if (cartId) {
@@ -90,6 +97,7 @@ export async function POST(req: NextRequest) {
         where: { id: cartId },
         data: {
           total,
+          deliveryFee: Number(deliveryFee),
           products: { create: items.map((i: any) => ({ productId: i.productId, quantity: i.quantity })) },
         },
       });
@@ -98,6 +106,7 @@ export async function POST(req: NextRequest) {
         data: {
           userId,
           total,
+          deliveryFee: Number(deliveryFee),
           status: "pending",
           products: { create: items.map((i: any) => ({ productId: i.productId, quantity: i.quantity })) },
         },

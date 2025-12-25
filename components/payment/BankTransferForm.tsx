@@ -29,7 +29,7 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
     const { user, openDialog } = useAppContext();
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [accountName, setAccountName] = useState("");
+    const [payeeName, setPayeeName] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
 
@@ -50,7 +50,7 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!accountName) {
+        if (!payeeName) {
             // alert("Please enter the account name used for the transfer.");
             openDialog("Please enter the account name used for the transfer.", "Missing Info");
             return;
@@ -93,6 +93,7 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
                         method: "bank_transfer",
                         amount,
                         receiptUrl,
+                        payeeName,
                     },
                 });
 
@@ -165,8 +166,8 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
                         <Input
                             id="accountName"
                             placeholder="e.g. John Doe"
-                            value={accountName}
-                            onChange={(e) => setAccountName(e.target.value)}
+                            value={payeeName}
+                            onChange={(e) => setPayeeName(e.target.value)}
                             required
                         />
                     </div>
