@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Similar from "@/components/myComponents/subs/similar";
+import { ProductCard } from "@/components/myComponents/subs/productCard";
 import { cn } from "@/lib/utils";
 
 /* -------------------------------------------------------------------------- */
@@ -66,9 +67,9 @@ export default function ProductDetailPage() {
         const totalStock =
           Array.isArray(data.stock)
             ? data.stock.reduce(
-                (sum: number, s: any) => sum + (s.addedQuantity ?? 0),
-                0
-              )
+              (sum: number, s: any) => sum + (s.addedQuantity ?? 0),
+              0
+            )
             : 0;
 
         const transformed: Product = {
@@ -81,9 +82,9 @@ export default function ProductDetailPage() {
           originalPrice: data.originalPrice || undefined,
           rating: data.reviews?.length
             ? data.reviews.reduce(
-                (acc: number, r: any) => acc + r.rating,
-                0
-              ) / data.reviews.length
+              (acc: number, r: any) => acc + r.rating,
+              0
+            ) / data.reviews.length
             : 0,
           inStock: totalStock > 0,
           features: [],
@@ -158,34 +159,34 @@ export default function ProductDetailPage() {
   /* ----------------------------- Render ---------------------------------- */
 
   const renderStars = () => {
-      const rating = product.rating ?? 0;
-      // const fullStars = Math.floor(rating);
-      const fullStars = 5;
-      const hasHalfStar = rating % 1 >= 0.5;
-  
-      return (
-        <div className="flex items-center /bg-red-500">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={`star-${product.id}-${i}`}
-              className={cn(
-                "h-4 w-4",
-                i < fullStars
-                  ? "fill-yellow-400 text-yellow-400"
-                  : i === fullStars && hasHalfStar
+    const rating = product.rating ?? 0;
+    // const fullStars = Math.floor(rating);
+    const fullStars = 5;
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    return (
+      <div className="flex items-center /bg-red-500">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={`star-${product.id}-${i}`}
+            className={cn(
+              "h-4 w-4",
+              i < fullStars
+                ? "fill-yellow-400 text-yellow-400"
+                : i === fullStars && hasHalfStar
                   ? "fill-yellow-400/50 text-yellow-400"
                   : "stroke-muted/40 text-muted"
-              )}
-            />
-          ))}
-          {rating > 0 && (
-            <span className="ml-1 text-xs text-muted-foreground">
-              {rating.toFixed(1)}
-            </span>
-          )}
-        </div>
-      );
-    };
+            )}
+          />
+        ))}
+        {rating > 0 && (
+          <span className="ml-1 text-xs text-muted-foreground">
+            {rating.toFixed(1)}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen py-10">
@@ -231,9 +232,8 @@ export default function ProductDetailPage() {
 
           {/* Stock */}
           <p
-            className={`mt-4 font-medium ${
-              product.inStock ? "text-green-600" : "text-red-500"
-            }`}
+            className={`mt-4 font-medium ${product.inStock ? "text-green-600" : "text-red-500"
+              }`}
           >
             {product.inStock ? "In Stock" : "Out of Stock"}
           </p>
@@ -265,6 +265,28 @@ export default function ProductDetailPage() {
       <Separator className="my-10" />
 
       <Similar similar={allProducts} />
+
+      <Separator className="my-10" />
+
+      <div className="container pb-20">
+        <h2 className="text-2xl font-bold mb-6">More to Explore</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {allProducts
+            .filter((p) => p.id !== id)
+            .slice(0, 8) // Limit to 8 products
+            .map((prod) => (
+              <ProductCard
+                key={prod.id}
+                product={prod}
+                orientation="vertical"
+                onAddToCart={(p) => {
+                  addItem(p, 1);
+                  toast.success(`${p.name} added to cart`);
+                }}
+              />
+            ))}
+        </div>
+      </div>
     </div>
   );
 }

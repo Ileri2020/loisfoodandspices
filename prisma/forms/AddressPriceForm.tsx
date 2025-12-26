@@ -3,10 +3,24 @@ import axios from 'axios';
 import { Country, State, City } from 'country-state-city';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+const REGIONS = [
+    "Africa",
+    "Asia",
+    "Europe",
+    "North America",
+    "South America",
+    "Oceania",
+    "Antarctica",
+    "United Kingdom", // As requested group
+];
 
 export default function AddressPriceForm() {
     const [fees, setFees] = useState<any[]>([]);
     const [formData, setFormData] = useState({
+        scope: 'country', // 'country' | 'region'
+        region: '',
         country: '',
         state: '',
         city: '',
@@ -30,14 +44,22 @@ export default function AddressPriceForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payload = { ...formData, price: parseFloat(formData.price) };
 
-        // Convert empty strings to null for clearer DB logic if desired, 
-        // but the prisma schema has optional strings. 
-        // If empty string is passed, it might be stored as empty string. 
-        // Let's coerce empty strings to null for state/city if simpler matching is needed.
-        // However, the component logic below relies on matching strings. 
-        // Let's stick to storing what's selected.
+        let payload: any = {
+            price: parseFloat(formData.price),
+        };
+
+        if (formData.scope === 'region') {
+            payload.region = formData.region;
+            payload.country = null;
+            payload.state = null;
+            payload.city = null;
+        } else {
+            payload.region = null;
+            payload.country = formData.country;
+            payload.state = formData.state || null;
+            payload.city = formData.city || null;
+        }
 
         if (editId) {
             await axios.put(`/api/dbhandler?model=deliveryFee&id=${editId}`, payload);
@@ -49,12 +71,25 @@ export default function AddressPriceForm() {
     };
 
     const handleEdit = (item: any) => {
-        setFormData({
-            country: item.country,
-            state: item.state || '',
-            city: item.city || '',
-            price: item.price.toString(),
-        });
+        if (item.region) {
+            setFormData({
+                scope: 'region',
+                region: item.region,
+                country: '',
+                state: '',
+                city: '',
+                price: item.price.toString(),
+            });
+        } else {
+            setFormData({
+                scope: 'country',
+                region: '',
+                country: item.country,
+                state: item.state || '',
+                city: item.city || '',
+                price: item.price.toString(),
+            });
+        }
         setEditId(item.id);
     };
 
@@ -64,7 +99,7 @@ export default function AddressPriceForm() {
     };
 
     const resetForm = () => {
-        setFormData({ country: '', state: '', city: '', price: '' });
+        setFormData({ scope: 'country', region: '', country: '', state: '', city: '', price: '' });
         setEditId(null);
     };
 
@@ -72,19 +107,17 @@ export default function AddressPriceForm() {
         if (!code) return 'All';
         if (type === 'country') return Country.getCountryByCode(code)?.name || code;
         if (type === 'state') return State.getStateByCodeAndCountry(code, countryCode!)?.name || code;
-        // City in this library doesn't have a simple code lookup that is globally unique without state context sometimes, 
-        // but the library city objects normally have 'name' as the value if we store names.
-        // Wait, the library methods return objects with `isoCode` for country/state but cities usually just names.
-        // Let's check how we store it. Ideally we store ISO codes for Country/State and Names for Cities.
         return code;
     };
 
-    // Helper to handle country selection
+    const onRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFormData({ ...formData, region: e.target.value });
+    }
+
     const onCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFormData({ ...formData, country: e.target.value, state: '', city: '' });
     }
 
-    // Helper to handle state selection
     const onStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFormData({ ...formData, state: e.target.value, city: '' });
     }
@@ -94,53 +127,79 @@ export default function AddressPriceForm() {
             <form onSubmit={handleSubmit} className='flex flex-col w-full max-w-lg gap-3 p-4 border rounded-md m-auto bg-card text-card-foreground shadow-sm'>
                 <h2 className='font-semibold text-xl'>Manage Delivery Fees</h2>
 
-                {/* Country */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium">Country</label>
-                    <select
-                        className="w-full rounded-md border p-2 bg-background"
-                        value={formData.country}
-                        onChange={onCountryChange}
-                        required
-                    >
-                        <option value="">Select Country</option>
-                        {countries.map((c) => (
-                            <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
-                        ))}
-                    </select>
-                </div>
+                <Tabs value={formData.scope} onValueChange={(v) => setFormData({ ...formData, scope: v })} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="country">Country Specific</TabsTrigger>
+                        <TabsTrigger value="region">Region / Group</TabsTrigger>
+                    </TabsList>
+                </Tabs>
 
-                {/* State */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium">State (Optional - Leave empty for entire Country)</label>
-                    <select
-                        className="w-full rounded-md border p-2 bg-background"
-                        value={formData.state}
-                        onChange={onStateChange}
-                        disabled={!formData.country}
-                    >
-                        <option value="">All States</option>
-                        {states.map((s) => (
-                            <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
-                        ))}
-                    </select>
-                </div>
+                {formData.scope === 'region' ? (
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium">Region / Group</label>
+                        <select
+                            className="w-full rounded-md border p-2 bg-background"
+                            value={formData.region}
+                            onChange={onRegionChange}
+                            required={formData.scope === 'region'}
+                        >
+                            <option value="">Select Region</option>
+                            {REGIONS.map((r) => (
+                                <option key={r} value={r}>{r}</option>
+                            ))}
+                        </select>
+                    </div>
+                ) : (
+                    <>
+                        {/* Country */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-medium">Country</label>
+                            <select
+                                className="w-full rounded-md border p-2 bg-background"
+                                value={formData.country}
+                                onChange={onCountryChange}
+                                required={formData.scope === 'country'}
+                            >
+                                <option value="">Select Country</option>
+                                {countries.map((c) => (
+                                    <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                {/* City */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium">City (Optional - Leave empty for entire State)</label>
-                    <select
-                        className="w-full rounded-md border p-2 bg-background"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        disabled={!formData.state}
-                    >
-                        <option value="">All Cities</option>
-                        {cities.map((c: any) => (
-                            <option key={c.name} value={c.name}>{c.name}</option>
-                        ))}
-                    </select>
-                </div>
+                        {/* State */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-medium">State (Optional)</label>
+                            <select
+                                className="w-full rounded-md border p-2 bg-background"
+                                value={formData.state}
+                                onChange={onStateChange}
+                                disabled={!formData.country}
+                            >
+                                <option value="">All States</option>
+                                {states.map((s) => (
+                                    <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* City */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-medium">City (Optional)</label>
+                            <select
+                                className="w-full rounded-md border p-2 bg-background"
+                                value={formData.city}
+                                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                disabled={!formData.state}
+                            >
+                                <option value="">All Cities</option>
+                                {cities.map((c: any) => (
+                                    <option key={c.name} value={c.name}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </>
+                )}
 
                 {/* Price */}
                 <div className="flex flex-col gap-1">
@@ -168,11 +227,17 @@ export default function AddressPriceForm() {
                     {fees.map((item) => (
                         <div key={item.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-muted/50 p-3 rounded-lg border">
                             <div className="mb-2 sm:mb-0">
-                                <div className="font-medium text-base">
-                                    {getName('country', item.country)}
-                                    {item.state && ` > ${getName('state', item.state, item.country)}`}
-                                    {item.city && ` > ${item.city}`}
-                                </div>
+                                {item.region ? (
+                                    <div className="font-medium text-base text-primary">
+                                        Region: {item.region}
+                                    </div>
+                                ) : (
+                                    <div className="font-medium text-base">
+                                        {getName('country', item.country)}
+                                        {item.state && ` > ${getName('state', item.state, item.country)}`}
+                                        {item.city && ` > ${item.city}`}
+                                    </div>
+                                )}
                                 <div className="text-sm text-muted-foreground">Price: ₦{item.price.toLocaleString()}</div>
                             </div>
                             <div className="flex gap-2">

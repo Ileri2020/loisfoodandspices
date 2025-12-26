@@ -31,6 +31,7 @@ const modelMap: Record<string, any> = {
   user: prisma.user,
   deliveryFee: prisma.deliveryFee,
   visit: prisma.visit,
+  message: prisma.message,
 };
 
 // =====================
@@ -166,6 +167,9 @@ export async function GET(req: NextRequest) {
     stock: { product: true },
     payment: { cart: true },
     refund: { cart: true },
+    message: {
+      user: { select: { id: true, name: true, email: true, image: true } },
+    },
   };
 
   try {
@@ -356,12 +360,63 @@ export async function POST(req: NextRequest) {
 
       const address = await prisma.shippingAddress.findUnique({
         where: { id: deliveryAddressId },
-        select: { state: true },
+        select: { country: true, state: true, city: true },
       });
 
-      const normalizedState = normalizeState(address?.state);
-      const deliveryFee =
-        (normalizedState && DELIVERY_FEES_BY_STATE[normalizedState]) ?? 6500;
+      let deliveryFee = 6500;
+
+      if (address) {
+        // 1. Try City specific
+        const feeCity = await prisma.deliveryFee.findFirst({
+          where: { country: address.country, state: address.state, city: address.city },
+        });
+
+        if (feeCity) {
+          deliveryFee = feeCity.price;
+        } else {
+          // 2. Try State specific
+          const feeState = await prisma.deliveryFee.findFirst({
+            where: { country: address.country, state: address.state, city: null },
+          });
+
+          if (feeState) {
+            deliveryFee = feeState.price;
+          } else {
+            // 3. Try Country specific
+            const feeCountry = await prisma.deliveryFee.findFirst({
+              where: { country: address.country, state: null, city: null },
+            });
+
+            if (feeCountry) {
+              deliveryFee = feeCountry.price;
+            } else {
+              // 3b. Try Region/Group Specific (Fallback if no country match)
+              // Assumption: We check if any Defined Region matches the user's country? 
+              // Or rather, if the user's country is part of a region? 
+              // Without a Country->Region map table, we can only check if the address.country
+              // matches a 'region' field entry in DeliveryFee? 
+              // No, wait. The user selects "United Kingdom" as country. 
+              // If Admin sets Region="United Kingdom", Price=X.
+              // We should search where region = address.country OR region = 'Europe' (if we knew).
+              // For now, let's strictly check if the country name is used as a region key.
+
+              const feeRegion = await prisma.deliveryFee.findFirst({
+                where: { region: address.country }
+              });
+
+              if (feeRegion) {
+                deliveryFee = feeRegion.price;
+              } else {
+                // 4. Fallback to hardcoded for Nigeria states if applicable
+                const normalizedState = normalizeState(address.state);
+                if (normalizedState && DELIVERY_FEES_BY_STATE[normalizedState]) {
+                  deliveryFee = DELIVERY_FEES_BY_STATE[normalizedState];
+                }
+              }
+            }
+          }
+        }
+      }
 
       const total = subtotal + deliveryFee;
 

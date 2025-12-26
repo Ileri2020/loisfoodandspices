@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import React, { useRef, useState, FormEvent } from "react";
-import { Toaster } from "@/components/ui/sonner"; 
+import { Toaster } from "@/components/ui/sonner";
 import { useAppContext } from "@/hooks/useAppContext";
 
 const ContactForm = () => {
@@ -33,20 +33,30 @@ const ContactForm = () => {
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
 
-    try {
-      const formData = new FormData();
-      formData.append("username", details.username);
-      formData.append("email", details.email);
-      formData.append("category", details.category);
-      formData.append("message", details.message);
-      formData.append("to", details.to);
-      if (details.file) formData.append("file", details.file);
+    if (!details.username || !details.email || !details.message) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
 
-      const res = await fetch("/api/dbhandler?model=notification", { method: "POST", body: formData });
+    try {
+      const messageData = {
+        userId: user?.id || "guest",
+        senderName: details.username,
+        senderEmail: details.email,
+        subject: details.category,
+        message: details.message,
+      };
+
+      const res = await fetch("/api/dbhandler?model=message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(messageData)
+      });
+
       const data = await res.json();
 
       if (res.ok) {
-        toast.success("Message sent successfully!");
+        toast.success("Message sent successfully! We'll respond soon.");
         formRef.current?.reset();
         setDetails({
           username: user?.name || "",

@@ -51,7 +51,7 @@ export async function GET() {
 // POST → Add NEW stock entry to a product
 // -------------------------------------------------
 export async function POST(req: Request) {
-  const { productId, addedQuantity } = await req.json();
+  const { productId, addedQuantity, costPerProduct, pricePerProduct } = await req.json();
 
   if (!productId || !addedQuantity) {
     return NextResponse.json(
@@ -61,16 +61,21 @@ export async function POST(req: Request) {
   }
 
   try {
-      console.log("Data to create :", productId, addedQuantity);
-  
-      const stock = await prisma.stock.create({
-            data: { productId, addedQuantity },
-        });
-      return new Response(JSON.stringify(stock), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    } catch (error) {
-      // console.error('Database POST error:', error);
-      return new Response(JSON.stringify({ error: 'Failed to create item' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-    }
+    console.log("Data to create :", productId, addedQuantity);
+
+    const stock = await prisma.stock.create({
+      data: {
+        productId,
+        addedQuantity: Number(addedQuantity),
+        costPerProduct: Number(costPerProduct || 0),
+        pricePerProduct: Number(pricePerProduct || 0)
+      },
+    });
+    return new Response(JSON.stringify(stock), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  } catch (error) {
+    // console.error('Database POST error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to create item' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
 }
 
 // -------------------------------------------------

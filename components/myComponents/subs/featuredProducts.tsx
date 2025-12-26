@@ -12,6 +12,8 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
 
 /* ===============================
    Types
@@ -63,9 +65,9 @@ const FeaturedProducts = () => {
           const rating =
             item.product.reviews?.length > 0
               ? item.product.reviews.reduce(
-                  (acc: number, r: any) => acc + r.rating,
-                  0
-                ) / item.product.reviews.length
+                (acc: number, r: any) => acc + r.rating,
+                0
+              ) / item.product.reviews.length
               : undefined;
 
           return {
@@ -109,6 +111,22 @@ const FeaturedProducts = () => {
     return [top, bottom];
   }, [products]);
 
+  /* ===============================
+     Cart Hook
+  ================================ */
+  const { addItem } = useCart();
+  const { toast } = useToast();
+
+  const handleAddToCart = (product: FeaturedProductType) => {
+    // Map FeaturedProductType to the structure expected by cart if necessary
+    // Assuming cart expects { id, name, price, images, ... } which FeaturedProductType has
+    addItem(product as any, 1);
+    toast({
+      description: `${product.name} added to cart`,
+      duration: 2000,
+    });
+  };
+
   return (
     <section className="bg-muted/50 py-12 md:py-16 overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4">
@@ -140,7 +158,10 @@ const FeaturedProducts = () => {
                     key={product.id}
                     className="basis-1/2 md:basis-1/4 /lg:basis-1/7  px-3"
                   >
-                    <ProductCard product={product} />
+                    <ProductCard
+                      product={product}
+                      onAddToCart={() => handleAddToCart(product)}
+                    />
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -160,7 +181,10 @@ const FeaturedProducts = () => {
                     key={product.id}
                     className="basis-1/2 md:basis-1/4 px-3"
                   >
-                    <ProductCard product={product} />
+                    <ProductCard
+                      product={product}
+                      onAddToCart={() => handleAddToCart(product)}
+                    />
                   </CarouselItem>
                 ))}
               </CarouselContent>

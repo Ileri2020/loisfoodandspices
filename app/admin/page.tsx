@@ -22,6 +22,8 @@ import ShippingAddressForm from "@/prisma/forms/ShippingAddressForm";
 import PostForm from "@/prisma/forms/PostForm";
 import AddressPriceForm from "@/prisma/forms/AddressPriceForm";
 import { CartDetailsDialog } from "@/components/myComponents/subs/CartDetailsDialog";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 
 /* ================= FORMS ================= */
@@ -295,6 +297,11 @@ const Admin = () => {
 
       <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-5">
         {/* FORM SELECTOR */}
+        <div>
+          <Link href="/admin/analytics">
+            <Button>Analytics</Button>
+          </Link>
+        </div>
         <div className="mb-6 max-w-md">
           <DataTableDemo columns={formColumns} data={filteredForms} />
         </div>

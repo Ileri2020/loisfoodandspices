@@ -1,5 +1,6 @@
 "use client";
 
+import { toggleWishlist, checkWishlisStatus } from "@/action/wishlist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -35,6 +36,14 @@ export function ProductCard({
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
   const [isInWishlist, setIsInWishlist] = React.useState(false);
 
+  React.useEffect(() => {
+    if (product?.id) {
+      checkWishlisStatus(product.id)
+        .then((status) => setIsInWishlist(status))
+        .catch(() => { });
+    }
+  }, [product?.id]);
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onAddToCart) {
@@ -46,39 +55,48 @@ export function ProductCard({
     }
   };
 
-  const handleAddToWishlist = (e: React.MouseEvent) => {
+  const handleAddToWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (onAddToWishlist) {
-      setIsInWishlist(!isInWishlist);
-      onAddToWishlist(product.id);
+    const startState = isInWishlist;
+    setIsInWishlist(!startState);
+    try {
+      await toggleWishlist(product.id);
+      if (onAddToWishlist) {
+        onAddToWishlist(product.id);
+      }
+    } catch (err) {
+      setIsInWishlist(startState);
     }
   };
 
   /**
-   * ✅ Get price from stock using FIFO logic
+   * Safe Data Access
    */
   const currentPrice = getProductPrice(product);
-  const inStock = isProductInStock(product);
+  const inStock = typeof product.inStock === 'boolean' ? product.inStock : isProductInStock(product);
+  const categoryName = product?.category?.name || "Product";
+  const image = product?.images?.[0] || "/placeholder.png";
 
-  /**
-   * ✅ Proper discount calculation
-   */
-  const hasDiscount =
-    showDiscount &&
-    typeof product.discount === "number" &&
-    product.discount > 0;
+  // Rating Logic
+  const ratingValue = React.useMemo(() => {
+    if (typeof product.rating === 'number') return product.rating;
+    if (Array.isArray(product.reviews) && product.reviews.length > 0) {
+      const total = product.reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0);
+      return total / product.reviews.length;
+    }
+    return 0;
+  }, [product]);
 
-  const DISCOUNT_PERCENT = hasDiscount ? product.discount : 0;
-
+  const hasDiscount = showDiscount && (product.discount ?? 0) > 0;
+  const discountPercent = hasDiscount ? product.discount : 0;
   const originalPrice = currentPrice;
   const discountedPrice = hasDiscount
-    ? currentPrice * (1 - DISCOUNT_PERCENT / 100)
+    ? currentPrice * (1 - discountPercent / 100)
     : currentPrice;
 
   const renderStars = () => {
-    const rating = product.rating ?? 0;
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const fullStars = Math.floor(ratingValue);
+    const hasHalfStar = ratingValue % 1 >= 0.5;
 
     return (
       <div className="flex items-center">
@@ -95,9 +113,9 @@ export function ProductCard({
             )}
           />
         ))}
-        {rating > 0 && (
+        {ratingValue > 0 && (
           <span className="ml-1 text-xs text-muted-foreground">
-            {rating.toFixed(1)}
+            {ratingValue.toFixed(1)}
           </span>
         )}
       </div>
@@ -120,37 +138,36 @@ export function ProductCard({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
+          {/* Image */}
           <div
             className={cn(
               "relative aspect-square overflow-hidden rounded-t-lg flex justify-center items-center bg-muted md:w-full",
               orientation === "horizontal" ? "w-[40%]" : "w-full"
             )}
           >
-            {product.images && (
-              <img
-                alt={product.name}
-                className={cn(
-                  "object-cover w-full transition-transform duration-300 ease-in-out",
-                  isHovered && "scale-105"
-                )}
-                src={product.images[0]}
-              />
-            )}
+            <img
+              alt={product?.name || "Product"}
+              className={cn(
+                "object-cover w-full transition-transform duration-300 ease-in-out",
+                isHovered && "scale-105"
+              )}
+              src={image}
+            />
 
             {/* Category badge */}
             <Badge
               className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm"
               variant="outline"
             >
-              {product.category.name}
+              {categoryName}
             </Badge>
 
-            {/* ✅ Discount badge (CONDITIONALLY RENDERED, UI UNCHANGED) */}
+            {/* Discount badge */}
             {hasDiscount && (
               <Badge
                 className="absolute top-2 right-2 bg-destructive text-destructive-foreground"
               >
-                {DISCOUNT_PERCENT}% OFF
+                {discountPercent}% OFF
               </Badge>
             )}
 
@@ -182,7 +199,7 @@ export function ProductCard({
           <div className="w-full flex-1">
             <CardContent className="p-4 pt-2">
               <h3 className="line-clamp-2 text-base font-semibold group-hover:text-primary">
-                {product.name}
+                {product?.name || "Product Name"}
               </h3>
 
               {variant === "default" && (

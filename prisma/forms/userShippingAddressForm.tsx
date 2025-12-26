@@ -18,10 +18,10 @@ type ShippingAddress = {
 };
 
 const NIGERIA_STATES = [
-  "Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno","Cross River",
-  "Delta","Ebonyi","Edo","Ekiti","Enugu","Gombe","Imo","Jigawa","Kaduna","Kano","Katsina",
-  "Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun","Ondo","Osun","Oyo","Plateau",
-  "Rivers","Sokoto","Taraba","Yobe","Zamfara","FCT"
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River",
+  "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina",
+  "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau",
+  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT"
 ];
 
 type Props = {
@@ -56,19 +56,39 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
       {/* Country */}
       <div>
         <Label className="block text-sm font-medium mb-1">Country</Label>
-        <select
-          value={address.country}
-          onChange={(e) => {
-            handleChange("country", e.target.value);
-            setShowStateSelect(e.target.value === "Nigeria");
-            setShowCityInput(false);
-            setShowAddressInput(false);
-          }}
-          className="input w-full border-2 border-input h-7 rounded-sm"
-        >
-          <option value="Nigeria">Nigeria</option>
-          <option value="Other">Other</option>
-        </select>
+        <div className="flex gap-2">
+          <select
+            value={["Nigeria", "United Kingdom", "United States", "Canada", "Ghana"].includes(address.country) ? address.country : "Other"}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "Other") {
+                handleChange("country", ""); // Clear for manual entry
+              } else {
+                handleChange("country", val);
+              }
+              setShowStateSelect(val === "Nigeria");
+              setShowCityInput(val !== "Nigeria"); // Allow city input for non-Nigeria immediately
+              setShowAddressInput(false);
+            }}
+            className="input w-full border-2 border-input h-7 rounded-sm"
+          >
+            <option value="Nigeria">Nigeria</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="United States">United States</option>
+            <option value="Canada">Canada</option>
+            <option value="Ghana">Ghana</option>
+            <option value="Other">Other (Type below)</option>
+          </select>
+        </div>
+        {(!["Nigeria", "United Kingdom", "United States", "Canada", "Ghana"].includes(address.country)) && (
+          <Input
+            type="text"
+            value={address.country}
+            onChange={(e) => handleChange("country", e.target.value)}
+            className="input mt-2"
+            placeholder="Type your country name"
+          />
+        )}
       </div>
 
       {/* State */}

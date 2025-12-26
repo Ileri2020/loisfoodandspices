@@ -133,15 +133,15 @@ export function BankTransferForm({ amount, cartId, onSuccess }: BankTransferForm
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="w-full">
-                    Pay with Bank Transfer
+                <Button variant="outline" className="w-full border-2 border-green-500 text-green-500">
+                    Bank Transfer
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Bank Transfer</DialogTitle>
                     <DialogDescription>
-                        Please transfer <b>₦{amount.toLocaleString()}</b> to the account below, then provide your transfer details.
+                        Please transfer <b>₦{amount.toLocaleString()}</b> to the account below, then provide your transfer details. The payment will be confirmed manually within few seconds.
                     </DialogDescription>
                 </DialogHeader>
 
