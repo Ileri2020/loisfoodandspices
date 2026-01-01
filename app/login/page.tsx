@@ -23,11 +23,11 @@ const Login = async () => {
   return (
     <div className="mt-10 max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white border border-[#121212]  dark:bg-black">
       <form className="my-8" action={login}>
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email">Email Address or Contact Number</Label>
         <Input
           id="email"
-          placeholder="email"
-          type="email"
+          placeholder="email or contact"
+          type="text"
           name="email"
         />
 
@@ -50,7 +50,7 @@ const Login = async () => {
 
         <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
       </form>
-      
+
       <form
         action={googleSignIn}
       >

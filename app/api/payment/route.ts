@@ -74,6 +74,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
+    // Validate that user has contact field filled
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    if (!user.contact || user.contact === "xxxx-xxx-xxxx") {
+      return NextResponse.json({
+        error: "Please update your contact information before checkout. Go to your account settings to add your phone number."
+      }, { status: 400 });
+    }
+
     // Calculate subtotal server-side
     const products = await prisma.product.findMany({
       where: { id: { in: items.map((i: any) => i.productId) } },

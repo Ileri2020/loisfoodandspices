@@ -178,6 +178,12 @@ export function CartClient({ className }: CartProps) {
   const prepareCheckout = async () => {
     if (!user?.id || !selectedAddressId || items.length === 0) return;
 
+    // Check if user has contact filled
+    if (!user?.contact || user.contact === "xxxx-xxx-xxxx") {
+      alert("Please update your contact information before checkout. Go to your account settings to add your phone number.");
+      return null;
+    }
+
     try {
       const payload = {
         userId: user.id,
@@ -194,9 +200,10 @@ export function CartClient({ className }: CartProps) {
       const res = await axios.post("/api/payment", payload);
       setCheckoutData(res.data);
       return res.data; // Return for reuse
-    } catch (err) {
+    } catch (err: any) {
       console.error("Checkout initiation failed:", err);
-      // alert("Checkout failed, please try again.");
+      const errorMessage = err?.response?.data?.error || "Checkout failed, please try again.";
+      alert(errorMessage);
       return null;
     }
   };
