@@ -36,22 +36,52 @@ export async function POST(req: NextRequest) {
   
   try {
     const data = body;
-    // const newItem = await prismaModel.create({
-    //   data,
-    // });
-    const user = await prisma.user.findUnique({
-      where: { email: body.email, },
+    
+    // Find user by email or contact
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: body.email },
+          { contact: body.email }
+        ]
+      },
     });
-    const isvalid = await bcrypt.compare(body.password, user.password)
-    if(isvalid){
-    // const { id, ...updateduser } = user;
-    const updateduser = user;
-    return new Response(JSON.stringify(updateduser), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+
+    // User not found
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email/contact or password' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // User exists but has no password (OAuth user)
+    if (!user.password) {
+      return new Response(
+        JSON.stringify({
+          error: 'No password set',
+          requiresEmailVerification: true,
+          email: user.email,
+          message: 'This account was created with Google or Facebook. Please verify your email to set a password.',
+        }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // User has password, verify it
+    const isValid = await bcrypt.compare(body.password, user.password);
+    
+    if (isValid) {
+      const updatedUser = user;
+      return new Response(JSON.stringify(updatedUser), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     } else {
-      throw new Error('wrong password')
+      return new Response(
+        JSON.stringify({ error: 'Invalid email/contact or password' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
     }
   } catch (error) {
     console.error('LOGIN ERROR:', error);

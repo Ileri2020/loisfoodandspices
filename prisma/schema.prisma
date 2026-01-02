@@ -87,6 +87,18 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model EmailVerificationCode {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  code      String
+  expires   DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
 // model Visit {
 //   id        String   @id @default(auto()) @map("_id") @db.ObjectId
 //   user      User     @relation(fields: [userId], references: [id])
