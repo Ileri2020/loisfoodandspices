@@ -51,7 +51,7 @@ export default function CartForm() {
       setDialogOpen(false); 
   }
   
-  // Columns definition
+  // Columns definition 
   const columns = useMemo(() => [
       {
           accessorKey: "id",
