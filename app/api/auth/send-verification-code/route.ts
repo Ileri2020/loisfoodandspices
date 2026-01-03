@@ -1,18 +1,9 @@
 "use server";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import nodemailer from "nodemailer";
+import { sendVerificationEmail } from "@/lib/nodemailer";
 
 const prisma = new PrismaClient();
-
-// Configure nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail", // or your preferred email service
-  auth: {
-    user: process.env.GMAIL,
-    pass: process.env.GOOGLE_APP_PASSWORD, // The 16-character App Password
-  },
-});
 
 // Generate a 6-digit code
 function generateVerificationCode(): string {
@@ -46,12 +37,18 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user signed up via OAuth (Google/Facebook)
-    if (!user.providerid) {
-      return NextResponse.json(
-        { error: "This account was not created via Google or Facebook" },
-        { status: 400 }
-      );
-    }
+    // In the User model, providerid is used for OAuth ID. 
+    // If it's present, it means they might have signed up with OAuth.
+    // Logic: If they have no password AND have a providerid, they likely signed up via OAuth and want to add a password.
+    // Or if they just have no password.
+    
+    // Original logic:
+    // if (!user.providerid) {
+    //   return NextResponse.json(
+    //     { error: "This account was not created via Google or Facebook" },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Delete any existing unverified codes for this email
     await prisma.emailVerificationCode.deleteMany({
@@ -74,29 +71,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send email
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Verify Your Email - Lois Food and Spices",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #22c55e;">Verify Your Email</h2>
-          <p>Hi ${user.name || "there"},</p>
-          <p>You requested to set a password for your Lois Food and Spices account.</p>
-          <p>Your verification code is:</p>
-          <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
-            <h1 style="color: #22c55e; font-size: 32px; letter-spacing: 8px; margin: 0;">${code}</h1>
-          </div>
-          <p>This code will expire in 15 minutes.</p>
-          <p>If you didn't request this, please ignore this email.</p>
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-          <p style="color: #6b7280; font-size: 12px;">© 2026 Lois Food and Spices. All rights reserved.</p>
-        </div>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    // Send email using centralized function
+    await sendVerificationEmail(email, code, user.name || "User");
 
     return NextResponse.json(
       {
@@ -113,3 +89,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
