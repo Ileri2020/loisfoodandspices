@@ -580,7 +580,32 @@ export async function PUT(req: NextRequest) {
           // Only allow total update if cart is still pending (not paid/completed)
           ...(body.total && existingCart?.status === "pending" && { total: body.total }),
         },
+        include: {
+            user: { include: { addresses: true } },
+            products: { include: { product: true } }
+        }
       });
+      
+      // Send email if paid
+      if (body.status === 'paid' && updatedCart.user?.email) {
+          const { sendPaymentConfirmationEmail } = await import('@/lib/nodemailer');
+          // Use first address as fallback if not stored on cart (Architectural limitation)
+          const address = updatedCart.user.addresses?.[0];
+          const addressStr = address 
+              ? `${address.address}, ${address.city}, ${address.state}, ${address.country}`
+              : "Address on file";
+
+          await sendPaymentConfirmationEmail(updatedCart.user.email, {
+              customerName: updatedCart.user.name || 'Customer',
+              contact: updatedCart.user.contact || address?.phone || 'N/A',
+              address: addressStr,
+              products: updatedCart.products,
+              total: updatedCart.total,
+              deliveryFee: updatedCart.deliveryFee,
+              orderId: updatedCart.id
+          });
+      }
+
       return NextResponse.json(updatedCart);
     }
 

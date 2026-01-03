@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { Country, State, City } from 'country-state-city';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Loader2 } from 'lucide-react';
 
 const REGIONS = [
     "Africa",
@@ -13,7 +14,15 @@ const REGIONS = [
     "South America",
     "Oceania",
     "Antarctica",
-    "United Kingdom", // As requested group
+    "United Kingdom",
+];
+
+const NIGERIA_TARGET_STATES = [
+    { name: 'Lagos', price: 4000 },
+    { name: 'Ogun', price: 3500 },
+    { name: 'Oyo', price: 3000 },
+    { name: 'Kwara', price: 1000 },
+    { name: 'FCT', price: 4000 }, // Abuja
 ];
 
 export default function AddressPriceForm() {
@@ -26,12 +35,41 @@ export default function AddressPriceForm() {
         city: '',
         price: '',
     });
-    const [editId, setEditId] = useState<string | null>(null);
+    
+    // Custom Inputs State
+    const [isCustomRegion, setIsCustomRegion] = useState(false);
+    const [customRegion, setCustomRegion] = useState('');
+    const [isCustomState, setIsCustomState] = useState(false);
+    const [customState, setCustomState] = useState('');
+    const [isCustomCity, setIsCustomCity] = useState(false);
+    const [customCity, setCustomCity] = useState('');
 
-    // Derived lists for dropdowns
-    const countries = Country.getAllCountries();
-    const states = formData.country ? State.getStatesOfCountry(formData.country) : [];
-    const cities = formData.country && formData.state ? City.getCitiesOfState(formData.country, formData.state) : [];
+    // Search/Filter State
+    const [countrySearch, setCountrySearch] = useState('');
+    const [stateSearch, setStateSearch] = useState('');
+    const [citySearch, setCitySearch] = useState('');
+
+    const [editId, setEditId] = useState<string | null>(null);
+    const [seeding, setSeeding] = useState(false);
+
+    // Derived lists
+    const countries = useMemo(() => Country.getAllCountries(), []);
+    const states = useMemo(() => formData.country ? State.getStatesOfCountry(formData.country) : [], [formData.country]);
+    const cities = useMemo(() => formData.country && formData.state ? City.getCitiesOfState(formData.country, formData.state) : [], [formData.country, formData.state]);
+
+    // Filtered lists
+    const filteredCountries = useMemo(() => 
+        countries.filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())), 
+    [countries, countrySearch]);
+
+    const filteredStates = useMemo(() => 
+        states.filter(s => s.name.toLowerCase().includes(stateSearch.toLowerCase())), 
+    [states, stateSearch]);
+
+    const filteredCities = useMemo(() => 
+        cities.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase())), 
+    [cities, citySearch]);
+
 
     useEffect(() => {
         fetchFees();
@@ -50,15 +88,15 @@ export default function AddressPriceForm() {
         };
 
         if (formData.scope === 'region') {
-            payload.region = formData.region;
+            payload.region = isCustomRegion ? customRegion : formData.region;
             payload.country = null;
             payload.state = null;
             payload.city = null;
         } else {
             payload.region = null;
             payload.country = formData.country;
-            payload.state = formData.state || null;
-            payload.city = formData.city || null;
+            payload.state = isCustomState ? customState : (formData.state || null);
+            payload.city = isCustomCity ? customCity : (formData.city || null);
         }
 
         if (editId) {
@@ -80,6 +118,13 @@ export default function AddressPriceForm() {
                 city: '',
                 price: item.price.toString(),
             });
+            // check if custom
+            if (!REGIONS.includes(item.region)) {
+                setIsCustomRegion(true);
+                setCustomRegion(item.region);
+            } else {
+                setIsCustomRegion(false);
+            }
         } else {
             setFormData({
                 scope: 'country',
@@ -89,6 +134,13 @@ export default function AddressPriceForm() {
                 city: item.city || '',
                 price: item.price.toString(),
             });
+            // Handle custom state/city detection if needed (difficult without knowing if it was original ISO)
+            // Assuming for now they map to codes if possible, else we might need better logic.
+            // Simplified: if it's not in the list associated with the country, it's custom.
+            
+            // Checking logic could be added here but for now standard edit.
+             setIsCustomState(false);
+             setIsCustomCity(false);
         }
         setEditId(item.id);
     };
@@ -100,6 +152,12 @@ export default function AddressPriceForm() {
 
     const resetForm = () => {
         setFormData({ scope: 'country', region: '', country: '', state: '', city: '', price: '' });
+        setIsCustomRegion(false);
+        setCustomRegion('');
+        setIsCustomState(false);
+        setCustomState('');
+        setIsCustomCity(false);
+        setCustomCity('');
         setEditId(null);
     };
 
@@ -111,21 +169,99 @@ export default function AddressPriceForm() {
     };
 
     const onRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFormData({ ...formData, region: e.target.value });
-    }
-
-    const onCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFormData({ ...formData, country: e.target.value, state: '', city: '' });
+        const val = e.target.value;
+        if (val === 'OTHER') {
+            setIsCustomRegion(true);
+            setFormData({ ...formData, region: '' });
+        } else {
+            setIsCustomRegion(false);
+            setFormData({ ...formData, region: val });
+        }
     }
 
     const onStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFormData({ ...formData, state: e.target.value, city: '' });
+        const val = e.target.value;
+        if (val === 'OTHER') {
+            setIsCustomState(true);
+            setFormData({ ...formData, state: '' });
+        } else {
+            setIsCustomState(false);
+            setFormData({ ...formData, state: val, city: '' });
+        }
     }
+
+    const onCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        if (val === 'OTHER') {
+            setIsCustomCity(true);
+            setFormData({ ...formData, city: '' });
+        } else {
+            setIsCustomCity(false);
+            setFormData({ ...formData, city: val });
+        }
+    }
+
+    const seedNigeriaLGAs = async () => {
+        if (!confirm("This will add all LGAs for configured Nigerian states to the database. Continue?")) return;
+        setSeeding(true);
+        try {
+            const ng = Country.getAllCountries().find(c => c.name === 'Nigeria' || c.isoCode === 'NG');
+            if (!ng) return;
+
+            const allStates = State.getStatesOfCountry(ng.isoCode);
+            
+            let count = 0;
+
+            for (const target of NIGERIA_TARGET_STATES) {
+                // Find state object to match name
+                // FCT is usually "Abuja Federal Capital Territory" or similar in libraries
+                const stateObj = allStates.find(s => s.name.toLowerCase().includes(target.name.toLowerCase()));
+                
+                if (stateObj) {
+                    const cities = City.getCitiesOfState(ng.isoCode, stateObj.isoCode);
+                    console.log(`Seeding ${cities.length} cities for ${target.name}...`);
+                    
+                    for (const city of cities) {
+                        // Check if exists
+                        const exists = fees.find(f => 
+                            f.country === ng.isoCode && 
+                            f.state === stateObj.isoCode && 
+                            f.city === city.name
+                        );
+
+                        if (!exists) {
+                            await axios.post('/api/dbhandler?model=deliveryFee', {
+                                country: ng.isoCode,
+                                state: stateObj.isoCode,
+                                city: city.name,
+                                region: null,
+                                price: target.price
+                            });
+                            count++;
+                        }
+                    }
+                }
+            }
+            alert(`Successfully added ${count} Local Governments.`);
+            fetchFees();
+        } catch (err) {
+            console.error(err);
+            alert("Error seeding data.");
+        } finally {
+            setSeeding(false);
+        }
+    };
 
     return (
         <div className="w-full">
             <form onSubmit={handleSubmit} className='flex flex-col w-full max-w-lg gap-3 p-4 border rounded-md m-auto bg-card text-card-foreground shadow-sm'>
-                <h2 className='font-semibold text-xl'>Manage Delivery Fees</h2>
+                <div className="flex justify-between items-center">
+                    <h2 className='font-semibold text-xl'>Manage Delivery Fees</h2>
+                    <Button type="button" variant="secondary" size="sm" onClick={seedNigeriaLGAs} disabled={seeding}>
+                        {seeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Seed NG LGAs
+                    </Button>
+                </div>
 
                 <Tabs value={formData.scope} onValueChange={(v) => setFormData({ ...formData, scope: v })} className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
@@ -137,31 +273,50 @@ export default function AddressPriceForm() {
                 {formData.scope === 'region' ? (
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-medium">Region / Group</label>
-                        <select
-                            className="w-full rounded-md border p-2 bg-background"
-                            value={formData.region}
-                            onChange={onRegionChange}
-                            required={formData.scope === 'region'}
-                        >
-                            <option value="">Select Region</option>
-                            {REGIONS.map((r) => (
-                                <option key={r} value={r}>{r}</option>
-                            ))}
-                        </select>
+                        {!isCustomRegion ? (
+                            <select
+                                className="w-full rounded-md border p-2 bg-background"
+                                value={formData.region}
+                                onChange={onRegionChange}
+                                required={!isCustomRegion}
+                            >
+                                <option value="">Select Region</option>
+                                {REGIONS.map((r) => (
+                                    <option key={r} value={r}>{r}</option>
+                                ))}
+                                <option value="OTHER">Other / Custom Group...</option>
+                            </select>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Input 
+                                    placeholder="Enter Group Name (e.g. EU, UK)" 
+                                    value={customRegion} 
+                                    onChange={(e) => setCustomRegion(e.target.value)}
+                                    required
+                                />
+                                <Button type="button" variant="ghost" onClick={() => setIsCustomRegion(false)}>Cancel</Button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <>
                         {/* Country */}
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-medium">Country</label>
+                            <Input 
+                                placeholder="Search Country..." 
+                                value={countrySearch} 
+                                onChange={(e) => setCountrySearch(e.target.value)}
+                                className="mb-1 h-8 text-xs"
+                            />
                             <select
                                 className="w-full rounded-md border p-2 bg-background"
                                 value={formData.country}
-                                onChange={onCountryChange}
+                                onChange={(e) => setFormData({ ...formData, country: e.target.value, state: '', city: '' })}
                                 required={formData.scope === 'country'}
                             >
                                 <option value="">Select Country</option>
-                                {countries.map((c) => (
+                                {filteredCountries.map((c) => (
                                     <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
                                 ))}
                             </select>
@@ -170,33 +325,75 @@ export default function AddressPriceForm() {
                         {/* State */}
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-medium">State (Optional)</label>
-                            <select
-                                className="w-full rounded-md border p-2 bg-background"
-                                value={formData.state}
-                                onChange={onStateChange}
-                                disabled={!formData.country}
-                            >
-                                <option value="">All States</option>
-                                {states.map((s) => (
-                                    <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
-                                ))}
-                            </select>
+                            {!isCustomState ? (
+                                <>
+                                    <Input 
+                                        placeholder="Search State..." 
+                                        value={stateSearch} 
+                                        onChange={(e) => setStateSearch(e.target.value)}
+                                        className="mb-1 h-8 text-xs"
+                                        disabled={!formData.country}
+                                    />
+                                    <select
+                                        className="w-full rounded-md border p-2 bg-background"
+                                        value={formData.state}
+                                        onChange={onStateChange}
+                                        disabled={!formData.country}
+                                    >
+                                        <option value="">All States</option>
+                                        {filteredStates.map((s) => (
+                                            <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+                                        ))}
+                                        <option value="OTHER">Other / Custom State...</option>
+                                    </select>
+                                </>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Input 
+                                        placeholder="Enter State Name" 
+                                        value={customState} 
+                                        onChange={(e) => setCustomState(e.target.value)}
+                                    />
+                                    <Button type="button" variant="ghost" onClick={() => setIsCustomState(false)}>List</Button>
+                                </div>
+                            )}
                         </div>
 
                         {/* City */}
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-medium">City (Optional)</label>
-                            <select
-                                className="w-full rounded-md border p-2 bg-background"
-                                value={formData.city}
-                                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                disabled={!formData.state}
-                            >
-                                <option value="">All Cities</option>
-                                {cities.map((c: any) => (
-                                    <option key={c.name} value={c.name}>{c.name}</option>
-                                ))}
-                            </select>
+                            {!isCustomCity ? (
+                                <>
+                                    <Input 
+                                        placeholder="Search City..." 
+                                        value={citySearch} 
+                                        onChange={(e) => setCitySearch(e.target.value)}
+                                        className="mb-1 h-8 text-xs"
+                                        disabled={!formData.state}
+                                    />
+                                    <select
+                                        className="w-full rounded-md border p-2 bg-background"
+                                        value={formData.city}
+                                        onChange={onCityChange}
+                                        disabled={!formData.state}
+                                    >
+                                        <option value="">All Cities</option>
+                                        {filteredCities.map((c: any) => (
+                                            <option key={c.name} value={c.name}>{c.name}</option>
+                                        ))}
+                                        <option value="OTHER">Other / Custom City...</option>
+                                    </select>
+                                </>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Input 
+                                        placeholder="Enter City Name" 
+                                        value={customCity} 
+                                        onChange={(e) => setCustomCity(e.target.value)}
+                                    />
+                                    <Button type="button" variant="ghost" onClick={() => setIsCustomCity(false)}>List</Button>
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

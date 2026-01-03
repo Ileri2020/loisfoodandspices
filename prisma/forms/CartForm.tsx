@@ -1,127 +1,171 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { DataTableDemo } from "@/components/myComponents/subs/datatable";
+import { CartDetailsDialog } from "@/components/myComponents/subs/CartDetailsDialog";
+import { Trash2, Eye } from "lucide-react";
 
 export default function CartForm() {
-  const [carts, setCarts] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [formData, setFormData] = useState({
-    userId: '',
-    productId: '',
-    quantity: 0,
-    total: 0,
-  });
-  const [editId, setEditId] = useState(null);
+  const [carts, setCarts] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  const [selectedCart, setSelectedCart] = useState<any | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchCarts();
-    fetchUsers();
-    fetchProducts();
   }, []);
 
   const fetchCarts = async () => {
-    const res = await axios.get('/api/dbhandler?model=cart');
-    setCarts(res.data);
+    setLoading(true);
+    try {
+        const res = await axios.get('/api/dbhandler?model=cart');
+        setCarts(res.data);
+    } catch(err) {
+        console.error(err);
+    } finally {
+        setLoading(false);
+    }
   };
 
-  const fetchUsers = async () => {
-    const res = await axios.get('/api/dbhandler?model=user');
-    setUsers(res.data);
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent row click
+    if (!confirm("Are you sure you want to delete this cart?")) return;
+    try {
+        await axios.delete(`/api/dbhandler?model=cart&id=${id}`);
+        fetchCarts();
+    } catch (err) {
+        console.error("Failed to delete", err);
+    }
   };
 
-  const fetchProducts = async () => {
-    const res = await axios.get('/api/dbhandler?model=product');
-    setProducts(res.data);
-  };
-
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  const newFormData = {
-    ...formData,
-    quantity: +formData.quantity,
-    total: +formData.total,
-  };
-  if (editId) {
-    await axios.put(`/api/dbhandler?model=cart&id=${editId}`, newFormData);
-  } else {
-    await axios.post('/api/dbhandler?model=cart', newFormData);
+  const handleUpdatePayment = async () => {
+      // Re-fetch carts to update status in table
+      await fetchCarts();
+      // Update the selected cart view
+      if (selectedCart) {
+          const updated = carts.find(c => c.id === selectedCart.id);
+          if (updated) setSelectedCart(updated);
+      }
+      setDialogOpen(false); 
   }
-  resetForm();
-  fetchCarts();
-};
+  
+  // Columns definition
+  const columns = useMemo(() => [
+      {
+          accessorKey: "id",
+          header: "Order ID",
+          cell: ({ row }: any) => <span className="font-mono text-xs">{row.original.id.slice(-6)}</span>
+      },
+      {
+          accessorKey: "user.email",
+          header: "User",
+          cell: ({ row }: any) => (
+             <div className="flex flex-col">
+                 <span className="font-medium text-xs">{row.original.user?.name || "Guest"}</span>
+                 <span className="text-xs text-muted-foreground">{row.original.user?.email}</span>
+             </div>
+          )
+      },
+      {
+          accessorKey: "total",
+          header: "Total",
+          cell: ({ row }: any) => <span className="font-bold">₦{row.original.total.toLocaleString()}</span>
+      },
+      {
+          accessorKey: "status",
+          header: "Status",
+          cell: ({ row }: any) => {
+            const s = row.original.status;
+            const color = s === 'paid' ? 'text-green-600' : s === 'unconfirmed' ? 'text-orange-500' : 'text-yellow-600';
+            return <span className={`uppercase text-xs font-bold ${color}`}>{s}</span>
+          }
+      },
+      {
+          accessorKey: "createdAt",
+          header: "Date",
+          cell: ({ row }: any) => <span className="text-xs text-muted-foreground">{new Date(row.original.createdAt).toLocaleDateString()}</span>
+      },
+      {
+          id: "actions",
+          cell: ({ row }: any) => (
+              <div className="flex gap-2 justify-end">
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedCart(row.original); setDialogOpen(true); }}>
+                      <Eye className="w-4 h-4 text-primary" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => handleDelete(e, row.original.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+              </div>
+          )
+      }
+  ], [carts]); 
 
-  const handleEdit = (item) => {
-    setFormData(item);
-    setEditId(item.id);
-  };
+  // Filter data
+  const filteredData = useMemo(() => {
+      if (!search) return carts;
+      const lower = search.toLowerCase();
+      return carts.filter(c => 
+          c.id?.toLowerCase().includes(lower) || 
+          c.user?.name?.toLowerCase().includes(lower) || 
+          c.user?.email?.toLowerCase().includes(lower) ||
+          c.status?.toLowerCase().includes(lower)
+      );
+  }, [carts, search]);
 
-  const handleDelete = async (id) => {
-    await axios.delete(`/api/dbhandler?model=cart&id=${id}`);
-    fetchCarts();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      userId: '',
-      productId: '',
-      quantity: 0,
-      total: 0,
-    });
-    setEditId(null);
-  };
+  const onRowClick = (row: any) => {
+      setSelectedCart(row);
+      setDialogOpen(true);
+  }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className='flex flex-col w-full max-w-sm gap-2 justify-center items-center p-3 border-2 border-secondary-foreground rounded-sm m-2'>
-        <h2 className='font-semibold text-lg'>Manage Carts</h2>
-        <select value={formData.userId} onChange={(e) => setFormData({ ...formData, userId: e.target.value })}>
-          {users.length > 0 ? (
-            users.map((user, index) => (
-              <option key={index} value={user.id}>
-                {user.name}
-              </option>
-            ))
-          ) : (
-            <option value="">No users</option>
-          )}
-        </select>
-        <select value={formData.productId} onChange={(e) => setFormData({ ...formData, productId: e.target.value })}>
-          {products.length > 0 ? (
-            products.map((product, index) => (
-              <option key={index} value={product.id}>
-                {product.name}
-              </option>
-            ))
-          ) : (
-            <option value="">No products</option>
-          )}
-        </select>
-        <Input placeholder="Quantity" value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: +e.target.value })}  type="number" />
-        <Input placeholder="Total" value={formData.total} onChange={(e) => setFormData({ ...formData, total: +e.target.value })}  type="number" />
-        <Button type="submit">{editId ? 'Update' : 'Create'}</Button>
-        {editId && <Button type="button" onClick={resetForm}>Cancel</Button>}
-        <ul className='w-full'>
-          {carts.length > 0 ? (
-            carts.map((item, index) => (
-              <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
-                <p>User: {users.find((user) => user.id === item.userId)?.name}</p>
-                <p>Product: {products.find((product) => product.id === item.productId)?.name}</p>
-                <p>Quantity: {item.quantity}</p>
-                <p>Total: {item.total}</p>
-                <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button type='button' onClick={() => handleDelete(item.id)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
-                </div>
-              </li>
-            ))
-          ) : (
-            <p>No carts.</p>
-          )}
-        </ul>
-      </form>
+    <div className='w-full p-4 border rounded-md bg-card mx-2'>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+            <h2 className='font-semibold text-lg'>All Carts Management</h2>
+            <div className="flex gap-2 w-full md:w-auto">
+                <Input 
+                    placeholder="Search carts..." 
+                    value={search} 
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="max-w-xs"
+                />
+                <Button variant="outline" onClick={fetchCarts}>Refresh</Button>
+            </div>
+        </div>
+
+        {loading ? (
+            <div className="text-center py-10">Loading carts...</div>
+        ) : (
+            <DataTableDemo 
+                columns={columns} 
+                data={filteredData} 
+                onRowClick={onRowClick}
+            />
+        )}
+
+        <CartDetailsDialog 
+            open={dialogOpen} 
+            onOpenChange={setDialogOpen}
+            cart={selectedCart}
+            onConfirmPayment={async () => {
+               // The logic for confirming is actually inside the parent component or triggered via API. 
+               // The Dialog calls 'onConfirmPayment'. 
+               // I need to implement the API call here.
+               if(!selectedCart) return;
+               try {
+                  await axios.put('/api/dbhandler?model=cart', {
+                      id: selectedCart.id,
+                      status: 'paid',
+                      adminConfirmed: true
+                  });
+                  await handleUpdatePayment();
+               } catch(e) {
+                   console.error(e);
+                   alert("Failed to confirm payment");
+               }
+            }}
+        />
     </div>
   );
 }

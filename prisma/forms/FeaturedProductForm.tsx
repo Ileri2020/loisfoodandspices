@@ -16,7 +16,7 @@ interface FeaturedProduct {
   product: Product;
 }
 
-const MAX_FEATURED_PRODUCTS = 10;
+const MAX_FEATURED_PRODUCTS = 16;
 
 export default function FeaturedProductForm() {
   const [featuredProduct, setFeaturedProduct] = useState<FeaturedProduct[]>([]);

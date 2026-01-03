@@ -7,7 +7,7 @@ import { RiseAndFadeText } from './textctrl'
 import { useAppContext } from '@/hooks/useAppContext'
 import { motion } from "framer-motion"
 
-interface HeroProps {
+interface HeroProps { 
   variant?: 'modern-split' | 'immersive';
 }
 

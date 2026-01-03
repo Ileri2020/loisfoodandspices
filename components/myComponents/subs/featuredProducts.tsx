@@ -105,7 +105,7 @@ const FeaturedProducts = () => {
     const top: FeaturedProductType[] = [];
     const bottom: FeaturedProductType[] = [];
     products.forEach((p, i) => {
-      if (i % 2 === 0) top.push(p);
+      if (i % 2 == 0) top.push(p);
       else bottom.push(p);
     });
     return [top, bottom];

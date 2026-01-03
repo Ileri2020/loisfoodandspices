@@ -30,10 +30,27 @@ export function CartDetailsDialog({
                 </DialogHeader>
 
                 {/* USER */}
-                <div className="text-sm text-muted-foreground">
-                    <p>User: {cart.user?.name}</p>
-                    <p>Email: {cart.user?.email}</p>
-                    <p>Status: <b>{cart.status}</b></p>
+                <div className="text-sm text-muted-foreground p-3 border rounded-md bg-muted/50">
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <span className="font-semibold block text-xs uppercase">Customer</span>
+                            {cart.user?.name || "Guest"}
+                        </div>
+                        <div>
+                            <span className="font-semibold block text-xs uppercase">Email</span>
+                            {cart.user?.email || "N/A"}
+                        </div>
+                        <div>
+                            <span className="font-semibold block text-xs uppercase">Contact</span>
+                            {cart.user?.contact || "N/A"}
+                        </div>
+                         <div>
+                            <span className="font-semibold block text-xs uppercase">Status</span>
+                            <span className={`badge ${cart.status === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
+                                {cart.status}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* PRODUCTS */}
