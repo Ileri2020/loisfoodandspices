@@ -36,6 +36,7 @@ interface CartItem {
 
 interface CartData {
     id: string;
+    name?: string;
     total: number;
     deliveryFee?: number;
     status: string;
@@ -48,17 +49,17 @@ interface CartData {
     } | null;
 }
 
+const normalizeState = (state?: string | null): string | null => {
+    if (!state) return null;
+    return state.replace(/state/i, "").replace(/[-\s]/g, "_").trim();
+};
+
 interface Address {
     id: string;
     address?: string | null;
     city?: string | null;
     state?: string | null;
 }
-
-const normalizeState = (state?: string | null): string | null => {
-    if (!state) return null;
-    return state.replace(/state/i, "").replace(/[-\s]/g, "_").trim();
-};
 
 export function CartDetails({ cartId, onPaymentSuccess }: CartDetailsProps) {
     const [cart, setCart] = useState<CartData | null>(null);
@@ -68,6 +69,10 @@ export function CartDetails({ cartId, onPaymentSuccess }: CartDetailsProps) {
     const { clearCart, addItem } = useCart();
 
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    
+    // Name editing state
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editedName, setEditedName] = useState("");
 
     useEffect(() => {
         if (user?.addresses?.length && !selectedAddressId) {
@@ -83,6 +88,7 @@ export function CartDetails({ cartId, onPaymentSuccess }: CartDetailsProps) {
             try {
                 const res = await axios.get(`/api/dbhandler?model=cart&id=${cartId}`);
                 setCart(res.data);
+                setEditedName(res.data.name || "");
             } catch (err) {
                 console.error("Failed to fetch cart details:", err);
                 setError("Failed to load cart details.");
@@ -93,6 +99,21 @@ export function CartDetails({ cartId, onPaymentSuccess }: CartDetailsProps) {
 
         fetchCartDetails();
     }, [cartId]);
+
+    const handleSaveName = async () => {
+        if (!cart) return;
+        try {
+            await axios.put(`/api/dbhandler?model=cart&id=${cart.id}`, { name: editedName });
+            setCart({ ...cart, name: editedName });
+            setIsEditingName(false);
+            toast.success("Cart name updated");
+        } catch (err) {
+            console.error("Failed to update name", err);
+            toast.error("Failed to update cart name");
+        }
+    }
+
+    // ... existing ...
 
     const calculateDeliveryFee = (address?: Address | null): number => {
         const normalizedState = normalizeState(address?.state);
@@ -175,11 +196,27 @@ export function CartDetails({ cartId, onPaymentSuccess }: CartDetailsProps) {
             <CardHeader className="bg-muted/30 pb-4 border-b mb-4">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-xl font-semibold">
-                            {isLocked ? "Order Details" : "Review & Pay"}
-                        </CardTitle>
-                        <Badge variant={cart.status === 'paid' ? "default" : cart.status === 'unconfirmed' ? "outline" : "destructive"}>
-                            {cart.status}
+                        <div className="flex items-center gap-2">
+                             {isEditingName ? (
+                                 <div className="flex items-center gap-2">
+                                     <input 
+                                         className="h-8 rounded border px-2 text-sm max-w-[150px]"
+                                         value={editedName}
+                                         onChange={(e) => setEditedName(e.target.value)}
+                                         placeholder="Name this cart..."
+                                     />
+                                     <Button size="sm" onClick={handleSaveName}>Save</Button>
+                                     <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}>Cancel</Button>
+                                 </div>
+                             ) : (
+                                 <CardTitle className="text-xl font-semibold flex items-center gap-2 group cursor-pointer" onClick={() => setIsEditingName(true)}>
+                                     {cart?.name || (isLocked ? "Order Details" : "Review & Pay")}
+                                     <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 font-normal ml-2">(Edit Name)</span>
+                                 </CardTitle>
+                             )}
+                        </div>
+                        <Badge variant={cart?.status === 'paid' ? "default" : cart?.status === 'unconfirmed' ? "outline" : "destructive"}>
+                            {cart?.status}
                         </Badge>
                     </div>
 

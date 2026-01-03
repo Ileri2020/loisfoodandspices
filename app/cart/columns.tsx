@@ -9,6 +9,7 @@ import { Eye } from "lucide-react"
 // Define the shape of our data (matches the optimized API response)
 export type CartSummary = {
     id: string
+    name?: string // Added name
     total: number
     status: string
     createdAt: string
@@ -18,6 +19,11 @@ export type CartSummary = {
 }
 
 export const getColumns = (): ColumnDef<CartSummary>[] => [
+    {
+        accessorKey: "name",
+        header: "Name",
+        cell: ({ row }) => <span className="font-medium">{row.original.name || "Untitled"}</span>,
+    },
     {
         accessorKey: "createdAt",
         header: "Date",

@@ -21,6 +21,7 @@ const Home = () => {
     >
       {/* <Filters /> */}
       <Hero />
+      {/* 'modern-split' | 'immersive' | 'carousel' | 'story' | 'menu' | 'experience' | 'local'; */}
 
       <ScrollScaleWrapper className="w-full flex justify-center">
         <FeaturedCategories />

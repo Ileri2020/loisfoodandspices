@@ -172,6 +172,56 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
           )}
         </>
       )}
+      {/* Geolocation Button */}
+      <div className="mb-2">
+         <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full text-xs"
+            onClick={() => {
+                if (!navigator.geolocation) {
+                    alert("Geolocation is not supported by your browser");
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                        // Use OpenStreetMap Nominatim for free reverse geocoding
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        const data = await res.json();
+                        if (data && data.address) {
+                            const addr = data.address;
+                            const newAddress = {
+                                ...address,
+                                country: addr.country || "Nigeria",
+                                state: addr.state || addr.region || "Lagos",
+                                city: addr.city || addr.town || addr.village || addr.county || "",
+                                address: `${addr.road || ""} ${addr.house_number || ""}`.trim(),
+                                zip: addr.postcode || "",
+                            };
+                            
+                            // Adjust control flags
+                            const isNG = newAddress.country === "Nigeria";
+                            setShowStateSelect(isNG);
+                            setShowCityInput(!isNG || !!newAddress.state);
+                            setShowAddressInput(!!newAddress.city);
+                            
+                            setAddress(newAddress);
+                            if (onSaved) onSaved(newAddress);
+                        }
+                    } catch (e) {
+                        console.error("Geocoding failed", e);
+                        alert("Failed to retrieve address from location");
+                    }
+                }, () => {
+                    alert("Unable to retrieve your location");
+                });
+            }}
+         >
+            📍 Use Current Location
+         </Button>
+      </div>
+
     </div>
   );
 }

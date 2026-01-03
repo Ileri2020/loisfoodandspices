@@ -140,7 +140,7 @@ const Admin = () => {
 
   const cartColumns = useMemo(
     () => [
-      { accessorKey: "id", header: "ID" },
+      { accessorKey: "name", header: "Name" }, // Added Name
       { accessorKey: "userName", header: "User" },
       { accessorKey: "total", header: "Total" },
       { accessorKey: "status", header: "Status" },
@@ -161,6 +161,8 @@ const Admin = () => {
   );
 
   /* ================= DATA FETCH ================= */
+  
+  const [cartSearch, setCartSearch] = useState("");
 
   useEffect(() => {
     if (!isAdmin && !isStaff) return;
@@ -169,7 +171,7 @@ const Admin = () => {
       try {
         /* ===== CARTS (PAID + UNCONFIRMED) ===== */
         const cartsRes = await fetch(
-          "/api/dbhandler?model=cart&status=paid,unconfirmed"
+          `/api/dbhandler?model=cart&status=paid,unconfirmed&search=${cartSearch}`
         );
 
         let carts = await cartsRes.json();
@@ -178,6 +180,7 @@ const Admin = () => {
         setCartData(
           carts.map((c: any) => ({
             id: c.id,
+            name: c.name || "N/A", // Map name
             userName: c.user?.name || "Unknown",
             total: c.total,
             status: c.status,
@@ -186,6 +189,7 @@ const Admin = () => {
         );
 
         /* ===== NOTIFICATIONS ===== */
+        // ... notifications fetch unchanged
         const notifRes = await fetch("/api/dbhandler?model=notification");
         let notifications = await notifRes.json();
         if (!Array.isArray(notifications)) notifications = [];
@@ -208,8 +212,9 @@ const Admin = () => {
       }
     };
 
-    fetchData();
-  }, [isAdmin, isStaff]);
+    const debounce = setTimeout(fetchData, 500);
+    return () => clearTimeout(debounce);
+  }, [isAdmin, isStaff, cartSearch]);
 
   /* ================= GUARD ================= */
 
@@ -314,9 +319,17 @@ const Admin = () => {
 
       {/* CARTS */}
       <div className="mt-8">
-        <h3 className="text-xl font-semibold mb-2">
-          Paid & Unconfirmed Carts
-        </h3>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-xl font-semibold">
+            Paid & Unconfirmed Carts
+          </h3>
+          <Input 
+            placeholder="Search carts..." 
+            value={cartSearch}
+            onChange={(e) => setCartSearch(e.target.value)}
+            className="max-w-xs"
+          />
+        </div>
         <DataTableDemo
           columns={cartColumns}
           data={cartData}

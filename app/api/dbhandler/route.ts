@@ -203,6 +203,9 @@ export async function GET(req: NextRequest) {
     // =====================
     // CART FILTERING (🔥 FIX)
     // =====================
+    // =====================
+    // CART FILTERING (🔥 FIX)
+    // =====================
     if (model === "cart") {
       const where: any = {};
 
@@ -212,6 +215,22 @@ export async function GET(req: NextRequest) {
           .map(s => s.trim().toLowerCase());
 
         where.status = { in: statuses };
+      }
+
+      if (searchQuery) {
+          where.OR = [
+              { name: { contains: searchQuery, mode: 'insensitive' } },
+              { user: { name: { contains: searchQuery, mode: 'insensitive' } } },
+              { user: { email: { contains: searchQuery, mode: 'insensitive' } } },
+              { user: { contact: { contains: searchQuery, mode: 'insensitive' } } },
+              // Check id too just in case
+              { id: { contains: searchQuery, mode: 'insensitive' } }
+          ];
+      }
+
+      // If userId is passed via searchParam (often unrelated to text search)
+      if (searchParams.get('userId')) {
+         where.userId = searchParams.get('userId');
       }
 
       const carts = await prisma.cart.findMany({
@@ -426,6 +445,8 @@ export async function POST(req: NextRequest) {
           total,
           deliveryFee,
           status: "pending",
+          name: body.name, // optional name
+          contact: body.contact, // optional contact
           products: {
             create: items.map((i: any) => ({
               productId: i.productId,
@@ -546,13 +567,6 @@ export async function PUT(req: NextRequest) {
     // remove id from update payload
     const { id: _ignore, ...updatedData } = body;
 
-    if (!updatedData || Object.keys(updatedData).length === 0) {
-      return NextResponse.json(
-        { error: "Nothing to update" },
-        { status: 400 }
-      );
-    }
-
     // =========================
     // TYPE FIXES (CRITICAL)
     // =========================
@@ -561,88 +575,91 @@ export async function PUT(req: NextRequest) {
     }
 
     // =========================
+    // CART PAYLOAD UPDATES
+    // =========================
+    if (model === "cart") {
+        // Allow updating name and contact if provided
+        // Logic handled by default update below unless it is status/payment specific
+        
+        // However, if it IS status/payment specific, we enter the block below.
+        // We should merge logic or let the block below handle strict status/payment updates.
+        // If the user is just renaming (body only has name), it skips the big block below.
+    }
+
+    if (!updatedData || Object.keys(updatedData).length === 0) {
+      return NextResponse.json(
+        { error: "Nothing to update" },
+        { status: 400 }
+      );
+    }
+
+    // =========================
     // UPDATE
     // =========================
     // =========================
     // CART PAYMENT UPDATE
     // =========================
-    if (model === "cart" && body.status && !body.payment) {
+    if (model === "cart" && (body.status || body.payment || body.total)) {
       // Fetch existing cart to check status
       const existingCart = await prisma.cart.findUnique({
         where: { id },
         select: { status: true },
       });
 
-      const updatedCart = await prisma.cart.update({
-        where: { id },
-        data: {
-          status: body.status,
-          // Only allow total update if cart is still pending (not paid/completed)
-          ...(body.total && existingCart?.status === "pending" && { total: body.total }),
-        },
-        include: {
-            user: { include: { addresses: true } },
-            products: { include: { product: true } }
-        }
-      });
+      const updatePayload: any = {};
+      if (body.status) updatePayload.status = body.status;
+      // Only allow total update if cart is still pending (not paid/completed)
+      if (body.total && existingCart?.status === "pending") updatePayload.total = body.total;
       
-      // Send email if paid
-      if (body.status === 'paid' && updatedCart.user?.email) {
-          const { sendPaymentConfirmationEmail } = await import('@/lib/nodemailer');
-          // Use first address as fallback if not stored on cart (Architectural limitation)
-          const address = updatedCart.user.addresses?.[0];
-          const addressStr = address 
-              ? `${address.address}, ${address.city}, ${address.state}, ${address.country}`
-              : "Address on file";
+      // Also allow updating name/contact here if passed
+      if (body.name) updatePayload.name = body.name;
+      if (body.contact) updatePayload.contact = body.contact;
 
-          await sendPaymentConfirmationEmail(updatedCart.user.email, {
-              customerName: updatedCart.user.name || 'Customer',
-              contact: updatedCart.user.contact || address?.phone || 'N/A',
-              address: addressStr,
-              products: updatedCart.products,
-              total: updatedCart.total,
-              deliveryFee: updatedCart.deliveryFee,
-              orderId: updatedCart.id
-          });
-      }
-
-      return NextResponse.json(updatedCart);
-    }
-
-    if (model === "cart" && body.payment) {
-      const cartId = parseId(body.id || searchParams.get("id"), model);
-
-      if (!cartId) {
-        return NextResponse.json({ error: "Missing cart id" }, { status: 400 });
-      }
-
-      const { method, amount, tx_ref } = body.payment;
-
-      const updatedCart = await prisma.cart.update({
-        where: { id: cartId },
-        data: {
-          status: body.status ?? "unconfirmed",
-          payment: {
-            upsert: {
-              create: {
-                method,
-                amount,
-                tx_ref,
-              },
-              update: {
-                method,
-                amount,
-                tx_ref,
-              },
+      if (Object.keys(updatePayload).length > 0 || body.payment) {
+          const updatedCart = await prisma.cart.update({
+            where: { id },
+            data: {
+              ...updatePayload,
+              ...(body.payment && {
+                  payment: {
+                    upsert: {
+                      create: body.payment,
+                      update: body.payment,
+                    },
+                  },
+              })
             },
-          },
-        },
-        include: {
-          payment: true,
-        },
-      });
+            include: {
+                user: { include: { addresses: true } },
+                products: { include: { product: true } },
+                payment: true
+            }
+          });
+          
+          // Send email if paid
+          if (body.status === 'paid' && updatedCart.user?.email && body.adminConfirmed) {
+              const { sendPaymentConfirmationEmail } = await import('@/lib/nodemailer');
+              // Use cart contact, then user contact, then address phone
+              const contact = updatedCart.contact || updatedCart.user.contact || updatedCart.user.addresses?.[0]?.phone || 'N/A';
+              
+              const address = updatedCart.user.addresses?.[0];
+              const addressStr = address 
+                  ? `${address.address}, ${address.city}, ${address.state}, ${address.country}`
+                  : "Address on file";
 
-      return NextResponse.json(updatedCart);
+              await sendPaymentConfirmationEmail(updatedCart.user.email, {
+                  customerName: updatedCart.user.name || 'Customer',
+                  contact: contact,
+                  address: addressStr,
+                  products: updatedCart.products,
+                  total: updatedCart.total,
+                  deliveryFee: updatedCart.deliveryFee,
+                  orderId: updatedCart.id
+              });
+          }
+
+          return NextResponse.json(updatedCart);
+      }
     }
 
     const updatedItem = await prismaModel.update({

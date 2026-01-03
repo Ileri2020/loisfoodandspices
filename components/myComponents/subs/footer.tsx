@@ -1,12 +1,14 @@
 import { Facebook, Github, Instagram, Linkedin, Twitter } from "lucide-react";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import linksData from "../../../data/links";
 
 import { SEO_CONFIG } from "../../../app/layout";
 import { cn } from "@/lib/utils"
 // import { Button } from "~/ui/primitives/button";
 import { Button } from "@/components/ui/button";
 
-export function Footer({ className }: { className?: string }) {
+export async function Footer({ className }: { className?: string }) {
   const socialMediaLinks = [
     { href: "#", icon: <Facebook className="h-4 w-4" />, label: "Facebook" },
     { href: "#", icon: <Twitter className="h-4 w-4" />, label: "Twitter" },
@@ -15,21 +17,22 @@ export function Footer({ className }: { className?: string }) {
     { href: "#", icon: <Linkedin className="h-4 w-4" />, label: "LinkedIn" },
   ];
   
-  const pageLinks = [
-    { href: "/home", label: "Home" },
-    { href: "/about", label: "About Us" },
-    { href: "/store", label: "Store" },
-    { href: "/contact", label: "Help Center" },
-    { href: "/account", label: "User Account" },
-  ];
+  // Fetch categories from DB
+  const categories = await prisma.category.findMany({
+      take: 6,
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true }
+  });
+
+  const pageLinks = linksData.Links.map(l => ({
+      href: l.path,
+      label: l.name
+  }));
   
-  const categoryLinks = [
-    { href: "/", label: "Spices" },
-    { href: "/", label: "Food Item" },
-    { href: "/", label: "Cloth" },
-    { href: "/", label: "Kitchen Utensils" },
-    { href: "/", label: "Content Tools" },
-  ];
+  const categoryLinks = categories.map(c => ({
+      href: `/store?category=${c.name}`,
+      label: c.name
+  }));
   
   const supportLinks = [
     { href: "/help", label: "Help Center" },
@@ -59,7 +62,6 @@ export function Footer({ className }: { className?: string }) {
       links : supportLinks,
     },
   ]
-  //flex-1 grid grid-cols-2 gap-5 max-w-[580px] my-5
   
   return (
     <footer className={cn("border-t bg-background", className)}>
