@@ -191,20 +191,28 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
                         const data = await res.json();
                         if (data && data.address) {
                             const addr = data.address;
+                            const isNG = (addr.country || "").toLowerCase().includes("nigeria");
+                            
                             const newAddress = {
                                 ...address,
-                                country: addr.country || "Nigeria",
-                                state: addr.state || addr.region || "Lagos",
-                                city: addr.city || addr.town || addr.village || addr.county || "",
-                                address: `${addr.road || ""} ${addr.house_number || ""}`.trim(),
+                                country: isNG ? "Nigeria" : (addr.country || "Nigeria"),
+                                state: (() => {
+                                    const s = addr.state || addr.region || addr.province || "";
+                                    if (isNG) {
+                                        const match = NIGERIA_STATES.find(name => s.toLowerCase().includes(name.toLowerCase()));
+                                        return match || s || "Lagos";
+                                    }
+                                    return s || "Lagos";
+                                })(),
+                                city: addr.city || addr.town || addr.village || addr.county || addr.suburb || "",
+                                address: `${addr.road || addr.suburb || addr.neighbourhood || ""} ${addr.house_number || ""}`.trim(),
                                 zip: addr.postcode || "",
                             };
                             
                             // Adjust control flags
-                            const isNG = newAddress.country === "Nigeria";
                             setShowStateSelect(isNG);
-                            setShowCityInput(!isNG || !!newAddress.state);
-                            setShowAddressInput(!!newAddress.city);
+                            setShowCityInput(true);
+                            setShowAddressInput(true);
                             
                             setAddress(newAddress);
                             if (onSaved) onSaved(newAddress);

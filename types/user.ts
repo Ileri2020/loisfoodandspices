@@ -6,4 +6,5 @@ export interface UserProps {
   role: string;
   contact: string;
   addresses : any[];
+  shippingAddress?: any;
 }

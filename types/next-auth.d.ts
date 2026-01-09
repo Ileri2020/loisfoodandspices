@@ -12,6 +12,8 @@ declare module "next-auth" {
       contact?: string | null;
       image?: string | null;
       providerid?: string | null;
+      addresses?: any[];
+      shippingAddress?: any;
     };
   }
 
