@@ -157,19 +157,17 @@ export default function ShippingAddressForm({ userId, existing, onSaved }: Props
             />
           </div>
 
-          {address.country === "Nigeria" && (
-            <div>
-              <Label className="block text-sm font-medium mb-1">ZIP / Postal Code (optional)</Label>
-              <Input
-                type="text"
-                value={address.zip}
-                onChange={(e) => handleChange("zip", e.target.value)}
-                name="zip"
-                className="input"
-                placeholder="ZIP / Postal Code"
-              />
-            </div>
-          )}
+          <div>
+            <Label className="block text-sm font-medium mb-1">ZIP / Postal Code (optional)</Label>
+            <Input
+              type="text"
+              value={address.zip}
+              onChange={(e) => handleChange("zip", e.target.value)}
+              name="zip"
+              className="input"
+              placeholder="ZIP / Postal Code"
+            />
+          </div>
         </>
       )}
       {/* Geolocation Button */}
