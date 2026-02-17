@@ -36,6 +36,13 @@ model User {
   messages      Message[]
 }
 
+model SiteSettings {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  aboutText   String   @default("Welcome to our store. We provide high-quality products to our customers.")
+  addToHome   String   @default("Add our app to your home screen for a better experience!")
+  updatedAt   DateTime @updatedAt
+}
+
 model Account {
   id                String @id @default(auto()) @map("_id") @db.ObjectId
   userId            String @db.ObjectId

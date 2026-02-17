@@ -57,6 +57,8 @@ export const SYSTEM_CONFIG = {
   // repoStars: true,
 };
 
+import { Toaster } from "@/components/ui/sonner"
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -82,6 +84,7 @@ export default async function RootLayout({
                   <VisitTracker />
                   <Navbar />
                   {children}
+                  <Toaster />
                   <Footer />
                 </ThemeProvider>
               </CartProvider>

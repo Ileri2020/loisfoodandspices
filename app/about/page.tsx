@@ -12,9 +12,20 @@ import Countup from "react-countup"
 import contact from "@/data/cont"
 // import Footer from "@/components/myComponents/subs/footer"
 import { useAppContext } from "@/hooks/useAppContext"
+import { getSiteSettings } from "@/server/action/siteSettings"
+import { AdminEditable } from "@/components/myComponents/subs/AdminEditable"
+import { useEffect, useState } from "react"
 
 const About = () => {
   const { selectedVideo, setSelectedVideo, useMock } = useAppContext();
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    getSiteSettings().then(setSettings);
+  }, []);
+
+  const aboutText = settings?.aboutText || Stats.about.join(" ");
+
   return (
     <motion.section 
       initial = {{ opacity: 0 }}

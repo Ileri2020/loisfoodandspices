@@ -171,7 +171,7 @@ const FeaturedProducts = () => {
                 BOTTOM CAROUSEL (RTL)
             ================================ */}
             <Carousel
-              opts={{ loop: true, direction: "rtl" }}
+              opts={{ loop: true }}
               plugins={[autoplayRTL.current]}
               className="w-screen  max-w-screen-md mx-auto"
             >

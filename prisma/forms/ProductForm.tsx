@@ -24,15 +24,14 @@ import { useEffect, useState } from 'react';
 //   updatedAt?: Date; 
 // }
 
-export default function ProductForm() {
+export default function ProductForm({ initialProduct, hideList = false }: { initialProduct?: any, hideList?: boolean }) {
   const [products, setProducts] = useState<any>([]);
   const [formData, setFormData] = useState<any>({ //useState<Omit<any, 'id' | 'createdAt' | 'updatedAt'>>({
-    name: '',
-    description: '',
-    category: '',
-    categoryId: '',
-    price: 0,
-    images: null,
+    name: initialProduct?.name || '',
+    description: initialProduct?.description || '',
+    categoryId: initialProduct?.categoryId || '',
+    price: initialProduct?.price || 0,
+    images: initialProduct?.images || null,
   });
   const [file, setFile] = useState(null);
   const [categories, setCategories] = useState([]);//categories to be mapped to the select input
@@ -40,12 +39,25 @@ export default function ProductForm() {
   const [uploadStatus , setUploadStatus] = useState("");
 
   const [productImage, setProductImage] = useState(null);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(initialProduct?.id || null);
 
   useEffect(() => {
-    fetchProducts();
+    if (!hideList) fetchProducts();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (initialProduct) {
+      setFormData({
+        name: initialProduct.name || '',
+        description: initialProduct.description || '',
+        categoryId: initialProduct.categoryId || '',
+        price: initialProduct.price || 0,
+        images: initialProduct.images || null,
+      });
+      setEditId(initialProduct.id);
+    }
+  }, [initialProduct]);
 
 
   const fetchProducts = async () => {
@@ -73,22 +85,21 @@ export default function ProductForm() {
     setFormData({
       name: '',
       description: '',
-      categoryId: '',
-      category: '',
+      categoryId: categories.length > 0 ? categories[0].id : '',
+      category: categories.length > 0 ? categories[0].name : '',
       price: 0,
       images: null,
     });
     setEditId(null);
+    setFile(null);
+    setPreview(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log('product', formData, 'file', file);
-
     const pformData = new FormData();
 
-    // ✅ only append file if user selected one
     if (file) {
       pformData.append("file", file);
     }
@@ -97,11 +108,6 @@ export default function ProductForm() {
     pformData.append("description", formData.description);
     pformData.append("categoryId", formData.categoryId);
     pformData.append("price", String(formData.price));
-
-    console.log("Submitting product data:", "Edit ID:", editId);
-    for (const [key, value] of pformData.entries()) {
-      console.log(key + ":", value);
-    }
 
     try {
       if (editId) {
@@ -112,13 +118,12 @@ export default function ProductForm() {
       } else {
         await axios.post(`/api/product`, pformData);
       }
+      resetForm();
+      fetchProducts();
     } catch (error) {
       console.error(error);
       alert("Failed to save product.");
     }
-
-    resetForm();
-    fetchProducts();
   };
 
 
@@ -236,25 +241,27 @@ export default function ProductForm() {
         {editId && <Button type="button" onClick={resetForm}>Cancel</Button>}
 
 
-        <ul className='w-full'>
-          {products.length > 0 ? (
-            products.map((item , index) => (
-              <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
-                <div className="flex flex-row gap-2">
-                  <span>{(index + 1)}. Name : </span>
-                  <span>{item.name}</span>
-                </div>
-                <p>Price : {item.price || <em>No price tag</em>}</p>
-                <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button type='button' onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
-                </div>
-              </li>
-            ))
-          ) : (
-            <p>No available product.</p>
-          )}
-        </ul>
+        {!hideList && (
+          <ul className='w-full'>
+            {products.length > 0 ? (
+              products.map((item, index) => (
+                <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
+                  <div className="flex flex-row gap-2">
+                    <span>{(index + 1)}. Name : </span>
+                    <span>{item.name}</span>
+                  </div>
+                  <p>Price : {item.price || <em>No price tag</em>}</p>
+                  <div className='flex flex-row gap-2 p-1 w-full'>
+                    <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
+                    <Button type='button' onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <p>No available product.</p>
+            )}
+          </ul>
+        )}
       </form>
     </div>
   );

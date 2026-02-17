@@ -3,6 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Stocks from '@/components/myComponents/subs/stocks';
 import { SearchInput } from '@/components/myComponents/subs/searchcomponent';
+import { FloatingAddButton } from '@/components/myComponents/subs/FloatingAddButton';
 
 const Store = () => {
   const searchParams = useSearchParams();
@@ -23,6 +24,7 @@ const Store = () => {
         </div>
         <Stocks categoryFilter={category} search={search} selectedId={id} />
       </div>
+      <FloatingAddButton />
     </motion.section>
   );
 };

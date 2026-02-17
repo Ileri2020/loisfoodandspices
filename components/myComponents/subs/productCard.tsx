@@ -6,9 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getProductPrice, isProductInStock } from "@/lib/stock-pricing";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart, Star, Edit3, Trash2 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import ProductForm from "@/prisma/forms/ProductForm";
+import axios from "axios";
+import { toast } from "sonner";
 
 type ProductCardProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
@@ -122,8 +133,58 @@ export function ProductCard({
     );
   };
 
+  const isAdmin = useIsAdmin();
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+  const handleDeleteProduct = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm(`Are you sure you want to delete ${product.name}?`)) {
+      try {
+        await axios.delete(`/api/dbhandler?model=product&id=${product.id}`);
+        toast.success("Product deleted successfully");
+        window.location.reload(); // Refresh to show changes
+      } catch (err) {
+        toast.error("Failed to delete product");
+      }
+    }
+  };
+
   return (
-    <div className={cn("group", className)} {...props}>
+    <div className={cn("group relative", className)} {...props}>
+      {/* Admin Actions */}
+      {isAdmin && (
+        <div className="absolute top-2 left-2 flex gap-2 z-30">
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md overflow-y-auto max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>Edit Product: {product.name}</DialogTitle>
+              </DialogHeader>
+              <ProductForm initialProduct={product} hideList={true} />
+            </DialogContent>
+          </Dialog>
+
+          <Button
+            size="icon"
+            variant="destructive"
+            className="h-8 w-8 rounded-full bg-destructive/80 backdrop-blur-sm shadow-sm"
+            onClick={handleDeleteProduct}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       <Link href={`/store/${product.id}`}>
         <Card
           className={cn(
@@ -154,9 +215,9 @@ export function ProductCard({
               src={image}
             />
 
-            {/* Category badge */}
+            {/* Category badge moved to bottom-left */}
             <Badge
-              className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm"
+              className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm z-10"
               variant="outline"
             >
               {categoryName}
