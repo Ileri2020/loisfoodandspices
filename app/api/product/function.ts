@@ -65,6 +65,7 @@ async function dbHandler({
                 categoryId: body.categoryId,
                 category: body.category,
                 price: parseFloat(body.price),
+                costPrice: body.costPrice ? parseFloat(body.costPrice) : null,
               // images: {
               //   push: body.url,
               // },

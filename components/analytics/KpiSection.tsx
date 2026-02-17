@@ -5,13 +5,12 @@ import { KpiCard } from "./cards/KpiCard";
 import { DollarSign, ShoppingCart, Users, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 interface KpiSectionProps {
-    params?: Record<string, any>;
+    data?: any;
+    isLoading?: boolean;
 }
 
-export function KpiSection({ params }: KpiSectionProps) {
-    const { data, isLoading } = useAnalytics("kpi", params);
-
-    if (isLoading) return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full h-24 animate-pulse bg-muted rounded-md" />;
+export function KpiSection({ data, isLoading }: KpiSectionProps) {
+    if (isLoading && !data) return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full h-24 animate-pulse bg-muted rounded-md" />;
     if (!data) return null;
 
     return (

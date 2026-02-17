@@ -42,6 +42,7 @@ export async function POST(req , res) {
       categoryId: Formdata.get("categoryId"),
       //category: Formdata.get("category"),
       price: parseFloat(Formdata.get("price")),
+      costPrice: Formdata.get("costPrice") ? parseFloat(Formdata.get("costPrice")) : null,
       url: cldRes.url,
     },
   });

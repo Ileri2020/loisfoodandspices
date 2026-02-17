@@ -1,16 +1,16 @@
 "use client";
 
-import { useAnalytics } from "../hooks/useAnalytics";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#0088FE", "#8884d8"];
 
 interface ChartProps {
-    params?: Record<string, any>;
+    data?: any;
+    isLoading?: boolean;
 }
 
-export function RefundReasonChart({ params }: ChartProps) {
-    const { data, isLoading } = useAnalytics("refunds", params); // Assuming we update API to group by reason if possible, or just mock reasons if unimplemented
+export function RefundReasonChart({ data, isLoading }: ChartProps) {
+    if (isLoading && !data) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
 
     // Mock data for reasons if API only returns total list, or if API response structure is just list of amounts
     // For now let's assume we want to visualize this even if data is simple

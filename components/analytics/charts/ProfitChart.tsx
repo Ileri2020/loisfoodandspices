@@ -5,13 +5,12 @@ import { ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, CartesianG
 import { format } from "date-fns";
 
 interface ChartProps {
-    params?: Record<string, any>;
+    data?: any;
+    isLoading?: boolean;
 }
 
-export function ProfitChart({ params }: ChartProps) {
-    const { data, isLoading } = useAnalytics("profit", params);
-
-    if (isLoading) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
+export function ProfitChart({ data, isLoading }: ChartProps) {
+    if (isLoading && !data) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
     if (!data || !Array.isArray(data) || data.length === 0) return <div className="h-[300px] flex items-center justify-center text-muted-foreground">No data available</div>;
 
     const formattedData = data.map((d: any) => ({

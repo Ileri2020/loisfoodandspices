@@ -1,6 +1,6 @@
 ================================================================================
 LOIS SPICE PROJECT - SOURCE CODE CONSOLIDATION
-Generated: 2026-02-17 07:47:35
+Generated: 2026-02-17 09:03:37
 ================================================================================
 
 
@@ -170,9 +170,20 @@ import Countup from "react-countup"
 import contact from "@/data/cont"
 // import Footer from "@/components/myComponents/subs/footer"
 import { useAppContext } from "@/hooks/useAppContext"
+import { getSiteSettings } from "@/server/action/siteSettings"
+import { AdminEditable } from "@/components/myComponents/subs/AdminEditable"
+import { useEffect, useState } from "react"
 
 const About = () => {
   const { selectedVideo, setSelectedVideo, useMock } = useAppContext();
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    getSiteSettings().then(setSettings);
+  }, []);
+
+  const aboutText = settings?.aboutText || Stats.about.join(" ");
+
   return (
     <motion.section 
       initial = {{ opacity: 0 }}
@@ -4960,6 +4971,8 @@ export const SYSTEM_CONFIG = {
   // repoStars: true,
 };
 
+import { Toaster } from "@/components/ui/sonner"
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -4985,6 +4998,7 @@ export default async function RootLayout({
                   <VisitTracker />
                   <Navbar />
                   {children}
+                  <Toaster />
                   <Footer />
                 </ThemeProvider>
               </CartProvider>
@@ -5344,6 +5358,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Stocks from '@/components/myComponents/subs/stocks';
 import { SearchInput } from '@/components/myComponents/subs/searchcomponent';
+import { FloatingAddButton } from '@/components/myComponents/subs/FloatingAddButton';
 
 const Store = () => {
   const searchParams = useSearchParams();
@@ -5364,6 +5379,7 @@ const Store = () => {
         </div>
         <Stocks categoryFilter={category} search={search} selectedId={id} />
       </div>
+      <FloatingAddButton />
     </motion.section>
   );
 };
@@ -7147,6 +7163,84 @@ const ECommerceSalesPage = () => {
 };
 
 export default ECommerceSalesPage;
+
+
+================================================================================
+LOCATION: components\myComponents\subs\AdminEditable.tsx
+================================================================================
+
+"use client"
+
+import React, { useState, useEffect } from "react"
+import { useIsAdmin } from "@/hooks/useIsAdmin"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { updateSiteSettings } from "@/server/action/siteSettings"
+import { toast } from "sonner"
+import { Edit2, Check, X } from "lucide-react"
+
+interface AdminEditableProps {
+  value: string
+  field: "aboutText" | "addToHome"
+  children: React.ReactNode
+}
+
+export const AdminEditable = ({ value, field, children }: AdminEditableProps) => {
+  const isAdmin = useIsAdmin()
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentValue, setCurrentValue] = useState(value)
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    setCurrentValue(value)
+  }, [value])
+
+  if (!isAdmin) return <>{children}</>
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    const res = await updateSiteSettings({ [field]: currentValue })
+    if (res.success) {
+      toast.success("Settings updated")
+      setIsEditing(false)
+    } else {
+      toast.error("Failed to update settings")
+    }
+    setIsSaving(false)
+  }
+
+  if (isEditing) {
+    return (
+      <div className="relative group w-full">
+        <Textarea
+          value={currentValue}
+          onChange={(e) => setCurrentValue(e.target.value)}
+          className="min-h-[100px] w-full p-2 border-2 border-primary focus:ring-primary"
+        />
+        <div className="flex gap-2 mt-2 justify-end">
+          <Button size="sm" variant="ghost" onClick={() => { setIsEditing(false); setCurrentValue(value); }}>
+            <X className="h-4 w-4 mr-1" /> Cancel
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? "Saving..." : <><Check className="h-4 w-4 mr-1" /> Save</>}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative group cursor-pointer" onClick={() => setIsEditing(true)}>
+      <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-primary text-white p-1 rounded-full shadow-lg z-10">
+        <Edit2 className="h-3 w-3" />
+      </div>
+      <div className="group-hover:ring-2 group-hover:ring-primary/50 group-hover:rounded-md transition-all p-1">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 
 
 ================================================================================
@@ -9530,7 +9624,7 @@ const FeaturedProducts = () => {
                 BOTTOM CAROUSEL (RTL)
             ================================ */}
             <Carousel
-              opts={{ loop: true, direction: "rtl" }}
+              opts={{ loop: true }}
               plugins={[autoplayRTL.current]}
               className="w-screen  max-w-screen-md mx-auto"
             >
@@ -10076,6 +10170,55 @@ const Filters = () => {
 }
 
 export default Filters
+
+
+
+================================================================================
+LOCATION: components\myComponents\subs\FloatingAddButton.tsx
+================================================================================
+
+"use client"
+
+import React, { useState } from "react"
+import { useIsAdmin } from "@/hooks/useIsAdmin"
+import { Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import ProductForm from "@/prisma/forms/ProductForm"
+
+export const FloatingAddButton = () => {
+  const isAdmin = useIsAdmin()
+  const [isOpen, setIsOpen] = useState(false)
+
+  if (!isAdmin) return null
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50">
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button
+            size="icon"
+            className="h-14 w-14 rounded-full shadow-2xl bg-primary text-white hover:scale-110 transition-transform"
+          >
+            <Plus className="h-8 w-8" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-md overflow-y-auto max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+          </DialogHeader>
+          <ProductForm hideList={true} />
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
 
 
 
@@ -12408,9 +12551,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getProductPrice, isProductInStock } from "@/lib/stock-pricing";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart, Star, Edit3, Trash2 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import ProductForm from "@/prisma/forms/ProductForm";
+import axios from "axios";
+import { toast } from "sonner";
 
 type ProductCardProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
@@ -12524,8 +12678,58 @@ export function ProductCard({
     );
   };
 
+  const isAdmin = useIsAdmin();
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+  const handleDeleteProduct = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm(`Are you sure you want to delete ${product.name}?`)) {
+      try {
+        await axios.delete(`/api/dbhandler?model=product&id=${product.id}`);
+        toast.success("Product deleted successfully");
+        window.location.reload(); // Refresh to show changes
+      } catch (err) {
+        toast.error("Failed to delete product");
+      }
+    }
+  };
+
   return (
-    <div className={cn("group", className)} {...props}>
+    <div className={cn("group relative", className)} {...props}>
+      {/* Admin Actions */}
+      {isAdmin && (
+        <div className="absolute top-2 left-2 flex gap-2 z-30">
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md overflow-y-auto max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>Edit Product: {product.name}</DialogTitle>
+              </DialogHeader>
+              <ProductForm initialProduct={product} hideList={true} />
+            </DialogContent>
+          </Dialog>
+
+          <Button
+            size="icon"
+            variant="destructive"
+            className="h-8 w-8 rounded-full bg-destructive/80 backdrop-blur-sm shadow-sm"
+            onClick={handleDeleteProduct}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       <Link href={`/store/${product.id}`}>
         <Card
           className={cn(
@@ -12556,9 +12760,9 @@ export function ProductCard({
               src={image}
             />
 
-            {/* Category badge */}
+            {/* Category badge moved to bottom-left */}
             <Badge
-              className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm"
+              className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm z-10"
               variant="outline"
             >
               {categoryName}
@@ -25110,6 +25314,19 @@ export const useAppContext = () => {
 
 
 ================================================================================
+LOCATION: hooks\useIsAdmin.ts
+================================================================================
+
+import { useSession } from "next-auth/react";
+
+export const useIsAdmin = () => {
+  const { data: session } = useSession();
+  return session?.user?.role === "admin";
+};
+
+
+
+================================================================================
 LOCATION: hooks\useMessageNotifications.ts
 ================================================================================
 
@@ -27559,15 +27776,14 @@ import { useEffect, useState } from 'react';
 //   updatedAt?: Date; 
 // }
 
-export default function ProductForm() {
+export default function ProductForm({ initialProduct, hideList = false }: { initialProduct?: any, hideList?: boolean }) {
   const [products, setProducts] = useState<any>([]);
   const [formData, setFormData] = useState<any>({ //useState<Omit<any, 'id' | 'createdAt' | 'updatedAt'>>({
-    name: '',
-    description: '',
-    category: '',
-    categoryId: '',
-    price: 0,
-    images: null,
+    name: initialProduct?.name || '',
+    description: initialProduct?.description || '',
+    categoryId: initialProduct?.categoryId || '',
+    price: initialProduct?.price || 0,
+    images: initialProduct?.images || null,
   });
   const [file, setFile] = useState(null);
   const [categories, setCategories] = useState([]);//categories to be mapped to the select input
@@ -27575,12 +27791,25 @@ export default function ProductForm() {
   const [uploadStatus , setUploadStatus] = useState("");
 
   const [productImage, setProductImage] = useState(null);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(initialProduct?.id || null);
 
   useEffect(() => {
-    fetchProducts();
+    if (!hideList) fetchProducts();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (initialProduct) {
+      setFormData({
+        name: initialProduct.name || '',
+        description: initialProduct.description || '',
+        categoryId: initialProduct.categoryId || '',
+        price: initialProduct.price || 0,
+        images: initialProduct.images || null,
+      });
+      setEditId(initialProduct.id);
+    }
+  }, [initialProduct]);
 
 
   const fetchProducts = async () => {
@@ -27608,22 +27837,21 @@ export default function ProductForm() {
     setFormData({
       name: '',
       description: '',
-      categoryId: '',
-      category: '',
+      categoryId: categories.length > 0 ? categories[0].id : '',
+      category: categories.length > 0 ? categories[0].name : '',
       price: 0,
       images: null,
     });
     setEditId(null);
+    setFile(null);
+    setPreview(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log('product', formData, 'file', file);
-
     const pformData = new FormData();
 
-    // ✅ only append file if user selected one
     if (file) {
       pformData.append("file", file);
     }
@@ -27632,11 +27860,6 @@ export default function ProductForm() {
     pformData.append("description", formData.description);
     pformData.append("categoryId", formData.categoryId);
     pformData.append("price", String(formData.price));
-
-    console.log("Submitting product data:", "Edit ID:", editId);
-    for (const [key, value] of pformData.entries()) {
-      console.log(key + ":", value);
-    }
 
     try {
       if (editId) {
@@ -27647,13 +27870,12 @@ export default function ProductForm() {
       } else {
         await axios.post(`/api/product`, pformData);
       }
+      resetForm();
+      fetchProducts();
     } catch (error) {
       console.error(error);
       alert("Failed to save product.");
     }
-
-    resetForm();
-    fetchProducts();
   };
 
 
@@ -27771,25 +27993,27 @@ export default function ProductForm() {
         {editId && <Button type="button" onClick={resetForm}>Cancel</Button>}
 
 
-        <ul className='w-full'>
-          {products.length > 0 ? (
-            products.map((item , index) => (
-              <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
-                <div className="flex flex-row gap-2">
-                  <span>{(index + 1)}. Name : </span>
-                  <span>{item.name}</span>
-                </div>
-                <p>Price : {item.price || <em>No price tag</em>}</p>
-                <div className='flex flex-row gap-2 p-1 w-full'>
-                  <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
-                  <Button type='button' onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
-                </div>
-              </li>
-            ))
-          ) : (
-            <p>No available product.</p>
-          )}
-        </ul>
+        {!hideList && (
+          <ul className='w-full'>
+            {products.length > 0 ? (
+              products.map((item, index) => (
+                <li key={index} className="flex flex-col justify-center items-center gap-2 my-2 bg-secondary rounded-md w-full p-2">
+                  <div className="flex flex-row gap-2">
+                    <span>{(index + 1)}. Name : </span>
+                    <span>{item.name}</span>
+                  </div>
+                  <p>Price : {item.price || <em>No price tag</em>}</p>
+                  <div className='flex flex-row gap-2 p-1 w-full'>
+                    <Button type='button' onClick={() => handleEdit(item)} className='flex-1'>Edit</Button>
+                    <Button type='button' onClick={() => handleDelete(item)} variant='ghost' className='flex-1 border-2 border-accent'>Delete</Button>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <p>No available product.</p>
+            )}
+          </ul>
+        )}
       </form>
     </div>
   );
@@ -29157,6 +29381,13 @@ model User {
   messages      Message[]
 }
 
+model SiteSettings {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  aboutText   String   @default("Welcome to our store. We provide high-quality products to our customers.")
+  addToHome   String   @default("Add our app to your home screen for a better experience!")
+  updatedAt   DateTime @updatedAt
+}
+
 model Account {
   id                String @id @default(auto()) @map("_id") @db.ObjectId
   userId            String @db.ObjectId
@@ -29725,6 +29956,59 @@ const register = async ( formData : FormData) => {
 };
 
 export {register}
+
+
+================================================================================
+LOCATION: server\action\siteSettings.ts
+================================================================================
+
+"use server"
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+
+export async function getSiteSettings() {
+  try {
+    let settings = await prisma.siteSettings.findFirst();
+    if (!settings) {
+      settings = await prisma.siteSettings.create({
+        data: {
+          aboutText: "Welcome to our store. We provide high-quality products to our customers.",
+          addToHome: "Add our app to your home screen for a better experience!",
+        },
+      });
+    }
+    return settings;
+  } catch (error) {
+    console.error("Failed to get site settings:", error);
+    return null;
+  }
+}
+
+export async function updateSiteSettings(data: { aboutText?: string; addToHome?: string }) {
+  try {
+    const settings = await prisma.siteSettings.findFirst();
+    if (settings) {
+      await prisma.siteSettings.update({
+        where: { id: settings.id },
+        data,
+      });
+    } else {
+      await prisma.siteSettings.create({
+        data: {
+          aboutText: data.aboutText || "Welcome to our store. We provide high-quality products to our customers.",
+          addToHome: data.addToHome || "Add our app to your home screen for a better experience!",
+        },
+      });
+    }
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update site settings:", error);
+    return { success: false, error: "Failed to update settings" };
+  }
+}
+
 
 
 ================================================================================
@@ -34747,5 +35031,5 @@ export const normalizeDateTime = (dateTime?: string): string => {
 
 
 ================================================================================
-TOTAL FILES CONSOLIDATED: 310
+TOTAL FILES CONSOLIDATED: 314
 ================================================================================

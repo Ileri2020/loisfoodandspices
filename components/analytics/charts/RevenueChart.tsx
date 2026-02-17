@@ -5,14 +5,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface ChartProps {
-    params?: Record<string, any>;
+    data?: any;
+    isLoading?: boolean;
 }
 
-export function RevenueChart({ params }: ChartProps) {
-    const { data, isLoading } = useAnalytics("revenue", params);
+export function RevenueChart({ data, isLoading }: ChartProps) {
     const [chartType, setChartType] = useState<"line" | "area" | "bar">("line");
 
-    if (isLoading) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
+    if (isLoading && !data) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
     if (!data || !Array.isArray(data) || data.length === 0) return <div className="h-[300px] flex items-center justify-center text-muted-foreground">No data available</div>;
 
     // Simple aggregation or formatting if needed

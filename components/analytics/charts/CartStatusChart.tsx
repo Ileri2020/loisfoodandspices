@@ -6,13 +6,12 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recha
 const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#0088FE"];
 
 interface ChartProps {
-    params?: Record<string, any>;
+    data?: any;
+    isLoading?: boolean;
 }
 
-export function CartStatusChart({ params }: ChartProps) {
-    const { data, isLoading } = useAnalytics("cart-status", params);
-
-    if (isLoading) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
+export function CartStatusChart({ data, isLoading }: ChartProps) {
+    if (isLoading && !data) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-md" />;
     if (!data || data.length === 0) return <div className="h-[300px] flex items-center justify-center text-muted-foreground">No data available</div>;
 
     return (

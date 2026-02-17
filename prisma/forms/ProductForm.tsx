@@ -31,6 +31,7 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
     description: initialProduct?.description || '',
     categoryId: initialProduct?.categoryId || '',
     price: initialProduct?.price || 0,
+    costPrice: initialProduct?.costPrice || 0,
     images: initialProduct?.images || null,
   });
   const [file, setFile] = useState(null);
@@ -53,6 +54,7 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
         description: initialProduct.description || '',
         categoryId: initialProduct.categoryId || '',
         price: initialProduct.price || 0,
+        costPrice: initialProduct.costPrice || 0,
         images: initialProduct.images || null,
       });
       setEditId(initialProduct.id);
@@ -88,6 +90,7 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
       categoryId: categories.length > 0 ? categories[0].id : '',
       category: categories.length > 0 ? categories[0].name : '',
       price: 0,
+      costPrice: 0,
       images: null,
     });
     setEditId(null);
@@ -108,6 +111,9 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
     pformData.append("description", formData.description);
     pformData.append("categoryId", formData.categoryId);
     pformData.append("price", String(formData.price));
+    if (formData.costPrice) {
+      pformData.append("costPrice", String(formData.costPrice));
+    }
 
     try {
       if (editId) {
@@ -159,6 +165,7 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
       description: product.description ?? '',
       categoryId: product.categoryId ?? '',
       price: product.price ?? 0,
+      costPrice: product.costPrice ?? 0,
       images: product.images ?? [],
     });
   };
@@ -212,6 +219,14 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
           placeholder="Price of product"
           value={formData.price}
           onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          type="number"
+        />
+
+        <div>Product Cost Price </div>
+        <Input
+          placeholder="Cost price of product"
+          value={formData.costPrice}
+          onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
           type="number"
         />
 
