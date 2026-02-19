@@ -210,7 +210,7 @@ export function ProductCard({
               alt={product?.name || "Product"}
               className={cn(
                 "object-cover w-full transition-transform duration-300 ease-in-out",
-                isHovered && "scale-105"
+                isHovered ? "scale-100" : "scale-110"
               )}
               src={image}
             />

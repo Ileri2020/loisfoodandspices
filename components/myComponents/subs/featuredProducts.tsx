@@ -14,6 +14,16 @@ import {
 } from "@/components/ui/carousel";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import FeaturedProductForm from "@/prisma/forms/FeaturedProductForm";
 
 /* ===============================
    Types
@@ -49,51 +59,53 @@ const FeaturedProducts = () => {
   /* ===============================
      Fetch + Normalize Data
   ================================ */
-  useEffect(() => {
-    async function fetchFeaturedProducts() {
-      try {
-        const res = await fetch("/api/dbhandler?model=featuredProduct");
-        const data = await res.json();
+  const isAdmin = useIsAdmin();
 
-        const mapped: FeaturedProductType[] = data.map((item: any) => {
-          const totalStock =
-            item.product.stock?.reduce(
-              (sum: number, s: any) => sum + (s.addedQuantity ?? 0),
+  async function fetchFeaturedProducts() {
+    try {
+      const res = await fetch("/api/dbhandler?model=featuredProduct");
+      const data = await res.json();
+
+      const mapped: FeaturedProductType[] = data.map((item: any) => {
+        const totalStock =
+          item.product.stock?.reduce(
+            (sum: number, s: any) => sum + (s.addedQuantity ?? 0),
+            0
+          ) ?? 0;
+
+        const rating =
+          item.product.reviews?.length > 0
+            ? item.product.reviews.reduce(
+              (acc: number, r: any) => acc + r.rating,
               0
-            ) ?? 0;
+            ) / item.product.reviews.length
+            : undefined;
 
-          const rating =
-            item.product.reviews?.length > 0
-              ? item.product.reviews.reduce(
-                (acc: number, r: any) => acc + r.rating,
-                0
-              ) / item.product.reviews.length
-              : undefined;
+        return {
+          id: item.product.id,
+          name: item.product.name,
+          category: {
+            name: item.product.category.name,
+          },
+          price: item.product.price,
+          images:
+            item.product.images?.length > 0
+              ? item.product.images
+              : ["/placeholder.png"],
+          inStock: totalStock > 0,
+          rating,
+        };
+      });
 
-          return {
-            id: item.product.id,
-            name: item.product.name,
-            category: {
-              name: item.product.category.name,
-            },
-            price: item.product.price,
-            images:
-              item.product.images?.length > 0
-                ? item.product.images
-                : ["/placeholder.png"],
-            inStock: totalStock > 0,
-            rating,
-          };
-        });
-
-        setProducts(mapped);
-      } catch (err) {
-        console.error("Failed to fetch featured products", err);
-      } finally {
-        setLoading(false);
-      }
+      setProducts(mapped);
+    } catch (err) {
+      console.error("Failed to fetch featured products", err);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchFeaturedProducts();
   }, []);
 
@@ -138,6 +150,25 @@ const FeaturedProducts = () => {
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Hand-picked products customers love most
           </p>
+
+          {isAdmin && (
+            <div className="mt-6">
+              <Dialog onOpenChange={(open) => !open && fetchFeaturedProducts()}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Manage Featured Products
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add Featured Products</DialogTitle>
+                  </DialogHeader>
+                  <FeaturedProductForm hideList={true} />
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
 
         {loading ? (

@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 // interface Product {
 //   id: string;
@@ -124,34 +127,36 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
       } else {
         await axios.post(`/api/product`, pformData);
       }
+      setUploadStatus("Product saved successfully");
+      toast.success(editId ? "Product updated successfully" : "Product created successfully");
       resetForm();
       fetchProducts();
     } catch (error) {
       console.error(error);
-      alert("Failed to save product.");
+      toast.error("Failed to save product.");
     }
   };
 
 
   const handleImageChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile.size > 3 * 1024){
-      alert("file size greater than 300kb file may not upload")
+    if (selectedFile.size > 300 * 1024){
+      toast.warning("File size greater than 300kb. Upload might fail.");
     }
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
   }
 
   const handleDelete = async (product : any) => {
-    if (!confirm(`Are you sure you want to delete ${product.name} product?`)) return;
+    if (!confirm(`Are you sure you want to delete ${product.name}?`)) return;
     try {
       const res = await axios.delete(`/api/dbhandler?model=product&id=${product.id}`);
       if (res.status === 200  || res.status === 201) {
-        alert('Product deleted successfully.');
+        toast.success('Product deleted successfully.');
       }
       fetchProducts();
     } catch (err) {
-      alert('Failed to delete product.');
+      toast.error('Failed to delete product.');
     }
   };
 
@@ -178,59 +183,77 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
       <form onSubmit={handleSubmit} className='flex flex-col w-full max-w-sm gap-2 justify-center items-center p-3 border-2 border-secondary-foreground rounded-sm m-2'>
         <h2>Product Form</h2>
 
-        <div>Product Name </div>
-        <Input
-          placeholder="Name of product"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
+        <div className="w-full space-y-1">
+          <Label htmlFor="product-name">Product Name</Label>
+          <Input
+            id="product-name"
+            placeholder="Name of product"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </div>
+
+        <div className="w-full space-y-1">
+          <Label htmlFor="product-desc">Product Description</Label>
+          <Input
+            id="product-desc"
+            placeholder="Description of product"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          />
+        </div>
+
+        <div className="w-full space-y-1 text-center flex flex-col items-center">
+          <Label htmlFor="product-category" className='mb-2'>Product Category</Label>
+          <Select 
+            value={formData.categoryId} 
+            onValueChange={(value) => {
+              const selectedCategory = categories.find(cat => cat.id === value);
+              setFormData({ 
+                ...formData, 
+                categoryId: value, 
+                category: selectedCategory ? selectedCategory.name : ''
+              });
+            }}
+          >
+            <SelectTrigger id="product-category" className="w-full">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.length > 0 ? categories.map((category: any) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              )) : <SelectItem value="none" disabled>No categories</SelectItem>}
+            </SelectContent>
+          </Select>
+        </div>
 
 
-        <div>Product Description </div>
-        <Input
-          placeholder="Description of product"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        />
+        <div className="w-full space-y-1">
+          <Label htmlFor="product-price">Product Price</Label>
+          <Input
+            id="product-price"
+            placeholder="Price of product"
+            value={formData.price}
+            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            type="number"
+          />
+        </div>
 
+        <div className="w-full space-y-1">
+          <Label htmlFor="product-cost-price">Product Cost Price</Label>
+          <Input
+            id="product-cost-price"
+            placeholder="Cost price of product"
+            value={formData.costPrice}
+            onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+            type="number"
+          />
+        </div>
 
-        <div>Product Category </div>
-        <select 
-          value={formData.categoryId} 
-          onChange={(e) => {
-            const selectedCategory = categories.find(cat => cat.id === e.target.value);
-            setFormData({ 
-              ...formData, 
-              categoryId: e.target.value, 
-              category: selectedCategory ? selectedCategory.name : ''
-            });
-          }}
-        >
-          {categories.length > 0 ? categories.map((category, index) => (
-            <option key={index} value={`${category.id}`}>
-              {category.name}
-            </option>
-          )) : <option value="">No categories</option>}
-        </select>
-
-
-        <div>Product Price </div>
-        <Input
-          placeholder="Price of product"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-          type="number"
-        />
-
-        <div>Product Cost Price </div>
-        <Input
-          placeholder="Cost price of product"
-          value={formData.costPrice}
-          onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
-          type="number"
-        />
-
-        <div>Product Image </div>
+        <div className="w-full space-y-1">
+          <Label htmlFor="product-image">Product Image</Label>
         {!preview && formData?.images?.length > 0 && (
           <img
             src={formData.images[0]}
@@ -246,12 +269,11 @@ export default function ProductForm({ initialProduct, hideList = false }: { init
             <Input
               type="file"
               name='image'
-              id='image'
+              id='product-image'
               placeholder="Product image"
-              // value={formData.image || ''}
-              // onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               onChange={handleImageChange}
             />
+        </div>
         <Button type="submit">{editId ? 'Update' : 'Create'}</Button>
         {editId && <Button type="button" onClick={resetForm}>Cancel</Button>}
 

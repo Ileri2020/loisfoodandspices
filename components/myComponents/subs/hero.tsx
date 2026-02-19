@@ -114,7 +114,7 @@ const Hero = ({ variant = 'modern-split' }: HeroProps) => {
 
   const CTAButtons = ({ className = "" }: { className?: string }) => (
     <div className={`flex flex-col gap-3 sm:flex-row z-10 ${className}`}>
-      <Link href="/" className='w-full max-w-52'>
+      <Link href="/store" className='w-full max-w-52'>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} animate={buttonBounce}>
           <Button className={`h-12 gap-1.5 px-8 transition-all duration-200 bg-accent hover:bg-accent/90 w-full text-white font-bold text-lg shadow-xl shadow-accent/20`} size="lg">
             Shop Now <ArrowRight className="h-5 w-5 animate-pulse" />

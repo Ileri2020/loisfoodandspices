@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -18,7 +20,11 @@ interface FeaturedProduct {
 
 const MAX_FEATURED_PRODUCTS = 16;
 
-export default function FeaturedProductForm() {
+interface FeaturedProductFormProps {
+  hideList?: boolean;
+}
+
+export default function FeaturedProductForm({ hideList = false }: FeaturedProductFormProps) {
   const [featuredProduct, setFeaturedProduct] = useState<FeaturedProduct[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
@@ -94,9 +100,11 @@ export default function FeaturedProductForm() {
         productId: item.id,
       });
 
+      toast.success(`${item.name} featured successfully`);
       await refreshAll();
     } catch (err) {
       console.error("Failed to feature product:", err);
+      toast.error("Failed to feature product");
     }
   };
 
@@ -112,10 +120,12 @@ export default function FeaturedProductForm() {
         { productId: formData.productId }
       );
 
+      toast.success("Featured product updated");
       resetForm();
       refreshAll();
     } catch (err) {
       console.error("Failed to update featured product:", err);
+      toast.error("Failed to update featured product");
     }
   };
 
@@ -130,9 +140,11 @@ export default function FeaturedProductForm() {
   const handleDelete = async (id: string) => {
     try {
       await axios.delete(`/api/dbhandler?model=featuredProduct&id=${id}`);
+      toast.success("Feature removed");
       refreshAll();
     } catch (err) {
       console.error("Failed to delete featured product", err);
+      toast.error("Failed to remove feature");
     }
   };
 
@@ -157,99 +169,121 @@ export default function FeaturedProductForm() {
         onSubmit={handleSubmit}
         className="flex flex-col w-full max-w-md gap-2 p-3 border-2 border-secondary-foreground rounded-md"
       >
-        <h3 className="font-semibold">
-          Select Product to Feature ({featuredProduct.length}/{MAX_FEATURED_PRODUCTS})
-        </h3>
-
-        <Input
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="w-full space-y-1">
+          <Label htmlFor="fp-search">Search Products ({featuredProduct.length}/{MAX_FEATURED_PRODUCTS})</Label>
+          <Input
+            id="fp-search"
+            placeholder="Type to find a product..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
         {/* Product List */}
-        <ul className="mb-2 max-h-64 overflow-y-auto">
-          {filteredProducts.map((item, index) => {
-            const isFeatured = featuredIds.has(item.id);
+        <div className="w-full mt-2">
+          <Label className="text-sm font-medium">Select Product to Feature</Label>
+          <ul className="mb-2 max-h-64 overflow-y-auto border rounded-md p-1 mt-1">
+            {filteredProducts.map((item, index) => {
+              const isFeatured = featuredIds.has(item.id);
 
-            return (
-              <li
-                key={item.id}
-                className="flex flex-col gap-1 my-2 bg-secondary rounded-md p-2"
-              >
-                <div className="flex justify-between w-full">
-                  <span>
-                    {index + 1}. {item.name}
-                  </span>
-                  <span>Price: {item.price ?? <em>No price</em>}</span>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={() => handleFeatureClick(item)}
-                  disabled={isFeatured || isLimitReached}
-                  variant={isFeatured ? "ghost" : "default"}
+              return (
+                <li
+                  key={item.id}
+                  className="flex flex-col gap-1 mb-2 bg-secondary/50 rounded-md p-2 hover:bg-secondary transition-colors"
                 >
-                  {isFeatured
-                    ? "Already Featured"
-                    : isLimitReached
-                    ? "Limit Reached"
-                    : "Feature"}
-                </Button>
-              </li>
-            );
-          })}
-        </ul>
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-medium text-sm">
+                      {item.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">₦{item.price ?? 0}</span>
+                  </div>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => handleFeatureClick(item)}
+                    disabled={isFeatured || isLimitReached}
+                    variant={isFeatured ? "outline" : "default"}
+                  >
+                    {isFeatured
+                      ? "Featured"
+                      : isLimitReached
+                      ? "Limit Reached"
+                      : "Add Feature"}
+                  </Button>
+                </li>
+              );
+            })}
+            {filteredProducts.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-4">No products found</p>
+            )}
+          </ul>
+        </div>
 
         {editId && (
-          <>
+          <div className="space-y-2 pt-2 border-t">
+            <Label className="text-sm">Editing Feature</Label>
             <Input value={formData.productName} disabled />
-            <Input value={formData.productId} disabled />
-
-            <Button type="submit">Update</Button>
-            <Button type="button" onClick={resetForm} variant="ghost">
-              Cancel
-            </Button>
-          </>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Update</Button>
+              <Button type="button" onClick={resetForm} variant="outline" className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          </div>
         )}
       </form>
 
       {/* ===============================
           FEATURED LIST
       ================================ */}
-      <h3 className="mt-4 font-semibold">Added Featured Products</h3>
+      {!hideList && (
+        <>
+          <h3 className="mt-6 font-semibold flex items-center gap-2">
+            Current Featured Products
+            <span className="text-xs font-normal text-muted-foreground">({featuredProduct.length})</span>
+          </h3>
 
-      <ul>
-        {featuredProduct.map((item, index) => (
-          <li
-            key={item.id}
-            className="flex flex-col gap-1 my-2 bg-secondary rounded-md p-2"
-          >
-            <div className="flex justify-between w-full">
-              <span>
-                {index + 1}. {item.product?.name ?? "Unnamed Product"}
-              </span>
-              <span>
-                Price: {item.product?.price ?? <em>No price</em>}
-              </span>
-            </div>
-
-            <div className="flex gap-2 mt-1">
-              <Button type="button" onClick={() => handleEdit(item)}>
-                Edit
-              </Button>
-              <Button
-                type="button"
-                onClick={() => handleDelete(item.id)}
-                variant="ghost"
-                className="border-2 border-accent"
+          <ul className="mt-2">
+            {featuredProduct.map((item, index) => (
+              <li
+                key={item.id}
+                className="flex flex-col gap-1 mb-3 bg-secondary rounded-md p-3 border shadow-sm"
               >
-                Delete
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-medium">
+                    {index + 1}. {item.product?.name ?? "Unnamed Product"}
+                  </span>
+                  <span className="text-sm font-semibold">
+                    ₦{item.product?.price ?? 0}
+                  </span>
+                </div>
+
+                <div className="flex gap-2 mt-2">
+                  <Button type="button" size="sm" onClick={() => handleEdit(item)} className="flex-1">
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleDelete(item.id)}
+                    variant="outline"
+                    className="flex-1 text-destructive hover:text-destructive"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </li>
+            ))}
+            {featuredProduct.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-6 border-2 border-dashed rounded-md">
+                No products are currently featured on the homepage.
+              </p>
+            )}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

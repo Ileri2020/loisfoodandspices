@@ -573,6 +573,9 @@ export async function PUT(req: NextRequest) {
     if (updatedData.price) {
       updatedData.price = parseFloat(updatedData.price);
     }
+    if (updatedData.costPrice) {
+      updatedData.costPrice = parseFloat(updatedData.costPrice);
+    }
 
     // =========================
     // CART PAYLOAD UPDATES
