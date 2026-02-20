@@ -82,7 +82,7 @@ export async function POST(req: Request) {
 // PUT → Edit existing stock record
 // -------------------------------------------------
 export async function PUT(req: Request) {
-  const { stockId, addedQuantity } = await req.json();
+  const { stockId, addedQuantity, costPerProduct, pricePerProduct } = await req.json();
 
   if (!stockId) {
     return NextResponse.json(
@@ -93,7 +93,11 @@ export async function PUT(req: Request) {
 
   const updated = await prisma.stock.update({
     where: { id: stockId },
-    data: { addedQuantity },
+    data: { 
+      addedQuantity: addedQuantity ? Number(addedQuantity) : undefined,
+      costPerProduct: costPerProduct ? Number(costPerProduct) : undefined,
+      pricePerProduct: pricePerProduct ? Number(pricePerProduct) : undefined
+    },
   });
 
   return NextResponse.json(updated);
